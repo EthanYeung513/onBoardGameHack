@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:18:36.427Z",
+  "updated_at": "2026-10-23T23:21:59.479Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T6",
-    "step": "T6.2",
-    "substep": "T6.2.1"
+    "task": "T11",
+    "step": "T11.1",
+    "substep": "T11.1.1"
   },
   "tasks": [
     {
@@ -697,7 +697,7 @@
     {
       "id": "T11",
       "title": "Eval harness + regression gate",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T4"
       ],
@@ -707,38 +707,42 @@
         {
           "id": "T11.1",
           "title": "Eval",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T11.1.1",
               "title": "Held-out set format + placeholder file",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
-              "decision_refs": []
+              "notes": "eval/heldout.example.json (12 placeholder labels); real set goes in eval/heldout.json",
+              "decision_refs": [
+                "D-10"
+              ]
             },
             {
               "id": "T11.1.2",
               "title": "Metrics: exact agreement, within-1, MAE, cost/1k, p50/p95",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "agreement, within-1, MAE (failures count as 3), cost/1k, p50/p95",
               "decision_refs": []
             },
             {
               "id": "T11.1.3",
               "title": "Eval script writing eval/results/<version>.json",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
-              "decision_refs": []
+              "notes": "npm run eval -- --label vN [--model] [--record]",
+              "decision_refs": [
+                "D-11"
+              ]
             },
             {
               "id": "T11.1.4",
               "title": "Regression gate + test",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "gateDecision + recordVersion; tests",
               "decision_refs": []
             }
           ]

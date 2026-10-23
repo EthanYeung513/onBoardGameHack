@@ -94,6 +94,26 @@ Run branch: `auto/gymquest-mvp`. Source plan: [PLAN.md](PLAN.md). Progress: [sta
 - **Reversibility:** easy
 - **Revisit?:** yes. Confirm the task mechanism and set `MUBIT_MODEL` to the model Mubit expects (the `gpt-4.1-mini` default is a placeholder)
 
+### D-10: Placeholder held-out labels, kept apart from the real set
+- **Task:** T11.1.1
+- **Time:** 2026-10-24T00:22Z
+- **Context:** the eval needs labelled answers, but the real labels are Nicole's expert judgement (T17)
+- **Options:** A) no data until morning / B) 12 placeholder labels I wrote, in `eval/heldout.example.json`, used only until `eval/heldout.json` exists, with a loud warning
+- **Chosen:** B
+- **Why:** the harness and gate can be tested end to end now; the eval refuses to look official (the warning and the `labeller` field say "placeholder")
+- **Reversibility:** easy
+- **Revisit?:** yes. Nicole writes 40 labels to `eval/heldout.json` (same format). Never quote numbers measured on the example set
+
+### D-11: Evals measure the model alone, without retrieved rulings
+- **Task:** T11.1.3
+- **Time:** 2026-10-24T00:22Z
+- **Context:** production grading adds retrieved corrections (the fast path); should held-out evals include them?
+- **Options:** A) include retrieval (needs DB state) / B) measure the model alone
+- **Chosen:** B
+- **Why:** the claim to prove is that the *adapter* learned the standard. Retrieval would blur v0 vs v2, and evals stay reproducible without DB state
+- **Reversibility:** easy (add a `--with-retrieval` flag)
+- **Revisit?:** no
+
 ## Blockers
 
 None yet.
