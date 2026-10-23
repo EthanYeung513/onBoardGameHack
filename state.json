@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:35:04.097Z",
+  "updated_at": "2026-10-23T23:38:10.839Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T9",
-    "step": "T9.1",
-    "substep": "T9.1.1"
+    "task": "T12",
+    "step": "T12.1",
+    "substep": "T12.1.1"
   },
   "tasks": [
     {
@@ -648,12 +648,12 @@
     {
       "id": "T10",
       "title": "Weakness tracking + adaptive Gym Leader boss",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "T9"
       ],
       "acceptance": "Unit test: boss deck is >=60% the learner's weak competencies",
-      "commit": null,
+      "commit": "029e2d0",
       "steps": [
         {
           "id": "T10.1",
@@ -754,7 +754,7 @@
     {
       "id": "T12",
       "title": "Learning timeline / Mubit panel",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T5",
         "T11"
@@ -765,30 +765,30 @@
         {
           "id": "T12.1",
           "title": "Timeline",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T12.1.1",
               "title": "GET /api/timeline aggregating corrections, versions, eval results, live grades",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "GET /api/timeline: counts, versions, corrections, live grades, mode",
               "decision_refs": []
             },
             {
               "id": "T12.1.2",
               "title": "LearningTimeline component",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "LearningTimeline: pipeline, tiles vs baseline, versions table w/ gate labels; screenshot checked",
               "decision_refs": []
             },
             {
               "id": "T12.1.3",
               "title": "Component test",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "tests/timeline.test.tsx",
               "decision_refs": []
             }
           ]

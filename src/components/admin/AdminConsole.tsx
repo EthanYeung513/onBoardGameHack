@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { LearningTimeline } from "./LearningTimeline";
 import { ReviewQueue } from "./ReviewQueue";
 
 const tabs = ["Review queue", "Learning timeline", "Readiness", "Content"] as const;
@@ -32,7 +33,8 @@ export function AdminConsole() {
         </nav>
       </header>
       {tab === "Review queue" && <ReviewQueue />}
-      {tab !== "Review queue" && <p className="text-ink/70">Coming next.</p>}
+      {tab === "Learning timeline" && <LearningTimeline />}
+      {(tab === "Readiness" || tab === "Content") && <p className="text-ink/70">Coming next.</p>}
     </main>
   );
 }
