@@ -114,6 +114,26 @@ Run branch: `auto/gymquest-mvp`. Source plan: [PLAN.md](PLAN.md). Progress: [sta
 - **Reversibility:** easy (add a `--with-retrieval` flag)
 - **Revisit?:** no
 
+### D-12: Uploaded packs publish straight away by default
+- **Task:** T13.1.3
+- **Time:** 2026-10-24T00:45Z
+- **Context:** PLAN.md wants "a new pack becomes a playable gym in under 60s" on stage, but also "separate generation from validation"
+- **Options:** A) always drafts + manual approval / B) publish by default with a "Review cards before the gym opens" checkbox
+- **Chosen:** B. With the box ticked, cards are drafts, the gym stays locked, and it opens when the last draft is approved
+- **Why:** the live demo needs the door to open in one step; the review path exists and is one click away for the Q&A answer
+- **Reversibility:** easy (flip the default in `ContentPanel` / the API)
+- **Revisit?:** yes. Decide which flow the demo shows. Stale-card regeneration always produces drafts
+
+### D-13: Policy edits re-point unchanged cards instead of regenerating everything
+- **Task:** T13.1.1
+- **Time:** 2026-10-24T00:45Z
+- **Context:** when a doc changes, which cards are stale?
+- **Options:** A) every card citing the doc / B) only cards whose section text changed (matched by heading)
+- **Chosen:** B
+- **Why:** an edit to one rule shouldn't invalidate the whole gym; the demo shows "1 card went stale, 5 carried over"
+- **Reversibility:** easy
+- **Revisit?:** no. Renaming a heading counts as removing the section (its cards are retired, not regenerated)
+
 ## Blockers
 
 None yet.

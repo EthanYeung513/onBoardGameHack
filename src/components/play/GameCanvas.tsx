@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gameBus, setLockedBuildings } from "@/game/events";
+import { gameBus, setBuildingLabels, setLockedBuildings } from "@/game/events";
 import type { Dir } from "@/game/logic";
 
 /** Mounts the Phaser world on the client only (Phaser needs `window`), with an on-screen d-pad for touch. */
-export function GameCanvas({ locked }: { locked: string[] }) {
+export function GameCanvas({ locked, labels }: { locked: string[]; labels: Record<string, string> }) {
   const host = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,6 +33,7 @@ export function GameCanvas({ locked }: { locked: string[] }) {
   }, []);
 
   useEffect(() => setLockedBuildings(locked), [locked]);
+  useEffect(() => setBuildingLabels(labels), [labels]);
 
   return (
     <div className="relative w-full">

@@ -111,5 +111,14 @@ export async function reviewCard(db: DB, cardId: string, action: "approve" | "ed
     .where(eq(t.cards.id, cardId))
     .returning();
   await db.insert(t.cardReviews).values({ cardId, action, before, after: action === "edit" ? { ...before, ...edits } : null, reviewer });
+
+  // A gym held back for review opens once its last draft is decided and it has something to play.
+  const [gym] = await db.select().from(t.gyms).where(eq(t.gyms.id, card.gymId));
+  if (gym?.locked) {
+    const rest = await db.select({ status: t.cards.status }).from(t.cards).where(eq(t.cards.gymId, gym.id));
+    if (!rest.some((c) => c.status === "draft") && rest.some((c) => c.status === "approved")) {
+      await db.update(t.gyms).set({ locked: false }).where(eq(t.gyms.id, gym.id));
+    }
+  }
   return updated;
 }

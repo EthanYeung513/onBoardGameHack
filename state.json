@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:38:10.839Z",
+  "updated_at": "2026-10-23T23:43:25.389Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T12",
-    "step": "T12.1",
-    "substep": "T12.1.1"
+    "task": "T13",
+    "step": "T13.1",
+    "substep": "T13.1.1"
   },
   "tasks": [
     {
@@ -754,13 +754,13 @@
     {
       "id": "T12",
       "title": "Learning timeline / Mubit panel",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T5",
         "T11"
       ],
       "acceptance": "Renders from eval/results + DB; component test passes",
-      "commit": null,
+      "commit": "7235479",
       "steps": [
         {
           "id": "T12.1",
@@ -798,7 +798,7 @@
     {
       "id": "T13",
       "title": "Fast refresh: doc versioning + pack upload",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T7",
         "T8"
@@ -809,46 +809,50 @@
         {
           "id": "T13.1",
           "title": "Refresh",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T13.1.1",
               "title": "Doc edit -> version bump -> stale cards + flag corrections",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
-              "decision_refs": []
+              "notes": "updateDoc: new version + chunks; changed sections -> stale; corrections flagged",
+              "decision_refs": [
+                "D-13"
+              ]
             },
             {
               "id": "T13.1.2",
               "title": "Regenerate stale cards",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "regenerateStale -> drafts from new wording; old retired",
               "decision_refs": []
             },
             {
               "id": "T13.1.3",
               "title": "Pack upload -> chunk, embed, gym, cards, unlock",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
-              "decision_refs": []
+              "notes": "uploadPack -> annex gym, up to 6 cards, boss, 3 parallel gens",
+              "decision_refs": [
+                "D-12"
+              ]
             },
             {
               "id": "T13.1.4",
               "title": "Tests",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "tests/refresh.test.ts",
               "decision_refs": []
             },
             {
               "id": "T13.1.5",
               "title": "Admin UI: edit doc, upload pack",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "ContentPanel (edit doc, regenerate, upload pack w/ sample); map sign shows new gym name; smoke covers upload",
               "decision_refs": []
             }
           ]

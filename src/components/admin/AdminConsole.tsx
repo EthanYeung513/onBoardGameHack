@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ContentPanel } from "./ContentPanel";
 import { LearningTimeline } from "./LearningTimeline";
 import { ReviewQueue } from "./ReviewQueue";
 
@@ -34,7 +35,8 @@ export function AdminConsole() {
       </header>
       {tab === "Review queue" && <ReviewQueue />}
       {tab === "Learning timeline" && <LearningTimeline />}
-      {(tab === "Readiness" || tab === "Content") && <p className="text-ink/70">Coming next.</p>}
+      {tab === "Readiness" && <p className="text-ink/70">Coming next.</p>}
+      {tab === "Content" && <ContentPanel />}
     </main>
   );
 }

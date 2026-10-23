@@ -77,6 +77,28 @@ try {
   await shot(page, "5-review-queue");
   console.log("✓ grade visible in the manager review queue");
 
+  // Fast refresh: upload the sample pack unless the annex is already taken (e.g. a second run).
+  const learnerId = await page.evaluate(() => localStorage.getItem("gymquest.learnerId"));
+  const before = await (await page.request.get(`${base}/api/world?learnerId=${learnerId}`)).json();
+  if (before.locked.includes("annex")) {
+    await page.getByRole("button", { name: "Content" }).click();
+    await page.getByRole("button", { name: "Load sample: Warehouse Ops" }).click();
+    await page.getByLabel("Pack title").waitFor();
+    await page.waitForFunction(() => (document.querySelector("textarea") as HTMLTextAreaElement | null)?.value.includes("warehouse"));
+    await page.getByRole("button", { name: "Generate gym" }).click();
+    await page.getByRole("status").filter({ hasText: "is open in the annex" }).waitFor({ timeout: 60000 });
+    await shot(page, "6-pack-uploaded");
+    const after = await (await page.request.get(`${base}/api/world?learnerId=${learnerId}`)).json();
+    if (after.locked.includes("annex")) throw new Error("annex still locked after upload");
+    console.log("✓ new pack generated and the annex opened");
+  } else {
+    console.log("· annex already open, skipped the upload");
+  }
+  await page.goto(`${base}/play`);
+  await page.locator("[data-testid=game-host] canvas").waitFor({ timeout: 30000 });
+  await page.waitForTimeout(1500);
+  await shot(page, "7-world-after-upload");
+
   if (errors.length) throw new Error(`Console errors:\n${errors.join("\n")}`);
   console.log(`Smoke test passed. Screenshots in ${values.out}`);
 } catch (err) {

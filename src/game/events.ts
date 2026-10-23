@@ -11,6 +11,7 @@ export interface GameEvents {
   "overlay:open": Record<string, never>;
   "overlay:close": Record<string, never>;
   "world:locked": { buildings: string[] };
+  "world:labels": { labels: Record<string, string> };
 }
 
 type Handler<T> = (payload: T) => void;
@@ -40,9 +41,15 @@ export class EventBus<E extends object> {
 export const gameBus = new EventBus<GameEvents>();
 
 /** The latest world state React has sent, so a scene that starts later can catch up. */
-export const worldState: { locked: string[] } = { locked: [] };
+export const worldState: { locked: string[]; labels: Record<string, string> } = { locked: [], labels: {} };
 
 export function setLockedBuildings(buildings: string[]): void {
   worldState.locked = buildings;
   gameBus.emit("world:locked", { buildings });
+}
+
+/** Building id -> sign text, e.g. the annex showing the name of a newly uploaded gym. */
+export function setBuildingLabels(labels: Record<string, string>): void {
+  worldState.labels = labels;
+  gameBus.emit("world:labels", { labels });
 }

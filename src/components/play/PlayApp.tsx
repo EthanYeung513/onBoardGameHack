@@ -150,7 +150,7 @@ export function PlayApp({ desk }: { desk?: (learnerId: string) => React.ReactNod
         </div>
       </header>
       <p className="text-sm text-ink/70">Walk with the arrow keys or WASD (or the d-pad on a phone). Enter a building to battle. Watch out in the long grass.</p>
-      <GameCanvas locked={world.locked} />
+      <GameCanvas locked={world.locked} labels={Object.fromEntries(world.gyms.filter((g) => !g.locked).map((g) => [g.building, g.name]))} />
       {toast && (
         <div role="status" className="fixed inset-x-4 bottom-6 mx-auto max-w-md rounded-lg bg-ink px-4 py-3 text-center text-paper shadow-lg">
           {toast}

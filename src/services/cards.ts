@@ -22,6 +22,7 @@ export interface CreateCardInput {
   type: t.CardType;
   role: string;
   isBoss?: boolean;
+  status?: t.CardStatus;
 }
 
 /** Generates a draft card from one doc section. The card cites that section and its doc version. */
@@ -59,7 +60,7 @@ export async function createCardFromChunk(db: DB, llm: LlmClient, input: CreateC
       expertAnswer: card.expert_answer,
       sourceChunkId: row.chunk.id,
       docVersion: row.chunk.docVersion,
-      status: "draft",
+      status: input.status ?? "draft",
       isBoss: input.isBoss ?? false,
     })
     .returning();

@@ -32,6 +32,7 @@ export class WorldScene extends Phaser.Scene {
   private paused = false;
   private locked = new Set<string>();
   private lockLabels: Phaser.GameObjects.Text[] = [];
+  private signs = new Map<string, Phaser.GameObjects.Text>();
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd?: Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
   private unsubscribers: (() => void)[] = [];
@@ -50,7 +51,9 @@ export class WorldScene extends Phaser.Scene {
     this.wasd = this.input.keyboard?.addKeys("W,A,S,D") as typeof this.wasd;
 
     this.setLocked(worldState.locked);
+    this.setLabels(worldState.labels);
     this.unsubscribers.push(
+      gameBus.on("world:labels", ({ labels }) => this.setLabels(labels)),
       gameBus.on("input:move", ({ dir }) => this.tryMove(dir)),
       gameBus.on("overlay:open", () => (this.paused = true)),
       gameBus.on("overlay:close", () => (this.paused = false)),
@@ -113,6 +116,10 @@ export class WorldScene extends Phaser.Scene {
       .map((p) => this.add.text(this.toPx(p.x), this.toPx(p.y), "🔒", { fontSize: "18px" }).setOrigin(0.5).setDepth(5));
   }
 
+  private setLabels(labels: Record<string, string>) {
+    for (const [building, text] of Object.entries(labels)) this.signs.get(building)?.setText(text);
+  }
+
   private drawMap() {
     const g = this.add.graphics();
     this.grid.tiles.forEach((row, y) =>
@@ -138,11 +145,12 @@ export class WorldScene extends Phaser.Scene {
       g.fillStyle(0xf7f4ea).fillRect(door.x * TILE + 8, door.y * TILE + 6, 16, 20);
       g.fillStyle(0x3b2a20).fillRect(door.x * TILE + 10, door.y * TILE + 8, 12, 18);
       const labelY = doorOnBottom ? top * TILE - 2 : (top + 3) * TILE + 2;
-      this.add
+      const sign = this.add
         .text(door.x * TILE + TILE / 2, labelY, label, { fontFamily: "monospace", fontSize: "13px", color: "#ffffff", backgroundColor: "#1b1e2bcc", padding: { x: 4, y: 2 } })
         .setOrigin(0.5, doorOnBottom ? 1 : 0)
         .setDepth(6)
         .setName(`label-${ch}`);
+      this.signs.set(building, sign);
     }
   }
 
