@@ -1,10 +1,9 @@
-import path from "node:path";
+// Wipes and re-seeds the local database directly. Stop `npm run dev` first (PGlite is single-process),
+// or use `npm run demo:reset`, which goes through the running app.
 import { acmePay } from "../content/acme-pay/world";
 import { getDb } from "../src/db/client";
-import { resetDb, seedWorld } from "../src/db/seed";
+import { resetDemo } from "../src/services/demo";
 
-const db = await getDb();
-await resetDb(db);
-const result = await seedWorld(db, acmePay, path.join(process.cwd(), "content", "acme-pay"), process.env.MUBIT_MODEL || "offline-baseline");
+const result = await resetDemo(await getDb());
 console.log(`Seeded ${acmePay.company.name}: company ${result.companyId}, demo learner ${result.learnerId}`);
 process.exit(0);

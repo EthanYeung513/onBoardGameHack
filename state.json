@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:50:32.365Z",
+  "updated_at": "2026-10-23T23:52:41.286Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T15",
-    "step": "T15.1",
-    "substep": "T15.1.2"
+    "task": "T18",
+    "step": "T18.1",
+    "substep": "T18.1.1"
   },
   "tasks": [
     {
@@ -921,12 +921,12 @@
     {
       "id": "T15",
       "title": "Content drafts: expanded handbook, persona script, second-domain pack",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T7"
       ],
       "acceptance": "Handbook committed; persona script verified with a mocked client; Warehouse Ops pack ready",
-      "commit": null,
+      "commit": "d796f0e",
       "steps": [
         {
           "id": "T15.1",
@@ -1022,7 +1022,7 @@
     {
       "id": "T18",
       "title": "demo:reset script + deploy",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T2"
       ],
@@ -1032,22 +1032,22 @@
         {
           "id": "T18.1",
           "title": "Reset",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T18.1.1",
               "title": "demo:reset script + test",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "resetDemo + POST /api/admin/reset (dev or DEMO_RESET_KEY) + script via running server; tests",
               "decision_refs": []
             },
             {
               "id": "T18.1.2",
               "title": "README run instructions",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "README: quick start, Mubit env, correction loop, scripts, code map",
               "decision_refs": []
             }
           ]
