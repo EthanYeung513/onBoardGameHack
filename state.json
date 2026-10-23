@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:43:25.389Z",
+  "updated_at": "2026-10-23T23:46:28.350Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T13",
-    "step": "T13.1",
-    "substep": "T13.1.1"
+    "task": "T14",
+    "step": "T14.1",
+    "substep": "T14.1.1"
   },
   "tasks": [
     {
@@ -798,13 +798,13 @@
     {
       "id": "T13",
       "title": "Fast refresh: doc versioning + pack upload",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T7",
         "T8"
       ],
       "acceptance": "Test: editing a doc marks citing cards stale; uploading a pack creates a gym + cards",
-      "commit": null,
+      "commit": "dd037c5",
       "steps": [
         {
           "id": "T13.1",
@@ -862,7 +862,7 @@
     {
       "id": "T14",
       "title": "Passport, readiness dashboard, doc audit, xAPI",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T9"
       ],
@@ -872,46 +872,46 @@
         {
           "id": "T14.1",
           "title": "Reporting",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T14.1.1",
               "title": "Passport query per learner",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "getPassport: badges, competencies shown/gap, attested policy versions",
               "decision_refs": []
             },
             {
               "id": "T14.1.2",
               "title": "Doc-audit flags",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "getDocAudit: >=2 attempts and >=50% failing",
               "decision_refs": []
             },
             {
               "id": "T14.1.3",
               "title": "xAPI statement builder + export route",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "xAPI statements (account actor, policy version in activity id) + /api/xapi download",
               "decision_refs": []
             },
             {
               "id": "T14.1.4",
               "title": "Dashboard + passport UI",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "ReadinessPanel + Passport (desk); screenshot checked",
               "decision_refs": []
             },
             {
               "id": "T14.1.5",
               "title": "Tests",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "tests/reporting.test.ts",
               "decision_refs": []
             }
           ]

@@ -9,6 +9,7 @@ import type { PublicCard, WorldGym } from "@/services/world";
 import { Battle } from "./Battle";
 import { GameCanvas } from "./GameCanvas";
 import { GymOverlay } from "./GymOverlay";
+import { Passport } from "./Passport";
 
 const STORAGE_KEY = "gymquest.learnerId";
 const ROLES = ["Customer Support", "Engineering", "Operations", "Sales"];
@@ -39,7 +40,7 @@ function store(id: string | null) {
   }
 }
 
-export function PlayApp({ desk }: { desk?: (learnerId: string) => React.ReactNode }) {
+export function PlayApp() {
   const [learnerId, setLearnerId] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [world, setWorld] = useState<World | null>(null);
@@ -165,7 +166,7 @@ export function PlayApp({ desk }: { desk?: (learnerId: string) => React.ReactNod
             )}
             {overlay.kind === "desk" && (
               <div className="flex flex-col gap-3">
-                {desk ? desk(learnerId) : <p>Your skills passport will appear here.</p>}
+                <Passport learnerId={learnerId} />
                 <button onClick={close} className="self-end rounded bg-ink px-4 py-2 font-semibold text-paper">
                   Close
                 </button>

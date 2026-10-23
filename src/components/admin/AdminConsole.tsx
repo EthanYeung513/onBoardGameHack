@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ContentPanel } from "./ContentPanel";
 import { LearningTimeline } from "./LearningTimeline";
+import { ReadinessPanel } from "./ReadinessPanel";
 import { ReviewQueue } from "./ReviewQueue";
 
 const tabs = ["Review queue", "Learning timeline", "Readiness", "Content"] as const;
@@ -35,7 +36,7 @@ export function AdminConsole() {
       </header>
       {tab === "Review queue" && <ReviewQueue />}
       {tab === "Learning timeline" && <LearningTimeline />}
-      {tab === "Readiness" && <p className="text-ink/70">Coming next.</p>}
+      {tab === "Readiness" && <ReadinessPanel />}
       {tab === "Content" && <ContentPanel />}
     </main>
   );
