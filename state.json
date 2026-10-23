@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T22:54:43.698Z",
+  "updated_at": "2026-10-23T22:59:18.423Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T1",
-    "step": "T1.1",
-    "substep": "T1.1.3"
+    "task": "T2",
+    "step": "T2.3",
+    "substep": "T2.3.1"
   },
   "tasks": [
     {
@@ -16,7 +16,7 @@
       "status": "done",
       "depends_on": [],
       "acceptance": "npm run build, npm test and npm run lint all pass",
-      "commit": "239b8db",
+      "commit": "ae789f1",
       "steps": [
         {
           "id": "T1.1",
@@ -87,7 +87,7 @@
     {
       "id": "T2",
       "title": "Drizzle schema + local Postgres (PGlite) + Acme Pay seed",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T1"
       ],
@@ -97,22 +97,22 @@
         {
           "id": "T2.1",
           "title": "Schema",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T2.1.1",
               "title": "Drizzle schema for all PLAN.md §7 tables",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "13 tables incl. card_reviews for generate corrections",
               "decision_refs": []
             },
             {
               "id": "T2.1.2",
               "title": "Generate SQL migrations with drizzle-kit",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "drizzle/0000_init.sql",
               "decision_refs": []
             }
           ]
@@ -120,22 +120,24 @@
         {
           "id": "T2.2",
           "title": "DB client",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T2.2.1",
               "title": "DB client: PGlite locally, postgres-js when DATABASE_URL is set; run migrations",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
-              "decision_refs": []
+              "notes": "pglite file/memory or postgres-js; migrate on connect",
+              "decision_refs": [
+                "D-5"
+              ]
             },
             {
               "id": "T2.2.2",
               "title": "Guard: refuse DATABASE_URL pointing at localhost:5432 (work SSH tunnel)",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "assertSafeDatabaseUrl + test",
               "decision_refs": []
             }
           ]
@@ -143,38 +145,38 @@
         {
           "id": "T2.3",
           "title": "Content and seed",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T2.3.1",
               "title": "Acme Pay handbook docs for company, compliance, support, engineering packs",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "4 handbook docs in content/acme-pay",
               "decision_refs": []
             },
             {
               "id": "T2.3.2",
               "title": "Seed scenarios/cards JSON with rubrics and citations",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "world.ts: 4 packs, 20 cards with citations",
               "decision_refs": []
             },
             {
               "id": "T2.3.3",
               "title": "Seed script: company, packs, docs, chunks, gyms, cards, learners",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "src/db/seed.ts + scripts/seed.ts",
               "decision_refs": []
             },
             {
               "id": "T2.3.4",
               "title": "Seed test",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "tests/seed.test.ts",
               "decision_refs": []
             }
           ]
