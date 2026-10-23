@@ -11,6 +11,7 @@ export async function resetDb(db: DB): Promise<void> {
   await db.delete(t.grades);
   await db.delete(t.attempts);
   await db.delete(t.weaknesses);
+  await db.delete(t.badges);
   await db.delete(t.cardReviews);
   await db.delete(t.cards);
   await db.delete(t.gyms);

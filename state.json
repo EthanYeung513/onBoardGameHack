@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:25:32.512Z",
+  "updated_at": "2026-10-23T23:32:59.554Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T8",
-    "step": "T8.1",
-    "substep": "T8.1.1"
+    "task": "T9",
+    "step": "T9.1",
+    "substep": "T9.1.1"
   },
   "tasks": [
     {
@@ -505,12 +505,12 @@
     {
       "id": "T8",
       "title": "Phaser overworld",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T1"
       ],
       "acceptance": "Movement logic unit tests pass; scene emits enter:gym and encounter:phish via the event bus",
-      "commit": null,
+      "commit": "2ea004e",
       "steps": [
         {
           "id": "T8.1",
@@ -581,7 +581,7 @@
     {
       "id": "T9",
       "title": "Battle UI (HP loop, MCQ + free text, grade display)",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T4",
         "T8"
@@ -592,30 +592,30 @@
         {
           "id": "T9.1",
           "title": "Battle",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T9.1.1",
               "title": "Battle state machine (HP, turns, win/lose) with tests",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "game/battle.ts: HP, crits, 3 misses lose",
               "decision_refs": []
             },
             {
               "id": "T9.1.2",
               "title": "Battle component: MCQ + free-text",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "Battle.tsx: MCQ, free text, phishing email view",
               "decision_refs": []
             },
             {
               "id": "T9.1.3",
               "title": "GradeDisplay: scores, evidence, feedback, citation",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "GradeDisplay: scores, evidence, feedback, expert answer, citation",
               "decision_refs": []
             }
           ]
@@ -623,22 +623,22 @@
         {
           "id": "T9.2",
           "title": "Play page",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T9.2.1",
               "title": "Play page: login (company code + name + role), world -> battle overlay",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "PlayApp: join, world, gym/wild/desk overlays; badges table + migration",
               "decision_refs": []
             },
             {
               "id": "T9.2.2",
               "title": "Component tests",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "world.test + battle-ui.test; Edge smoke test (scripts/smoke.ts) passes",
               "decision_refs": []
             }
           ]

@@ -48,7 +48,7 @@ export function offlineGrade(meta: unknown): GradeOutput {
   return {
     scores: { [competency]: score },
     evidence_quote: redFlag ?? hits.find(Boolean) ?? openingWords(input.answer),
-    feedback: missing ? `Good start. Next time, remember to ${missing[0]}.` : "Well handled: that follows the policy.",
+    feedback: missing ? `Good start, but the policy also expects: "${missing[0]}".` : "Well handled: that follows the policy.",
     gap,
   };
 }

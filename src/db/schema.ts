@@ -183,6 +183,21 @@ export const weaknesses = pgTable(
   (t) => [primaryKey({ columns: [t.learnerId, t.competency] })],
 );
 
+/** A cleared gym. A badge means "eligible": a manager still signs off before any real access (PLAN.md §2). */
+export const badges = pgTable(
+  "badges",
+  {
+    learnerId: text("learner_id")
+      .notNull()
+      .references(() => learners.id),
+    gymId: text("gym_id")
+      .notNull()
+      .references(() => gyms.id),
+    earnedAt: timestamp("earned_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.learnerId, t.gymId] })],
+);
+
 export const modelVersions = pgTable("model_versions", {
   id: id(),
   task: text("task").notNull(),
