@@ -9,6 +9,8 @@ export default defineConfig({
     environment: "node",
     include: ["tests/**/*.test.{ts,tsx}"],
     setupFiles: ["tests/setup.ts"],
+    // PGlite's WASM start-up is slow when every test file boots its own database in parallel.
     testTimeout: 30000,
+    hookTimeout: 30000,
   },
 });

@@ -2,7 +2,7 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:17:53.172Z",
+  "updated_at": "2026-10-23T23:18:36.427Z",
   "branch": "auto/gymquest-mvp",
   "current": {
     "task": "T6",
@@ -462,12 +462,12 @@
     {
       "id": "T7",
       "title": "generate task: doc chunk -> card with citation",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "T3"
       ],
       "acceptance": "Fixture tests pass; every generated card has sourceChunkId and docVersion",
-      "commit": null,
+      "commit": "95d02fc",
       "steps": [
         {
           "id": "T7.1",
