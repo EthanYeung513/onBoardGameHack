@@ -1,8 +1,8 @@
 {
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
-  "phase": "executing",
+  "phase": "verifying",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:52:41.286Z",
+  "updated_at": "2026-10-23T23:53:35.494Z",
   "branch": "auto/gymquest-mvp",
   "current": {
     "task": "T18",
@@ -1022,12 +1022,12 @@
     {
       "id": "T18",
       "title": "demo:reset script + deploy",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T2"
       ],
       "acceptance": "npm run demo:reset restores the seeded state (deploy is human)",
-      "commit": null,
+      "commit": "4d5db05",
       "steps": [
         {
           "id": "T18.1",

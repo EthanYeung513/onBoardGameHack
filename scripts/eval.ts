@@ -5,7 +5,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import { acmePay } from "../content/acme-pay/world";
-import { getDb } from "../src/db/client";
+import { closeDb, getDb } from "../src/db/client";
 import { recordVersion } from "../src/eval/gate";
 import { loadHeldOut, resolveItems } from "../src/eval/heldout";
 import { runEval } from "../src/eval/run";
@@ -41,4 +41,5 @@ if (values.record) {
   const { decision } = await recordVersion(await getDb(), "grade", values.label!, model, m);
   console.log(`  gate: ${decision.promote ? "PROMOTED" : "BLOCKED"} (${decision.reason})`);
 }
+await closeDb();
 process.exit(0);

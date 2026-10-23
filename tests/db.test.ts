@@ -1,5 +1,8 @@
+import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { assertSafeDatabaseUrl, connectPglite } from "@/db/client";
+import { acquireLock, assertSafeDatabaseUrl, connectPglite } from "@/db/client";
 import { companies } from "@/db/schema";
 
 describe("db client", () => {
@@ -14,5 +17,20 @@ describe("db client", () => {
     await db.insert(companies).values({ name: "Test", slug: "test", joinCode: "TEST" });
     const rows = await db.select().from(companies);
     expect(rows).toHaveLength(1);
+  });
+});
+
+describe("PGlite lockfile", () => {
+  it("refuses a directory held by another live process and takes over a stale lock", () => {
+    const dir = path.join(mkdtempSync(path.join(tmpdir(), "gq-")), "pglite");
+
+    writeFileSync(`${dir}.lock`, String(process.ppid));
+    expect(() => acquireLock(dir)).toThrow(/open in another process/);
+
+    writeFileSync(`${dir}.lock`, "999999");
+    const release = acquireLock(dir);
+    expect(existsSync(`${dir}.lock`)).toBe(true);
+    release();
+    expect(existsSync(`${dir}.lock`)).toBe(false);
   });
 });

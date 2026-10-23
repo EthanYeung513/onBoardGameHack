@@ -134,6 +134,16 @@ Run branch: `auto/gymquest-mvp`. Source plan: [PLAN.md](PLAN.md). Progress: [sta
 - **Reversibility:** easy
 - **Revisit?:** no. Renaming a heading counts as removing the section (its cards are retired, not regenerated)
 
+### D-14: PGlite gets a PID lockfile and clean shutdown in every script
+- **Task:** Phase 3 (verification)
+- **Time:** 2026-10-24T01:05Z
+- **Context:** during verification the local `.data/pglite` was corrupted. Stopping a background shell on Windows left `next dev`/`next start` running, and `db:seed` then opened the same directory from a second process (PGlite has no locking). Scripts also exited without closing PGlite
+- **Options:** A) document it only / B) `closeDb()` before every script exits + a `.data/pglite.lock` PID lockfile that refuses a second live process
+- **Chosen:** B. The corrupt directory was moved aside (`.data/pglite-corrupt-*`, not deleted) and the DB reseeded
+- **Why:** this would happen on stage during a rushed rehearsal; now it's a clear error ("open in another process (PID n)… use npm run demo:reset")
+- **Reversibility:** easy
+- **Revisit?:** yes. `.data/pglite-corrupt-*` folders can be deleted. On Windows, check Task Manager for stray `node` processes if a port is busy
+
 ## Blockers
 
 None yet.

@@ -4,7 +4,7 @@ import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import { migrate as migratePglite } from "drizzle-orm/pglite/migrator";
 import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
 import { migrate as migratePostgres } from "drizzle-orm/postgres-js/migrator";
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import postgres from "postgres";
 import * as schema from "./schema";
@@ -26,23 +26,77 @@ export function assertSafeDatabaseUrl(url: string): void {
   }
 }
 
+const globalForDb = globalThis as unknown as { gymquestDb?: Promise<DB>; gymquestClose?: () => Promise<void> };
+
 async function connectPostgres(url: string): Promise<DB> {
   assertSafeDatabaseUrl(url);
-  const db = drizzlePostgres({ client: postgres(url, { max: 5 }), schema });
+  const client = postgres(url, { max: 5 });
+  const db = drizzlePostgres({ client, schema });
   await migratePostgres(db, { migrationsFolder });
+  globalForDb.gymquestClose = () => client.end();
   return db as unknown as DB;
+}
+
+function isAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * PGlite has no locking, and two processes opening the same directory corrupt it. A PID lockfile turns that into
+ * a clear error. A lock left by a dead process is taken over.
+ */
+export function acquireLock(dataDir: string): () => void {
+  const lockFile = `${dataDir}.lock`;
+  if (existsSync(lockFile)) {
+    const pid = Number(readFileSync(lockFile, "utf8"));
+    if (pid && pid !== process.pid && isAlive(pid)) {
+      throw new Error(`The local database is open in another process (PID ${pid}). Stop it first, or use npm run demo:reset to reset through the running app.`);
+    }
+  }
+  writeFileSync(lockFile, String(process.pid));
+  const release = () => {
+    try {
+      if (readFileSync(lockFile, "utf8") === String(process.pid)) unlinkSync(lockFile);
+    } catch {
+      // already gone
+    }
+  };
+  process.once("exit", release);
+  return release;
 }
 
 /** A PGlite database: file-backed at `.data/pglite` by default, or in memory with `memory: true`. */
-export async function connectPglite({ memory = false } = {}): Promise<DB> {
-  if (!memory) mkdirSync(localDataDir, { recursive: true });
-  const client = new PGlite(memory ? undefined : localDataDir);
+export async function connectPglite({ memory = false, dataDir = localDataDir } = {}): Promise<DB> {
+  let release = () => {};
+  if (!memory) {
+    mkdirSync(path.dirname(dataDir), { recursive: true });
+    release = acquireLock(dataDir);
+  }
+  const client = new PGlite(memory ? undefined : dataDir);
   const db = drizzlePglite({ client, schema });
   await migratePglite(db, { migrationsFolder });
+  if (!memory)
+    globalForDb.gymquestClose = async () => {
+      await client.close();
+      release();
+    };
   return db as unknown as DB;
 }
 
-const globalForDb = globalThis as unknown as { gymquestDb?: Promise<DB> };
+/**
+ * Closes the shared connection. Scripts must call this before exiting: a PGlite data directory left open by a
+ * killed process can be corrupted. (PGlite is also single-process: never open `.data/pglite` from two processes.)
+ */
+export async function closeDb(): Promise<void> {
+  await globalForDb.gymquestClose?.();
+  globalForDb.gymquestDb = undefined;
+  globalForDb.gymquestClose = undefined;
+}
 
 /** The app's shared database connection, created once per process. */
 export function getDb(): Promise<DB> {

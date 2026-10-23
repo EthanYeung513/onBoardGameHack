@@ -2,7 +2,7 @@
 // Restores the seeded Acme Pay state. If the app is running it resets through the server (PGlite is
 // single-process, so the server must do it); otherwise it resets the database directly.
 import { parseArgs } from "node:util";
-import { getDb } from "../src/db/client";
+import { closeDb, getDb } from "../src/db/client";
 import { resetDemo } from "../src/services/demo";
 
 const { values } = parseArgs({
@@ -26,4 +26,5 @@ try {
   await resetDemo(await getDb());
   console.log("No app running: reset the database directly.");
 }
+await closeDb();
 process.exit(0);
