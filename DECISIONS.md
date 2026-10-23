@@ -84,6 +84,16 @@ Run branch: `auto/gymquest-mvp`. Source plan: [PLAN.md](PLAN.md). Progress: [sta
 - **Reversibility:** easy
 - **Revisit?:** yes. Richard swaps in Tiled + Kenney art
 
+### D-9: Task tagging header and default v0 model
+- **Task:** T3.2.1
+- **Time:** 2026-10-24T00:02Z
+- **Context:** we don't yet know how Mubit identifies a task beyond the system prompt, or which model name it expects
+- **Options:** A) wait for kickoff answers / B) fixed system prompt per task + an `X-Mubit-Task` header (configurable via `MUBIT_TASK_HEADER`) + `MUBIT_MODEL` env with a placeholder default
+- **Chosen:** B
+- **Why:** an extra header is harmless if Mubit ignores it, and the system prompt is fixed either way (PLAN.md §5). The model name is one env var
+- **Reversibility:** easy
+- **Revisit?:** yes. Confirm the task mechanism and set `MUBIT_MODEL` to the model Mubit expects (the `gpt-4.1-mini` default is a placeholder)
+
 ## Blockers
 
 None yet.

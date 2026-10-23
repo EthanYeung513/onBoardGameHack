@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T22:59:18.423Z",
+  "updated_at": "2026-10-23T23:01:24.077Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T2",
-    "step": "T2.3",
-    "substep": "T2.3.1"
+    "task": "T3",
+    "step": "T3.2",
+    "substep": "T3.2.1"
   },
   "tasks": [
     {
@@ -87,12 +87,12 @@
     {
       "id": "T2",
       "title": "Drizzle schema + local Postgres (PGlite) + Acme Pay seed",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T1"
       ],
       "acceptance": "npm run db:seed populates every table; seed test passes",
-      "commit": null,
+      "commit": "7431b2f",
       "steps": [
         {
           "id": "T2.1",
@@ -186,7 +186,7 @@
     {
       "id": "T3",
       "title": "LLM client + task registry with fixed system prompts",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T1"
       ],
@@ -196,30 +196,32 @@
         {
           "id": "T3.1",
           "title": "LLM client",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T3.1.1",
               "title": "LlmClient interface + Mubit implementation (openai SDK, MUBIT_BASE_URL)",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "MubitClient: openai SDK, task header, request id, cost",
               "decision_refs": []
             },
             {
               "id": "T3.1.2",
               "title": "Offline rule-based client for no-key dev and demo fallback",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
-              "decision_refs": []
+              "notes": "OfflineClient with per-task handlers",
+              "decision_refs": [
+                "D-7"
+              ]
             },
             {
               "id": "T3.1.3",
               "title": "Embeddings: Mubit /embeddings with hashed bag-of-words fallback",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "Mubit embeddings if MUBIT_EMBED_MODEL else hashed",
               "decision_refs": []
             }
           ]
@@ -227,22 +229,24 @@
         {
           "id": "T3.2",
           "title": "Task registry",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T3.2.1",
               "title": "Task registry: grade, generate with versioned fixed system prompts",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
-              "decision_refs": []
+              "notes": "grade + generate system prompts v1",
+              "decision_refs": [
+                "D-9"
+              ]
             },
             {
               "id": "T3.2.2",
               "title": "Snapshot tests for system prompts + mocked client test",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "snapshot + mocked MubitClient test",
               "decision_refs": []
             }
           ]
