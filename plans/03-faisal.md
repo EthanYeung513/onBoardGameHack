@@ -1,4 +1,4 @@
-> Plan 3 (Faiza). Copied verbatim from `onboarding-game-spec.md`; review notes added at the end.
+> Plan 3 (Faisal). Copied verbatim from `onboarding-game-spec.md`; review notes added at the end.
 
 # Gym Leader — gamified onboarding from a company's own docs
 

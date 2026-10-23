@@ -1,0 +1,1114 @@
+{
+  "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
+  "phase": "executing",
+  "started_at": "2026-10-23T21:26:06.315Z",
+  "updated_at": "2026-10-23T22:54:43.698Z",
+  "branch": "auto/gymquest-mvp",
+  "current": {
+    "task": "T1",
+    "step": "T1.1",
+    "substep": "T1.1.3"
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "Scaffold Next.js + TS + Tailwind + Vitest + ESLint",
+      "status": "done",
+      "depends_on": [],
+      "acceptance": "npm run build, npm test and npm run lint all pass",
+      "commit": "239b8db",
+      "steps": [
+        {
+          "id": "T1.1",
+          "title": "Project setup",
+          "status": "done",
+          "substeps": [
+            {
+              "id": "T1.1.1",
+              "title": "Project .npmrc (public registry), package.json, tsconfig",
+              "status": "done",
+              "attempts": 0,
+              "notes": "public registry .npmrc, package.json, tsconfig",
+              "decision_refs": [
+                "D-4"
+              ]
+            },
+            {
+              "id": "T1.1.2",
+              "title": "Install Next.js, React, Tailwind",
+              "status": "done",
+              "attempts": 0,
+              "notes": "next 16.4.3, react 19.3.1, tailwind 4.3.3 installed",
+              "decision_refs": []
+            },
+            {
+              "id": "T1.1.3",
+              "title": "App shell: root layout, landing page, admin + play placeholders",
+              "status": "done",
+              "attempts": 0,
+              "notes": "landing, /play, /admin placeholders",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T1.2",
+          "title": "Tooling",
+          "status": "done",
+          "substeps": [
+            {
+              "id": "T1.2.1",
+              "title": "ESLint config",
+              "status": "done",
+              "attempts": 0,
+              "notes": "flat config: next core-web-vitals + ts",
+              "decision_refs": []
+            },
+            {
+              "id": "T1.2.2",
+              "title": "Vitest config + smoke test",
+              "status": "done",
+              "attempts": 0,
+              "notes": "vitest node env, jsdom per-file, setup forces offline",
+              "decision_refs": []
+            },
+            {
+              "id": "T1.2.3",
+              "title": "Verify build, test, lint",
+              "status": "done",
+              "attempts": 0,
+              "notes": "build 12s warm (first cold build 16min, one-off)",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T2",
+      "title": "Drizzle schema + local Postgres (PGlite) + Acme Pay seed",
+      "status": "pending",
+      "depends_on": [
+        "T1"
+      ],
+      "acceptance": "npm run db:seed populates every table; seed test passes",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T2.1",
+          "title": "Schema",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T2.1.1",
+              "title": "Drizzle schema for all PLAN.md §7 tables",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T2.1.2",
+              "title": "Generate SQL migrations with drizzle-kit",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T2.2",
+          "title": "DB client",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T2.2.1",
+              "title": "DB client: PGlite locally, postgres-js when DATABASE_URL is set; run migrations",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T2.2.2",
+              "title": "Guard: refuse DATABASE_URL pointing at localhost:5432 (work SSH tunnel)",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T2.3",
+          "title": "Content and seed",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T2.3.1",
+              "title": "Acme Pay handbook docs for company, compliance, support, engineering packs",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T2.3.2",
+              "title": "Seed scenarios/cards JSON with rubrics and citations",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T2.3.3",
+              "title": "Seed script: company, packs, docs, chunks, gyms, cards, learners",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T2.3.4",
+              "title": "Seed test",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "LLM client + task registry with fixed system prompts",
+      "status": "pending",
+      "depends_on": [
+        "T1"
+      ],
+      "acceptance": "Snapshot test fails if a system prompt changes; mocked client test passes",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T3.1",
+          "title": "LLM client",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T3.1.1",
+              "title": "LlmClient interface + Mubit implementation (openai SDK, MUBIT_BASE_URL)",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T3.1.2",
+              "title": "Offline rule-based client for no-key dev and demo fallback",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T3.1.3",
+              "title": "Embeddings: Mubit /embeddings with hashed bag-of-words fallback",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T3.2",
+          "title": "Task registry",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T3.2.1",
+              "title": "Task registry: grade, generate with versioned fixed system prompts",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T3.2.2",
+              "title": "Snapshot tests for system prompts + mocked client test",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "grade task + /api/grade",
+      "status": "pending",
+      "depends_on": [
+        "T2",
+        "T3"
+      ],
+      "acceptance": "Fixture tests with mocked LLM pass; invalid JSON retried once then rejected; evidence_quote must be a substring of the answer",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T4.1",
+          "title": "Grader core",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T4.1.1",
+              "title": "Zod Grade schema + evidence substring validation",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T4.1.2",
+              "title": "Build grade user message (pack, rubric, scenario, policy, answer, corrections)",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T4.1.3",
+              "title": "gradeAnswer: call, validate, retry once, record latency/cost/request id",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T4.2",
+          "title": "API",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T4.2.1",
+              "title": "POST /api/grade: persist Attempt + Grade",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T4.2.2",
+              "title": "Fixture tests",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T5",
+      "title": "Corrections API + retrieval (fast path) + FeedbackSink",
+      "status": "pending",
+      "depends_on": [
+        "T4"
+      ],
+      "acceptance": "Test: after a correction, a similar answer's grade prompt contains that correction (top-k)",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T5.1",
+          "title": "Retrieval",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T5.1.1",
+              "title": "Cosine top-k retrieval over stored correction embeddings",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T5.1.2",
+              "title": "Corrections service: create, embed, link to grade",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T5.2",
+          "title": "Feedback",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T5.2.1",
+              "title": "FeedbackSink interface: MubitFeedbackSink + DistilSink fallback",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T5.2.2",
+              "title": "POST /api/corrections route",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T5.3",
+          "title": "Verify",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T5.3.1",
+              "title": "Test: correction retrieved into next similar prompt",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T6",
+      "title": "Review queue UI",
+      "status": "pending",
+      "depends_on": [
+        "T5"
+      ],
+      "acceptance": "Component test passes; an override creates a Correction row",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T6.1",
+          "title": "APIs",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T6.1.1",
+              "title": "GET review queue (ungraded-by-human grades, draft cards)",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T6.1.2",
+              "title": "Card approve/edit/reject API",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T6.2",
+          "title": "UI",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T6.2.1",
+              "title": "ReviewQueue component (override score + reason, approve)",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T6.2.2",
+              "title": "Admin page wiring",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T6.2.3",
+              "title": "Component test",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T7",
+      "title": "generate task: doc chunk -> card with citation",
+      "status": "pending",
+      "depends_on": [
+        "T3"
+      ],
+      "acceptance": "Fixture tests pass; every generated card has sourceChunkId and docVersion",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T7.1",
+          "title": "Generator",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T7.1.1",
+              "title": "Card schemas per type (mcq, free_text, phish_email, incident)",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T7.1.2",
+              "title": "generateCard(chunk, role, type) with citation + rubric",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T7.1.3",
+              "title": "Fixture tests",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T8",
+      "title": "Phaser overworld",
+      "status": "pending",
+      "depends_on": [
+        "T1"
+      ],
+      "acceptance": "Movement logic unit tests pass; scene emits enter:gym and encounter:phish via the event bus",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T8.1",
+          "title": "Pure logic",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T8.1.1",
+              "title": "Map data (tile grid, buildings, doors, grass)",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T8.1.2",
+              "title": "Grid movement + collision + door/grass detection with tests",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T8.2",
+          "title": "Phaser",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T8.2.1",
+              "title": "Typed event bus between Phaser and React",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T8.2.2",
+              "title": "WorldScene: tiles, player, input, encounters",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T8.2.3",
+              "title": "Client-only GameCanvas mount",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T8.2.4",
+              "title": "Test: logic emits enter:gym and encounter:phish",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T9",
+      "title": "Battle UI (HP loop, MCQ + free text, grade display)",
+      "status": "pending",
+      "depends_on": [
+        "T4",
+        "T8"
+      ],
+      "acceptance": "Component tests pass; a full battle runs on seeded data",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T9.1",
+          "title": "Battle",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T9.1.1",
+              "title": "Battle state machine (HP, turns, win/lose) with tests",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T9.1.2",
+              "title": "Battle component: MCQ + free-text",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T9.1.3",
+              "title": "GradeDisplay: scores, evidence, feedback, citation",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T9.2",
+          "title": "Play page",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T9.2.1",
+              "title": "Play page: login (company code + name + role), world -> battle overlay",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T9.2.2",
+              "title": "Component tests",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T10",
+      "title": "Weakness tracking + adaptive Gym Leader boss",
+      "status": "pending",
+      "depends_on": [
+        "T9"
+      ],
+      "acceptance": "Unit test: boss deck is >=60% the learner's weak competencies",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T10.1",
+          "title": "Adaptive",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T10.1.1",
+              "title": "Weakness update from attempts",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T10.1.2",
+              "title": "Boss deck builder (>=60% weak competencies)",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T10.1.3",
+              "title": "Retry picks a different scenario for the same competency",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T10.1.4",
+              "title": "Tests",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T11",
+      "title": "Eval harness + regression gate",
+      "status": "pending",
+      "depends_on": [
+        "T4"
+      ],
+      "acceptance": "npm run eval -- --model X writes eval/results JSON; gate test blocks a lower-agreement candidate",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T11.1",
+          "title": "Eval",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T11.1.1",
+              "title": "Held-out set format + placeholder file",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T11.1.2",
+              "title": "Metrics: exact agreement, within-1, MAE, cost/1k, p50/p95",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T11.1.3",
+              "title": "Eval script writing eval/results/<version>.json",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T11.1.4",
+              "title": "Regression gate + test",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T12",
+      "title": "Learning timeline / Mubit panel",
+      "status": "pending",
+      "depends_on": [
+        "T5",
+        "T11"
+      ],
+      "acceptance": "Renders from eval/results + DB; component test passes",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T12.1",
+          "title": "Timeline",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T12.1.1",
+              "title": "GET /api/timeline aggregating corrections, versions, eval results, live grades",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T12.1.2",
+              "title": "LearningTimeline component",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T12.1.3",
+              "title": "Component test",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T13",
+      "title": "Fast refresh: doc versioning + pack upload",
+      "status": "pending",
+      "depends_on": [
+        "T7",
+        "T8"
+      ],
+      "acceptance": "Test: editing a doc marks citing cards stale; uploading a pack creates a gym + cards",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T13.1",
+          "title": "Refresh",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T13.1.1",
+              "title": "Doc edit -> version bump -> stale cards + flag corrections",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T13.1.2",
+              "title": "Regenerate stale cards",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T13.1.3",
+              "title": "Pack upload -> chunk, embed, gym, cards, unlock",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T13.1.4",
+              "title": "Tests",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T13.1.5",
+              "title": "Admin UI: edit doc, upload pack",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T14",
+      "title": "Passport, readiness dashboard, doc audit, xAPI",
+      "status": "pending",
+      "depends_on": [
+        "T9"
+      ],
+      "acceptance": "xAPI statement shape test passes; doc flagged when >=50% of attempts fail",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T14.1",
+          "title": "Reporting",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T14.1.1",
+              "title": "Passport query per learner",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T14.1.2",
+              "title": "Doc-audit flags",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T14.1.3",
+              "title": "xAPI statement builder + export route",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T14.1.4",
+              "title": "Dashboard + passport UI",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T14.1.5",
+              "title": "Tests",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T15",
+      "title": "Content drafts: expanded handbook, persona script, second-domain pack",
+      "status": "pending",
+      "depends_on": [
+        "T7"
+      ],
+      "acceptance": "Handbook committed; persona script verified with a mocked client; Warehouse Ops pack ready",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T15.1",
+          "title": "Content",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T15.1.1",
+              "title": "Expand handbook toward ~15 pages",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T15.1.2",
+              "title": "Persona answer script (runs live with a Mubit key)",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T15.1.3",
+              "title": "Warehouse Ops pack for the live demo",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T16",
+      "title": "Bulk grading run + training triggers v1/v2/v3",
+      "status": "skipped",
+      "depends_on": [
+        "T4",
+        "T15"
+      ],
+      "acceptance": "Mubit console shows versions; results in eval/results",
+      "commit": null,
+      "skip_reason": "human: needs Mubit key and console",
+      "steps": [
+        {
+          "id": "T16.1",
+          "title": "Live",
+          "status": "skipped",
+          "substeps": [
+            {
+              "id": "T16.1.1",
+              "title": "Run bulk grading and trigger training",
+              "status": "skipped",
+              "attempts": 0,
+              "notes": "human task",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T17",
+      "title": "Held-out labels (40) + corrections (60+)",
+      "status": "skipped",
+      "depends_on": [
+        "T6",
+        "T15"
+      ],
+      "acceptance": "Counts visible on the timeline",
+      "commit": null,
+      "skip_reason": "human: needs Nicole's expert judgement",
+      "steps": [
+        {
+          "id": "T17.1",
+          "title": "Labelling",
+          "status": "skipped",
+          "substeps": [
+            {
+              "id": "T17.1.1",
+              "title": "Manager labels held-out set and makes corrections",
+              "status": "skipped",
+              "attempts": 0,
+              "notes": "human task",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T18",
+      "title": "demo:reset script + deploy",
+      "status": "pending",
+      "depends_on": [
+        "T2"
+      ],
+      "acceptance": "npm run demo:reset restores the seeded state (deploy is human)",
+      "commit": null,
+      "steps": [
+        {
+          "id": "T18.1",
+          "title": "Reset",
+          "status": "pending",
+          "substeps": [
+            {
+              "id": "T18.1.1",
+              "title": "demo:reset script + test",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            },
+            {
+              "id": "T18.1.2",
+              "title": "README run instructions",
+              "status": "pending",
+              "attempts": 0,
+              "notes": "",
+              "decision_refs": []
+            }
+          ]
+        },
+        {
+          "id": "T18.2",
+          "title": "Deploy",
+          "status": "skipped",
+          "substeps": [
+            {
+              "id": "T18.2.1",
+              "title": "Deploy to Vercel + Neon",
+              "status": "skipped",
+              "attempts": 0,
+              "notes": "human task",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T19",
+      "title": "Sapling verify step (stretch)",
+      "status": "skipped",
+      "depends_on": [
+        "T4"
+      ],
+      "acceptance": "An insufficient verdict routes the grade to the queue",
+      "commit": null,
+      "skip_reason": "human: needs confirmation Mubit hosts Sapling",
+      "steps": [
+        {
+          "id": "T19.1",
+          "title": "Verify",
+          "status": "skipped",
+          "substeps": [
+            {
+              "id": "T19.1.1",
+              "title": "Sapling verify step",
+              "status": "skipped",
+              "attempts": 0,
+              "notes": "human task",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T20",
+      "title": "Deck, demo script, backup video",
+      "status": "skipped",
+      "depends_on": [
+        "T12",
+        "T13"
+      ],
+      "acceptance": "Two timed rehearsals under 3:00",
+      "commit": null,
+      "skip_reason": "human: Richard owns the pitch",
+      "steps": [
+        {
+          "id": "T20.1",
+          "title": "Pitch",
+          "status": "skipped",
+          "substeps": [
+            {
+              "id": "T20.1.1",
+              "title": "Deck, rehearsals, backup video",
+              "status": "skipped",
+              "attempts": 0,
+              "notes": "human task",
+              "decision_refs": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
