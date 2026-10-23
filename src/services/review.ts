@@ -1,7 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import type { DB } from "@/db/client";
 import * as t from "@/db/schema";
-import { BadRequestError, NotFoundError } from "./grading";
+import { BadRequestError, NotFoundError } from "./errors";
 
 export interface QueueGrade {
   gradeId: string;

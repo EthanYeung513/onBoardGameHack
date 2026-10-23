@@ -5,7 +5,9 @@ import { cosine } from "@/llm/embeddings";
 import type { LlmClient } from "@/llm/types";
 import { isPassing, type RetrievedCorrection } from "@/tasks/grade";
 import type { FeedbackSink } from "./feedback";
-import { BadRequestError, NotFoundError, type Retriever } from "./grading";
+import { recordOutcome } from "./adaptive";
+import { BadRequestError, NotFoundError } from "./errors";
+import type { Retriever } from "./grading";
 
 export const TOP_K = 3;
 export const MIN_SIMILARITY = 0.35;
@@ -81,7 +83,10 @@ export async function createCorrection(db: DB, llm: LlmClient, sink: FeedbackSin
     })
     .returning();
   await db.update(t.grades).set({ reviewed: true }).where(eq(t.grades.id, grade.id));
-  await db.update(t.attempts).set({ correct: isPassing(input.correctedScores) }).where(eq(t.attempts.id, attempt.id));
+  const nowCorrect = isPassing(input.correctedScores);
+  await db.update(t.attempts).set({ correct: nowCorrect }).where(eq(t.attempts.id, attempt.id));
+  // The reviewer's verdict replaces the grader's in the learner's record, so the boss targets the right gaps.
+  if (nowCorrect !== attempt.correct) await recordOutcome(db, attempt.learnerId, card.competency, { attempts: 0, fails: nowCorrect ? -1 : 1 });
 
   const feedback = await sink.send({
     kind: "correction",

@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray } from "drizzle-orm";
 import type { DB } from "@/db/client";
 import * as t from "@/db/schema";
-import { BadRequestError, NotFoundError } from "./grading";
+import { BadRequestError, NotFoundError } from "./errors";
 
 /** A card as the player sees it: no answer key, expert answer or rubric. */
 export interface PublicCard {

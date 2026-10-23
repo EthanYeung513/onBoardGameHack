@@ -5,7 +5,7 @@ import { defaultModel } from "@/llm/env";
 import type { LlmClient } from "@/llm/types";
 import { generateCard } from "@/tasks/generate";
 import { sectionRules, signalsFromRules } from "@/tasks/offline-generate";
-import { NotFoundError } from "./grading";
+import { NotFoundError } from "./errors";
 
 /** The promoted model for a task, or the default frontier model when none has been recorded. */
 export async function modelFor(db: DB, task: string): Promise<string> {

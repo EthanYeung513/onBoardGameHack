@@ -3,6 +3,8 @@ import type { DB } from "@/db/client";
 import * as t from "@/db/schema";
 import type { LlmClient } from "@/llm/types";
 import { gradeAnswer, isPassing, type RetrievedCorrection } from "@/tasks/grade";
+import { recordOutcome } from "./adaptive";
+import { BadRequestError, NotFoundError } from "./errors";
 
 export interface Citation {
   docTitle: string;
@@ -37,8 +39,6 @@ export async function getCardContext(db: DB, cardId: string) {
   return { ...row, citation };
 }
 
-export class NotFoundError extends Error {}
-export class BadRequestError extends Error {}
 
 export type Retriever = (db: DB, llm: LlmClient, answer: string, competency: string) => Promise<RetrievedCorrection[]>;
 
@@ -91,6 +91,7 @@ export async function submitAnswer(db: DB, llm: LlmClient, input: SubmitInput, r
       .insert(t.attempts)
       .values({ learnerId: learner.id, cardId: card.id, choiceIdx: input.choiceIdx, correct })
       .returning();
+    await recordOutcome(db, learner.id, card.competency, { attempts: 1, fails: correct ? 0 : 1 });
     return { attemptId: attempt.id, correct, grade: null, ...base };
   }
 
@@ -110,6 +111,7 @@ export async function submitAnswer(db: DB, llm: LlmClient, input: SubmitInput, r
   });
   const correct = isPassing(grade.scores);
   const [attempt] = await db.insert(t.attempts).values({ learnerId: learner.id, cardId: card.id, answerText: answer, correct }).returning();
+  await recordOutcome(db, learner.id, card.competency, { attempts: 1, fails: correct ? 0 : 1 });
   const [gradeRow] = await db
     .insert(t.grades)
     .values({

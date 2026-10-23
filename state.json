@@ -2,7 +2,7 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:32:59.554Z",
+  "updated_at": "2026-10-23T23:35:04.097Z",
   "branch": "auto/gymquest-mvp",
   "current": {
     "task": "T9",
@@ -581,13 +581,13 @@
     {
       "id": "T9",
       "title": "Battle UI (HP loop, MCQ + free text, grade display)",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T4",
         "T8"
       ],
       "acceptance": "Component tests pass; a full battle runs on seeded data",
-      "commit": null,
+      "commit": "70df555",
       "steps": [
         {
           "id": "T9.1",
@@ -658,38 +658,38 @@
         {
           "id": "T10.1",
           "title": "Adaptive",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T10.1.1",
               "title": "Weakness update from attempts",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "recordOutcome upsert from answers + correction flips",
               "decision_refs": []
             },
             {
               "id": "T10.1.2",
               "title": "Boss deck builder (>=60% weak competencies)",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "getBossDeck: >=60% weak competencies when available",
               "decision_refs": []
             },
             {
               "id": "T10.1.3",
               "title": "Retry picks a different scenario for the same competency",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "just-failed scenarios ranked after other scenarios of same competency",
               "decision_refs": []
             },
             {
               "id": "T10.1.4",
               "title": "Tests",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "tests/adaptive.test.ts; errors moved to services/errors.ts",
               "decision_refs": []
             }
           ]
