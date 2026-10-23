@@ -32,3 +32,16 @@ A retry storm in the payout service resent 1,200 payout requests after a network
 idempotency key, so 312 merchants were paid twice, and recovering the money took three weeks. The fix: the
 `Idempotency-Key` header is now mandatory, and manual batch re-runs need the on-call lead. Lesson: when a payout looks
 stuck, don't retry it; check the Ledger first to see whether it actually went through.
+
+## On-call
+
+- The payments on-call rota runs a week at a time, handing over on Monday at 10:00.
+- Acknowledge a page within 5 minutes. If you can't, escalate to the secondary on-call immediately.
+- Hand over every open incident in writing in #payments-oncall, even if you think it's resolved.
+
+## Secrets and credentials
+
+- Secrets live in the secrets manager, never in code, config files, tickets or Slack.
+- If a secret is exposed (pushed to GitHub, pasted in chat), rotate it straight away and report it in
+  #security-incidents. Deleting the message is not enough.
+- Production database access is break-glass only, approved by the payments lead and logged.

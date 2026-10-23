@@ -35,3 +35,18 @@ Respond with JSON only, in this shape:
   "version": 1,
 }
 `;
+
+exports[`task registry > keeps system prompts byte-identical (changing one creates a new Mubit task) > persona 1`] = `
+{
+  "system": "You write realistic answers that a new hire might type in response to a workplace scenario during onboarding, in the voice of a given persona.
+
+Rules:
+- Write in first person, as the hire, in one to three sentences. No preamble.
+- Stay in the persona: their knowledge, their mistakes and their tone. Do not correct them.
+- Vary the wording between answers. Never copy the expert answer word for word.
+
+Respond with JSON only, in this shape:
+{"answers": ["<answer>", "..."]}",
+  "version": 1,
+}
+`;

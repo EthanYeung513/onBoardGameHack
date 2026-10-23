@@ -44,7 +44,8 @@ describe("policy edits", () => {
 
     expect(result.version).toBe(2);
     expect(result.staleCards).toBe(1);
-    expect(result.carriedOver).toBe(5);
+    const supportCards = await db.select().from(t.cards).where(eq(t.cards.gymId, hero.gymId));
+    expect(result.carriedOver).toBe(supportCards.length - 1);
     expect(result.flaggedCorrections).toBe(1);
     const [staleHero] = await db.select().from(t.cards).where(eq(t.cards.id, hero.id));
     expect(staleHero.status).toBe("stale");

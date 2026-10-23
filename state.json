@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:46:28.350Z",
+  "updated_at": "2026-10-23T23:50:32.365Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T14",
-    "step": "T14.1",
-    "substep": "T14.1.1"
+    "task": "T15",
+    "step": "T15.1",
+    "substep": "T15.1.2"
   },
   "tasks": [
     {
@@ -862,12 +862,12 @@
     {
       "id": "T14",
       "title": "Passport, readiness dashboard, doc audit, xAPI",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T9"
       ],
       "acceptance": "xAPI statement shape test passes; doc flagged when >=50% of attempts fail",
-      "commit": null,
+      "commit": "0980f19",
       "steps": [
         {
           "id": "T14.1",
@@ -921,7 +921,7 @@
     {
       "id": "T15",
       "title": "Content drafts: expanded handbook, persona script, second-domain pack",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T7"
       ],
@@ -931,30 +931,30 @@
         {
           "id": "T15.1",
           "title": "Content",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T15.1.1",
               "title": "Expand handbook toward ~15 pages",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "4 docs ~2k words (+9 sections), 2 new free-text cards; full 15 pages is Nicole's",
               "decision_refs": []
             },
             {
               "id": "T15.1.2",
               "title": "Persona answer script (runs live with a Mubit key)",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "persona task + npm run personas; bulkGrade + npm run bulk-grade (live run is T16)",
               "decision_refs": []
             },
             {
               "id": "T15.1.3",
               "title": "Warehouse Ops pack for the live demo",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "content/samples/warehouse-ops.ts (5 sections) + Load sample button",
               "decision_refs": []
             }
           ]

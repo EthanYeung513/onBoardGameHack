@@ -32,3 +32,15 @@ If you don't know who owns something, ask in #who-owns-what. Never guess and act
 When something goes wrong, escalate early. Tell your team lead first. If a customer's money is at risk, or you think
 there has been a security incident, you can go straight to #security-incidents without waiting for your lead.
 Nobody is ever blamed for escalating something that turns out to be fine.
+
+## Holidays and sick leave
+
+- Everyone gets 27 days of holiday plus bank holidays. Book them in the People app at least two weeks ahead.
+- Customer Support and Operations: check the team rota before booking, so cover is in place.
+- Off sick? Tell your manager before your shift starts, by phone or message, not just on Slack.
+
+## Tools we use
+
+Slack for chat, Google Workspace for documents and email, Vault for customer data, the Expenses app for claims, and
+the People app for holidays. Engineering also uses GitHub and the deploy CLI. Ask IT for access on day one; never
+share logins.

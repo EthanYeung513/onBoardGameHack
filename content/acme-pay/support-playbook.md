@@ -38,3 +38,21 @@ story. Never pressure a vulnerable customer into a decision on the call.
 - Send a final response within 8 weeks. This is a regulatory deadline (FCA DISP rules).
 - If a merchant mentions the Financial Ombudsman, escalate to the complaints team lead the same day.
 - Log every complaint in the Complaints register, even if you resolved it on the call.
+
+## Chargebacks
+
+When a cardholder disputes a payment with their bank, the merchant receives a chargeback. Explain the process
+plainly: the merchant has 7 days to upload evidence (receipt, delivery proof) in their dashboard. Never promise a
+merchant they will win a chargeback, and never advise them to refund the cardholder directly while a dispute is open,
+because they could lose the money twice.
+
+## Third parties on the account
+
+Only people listed as account users can discuss the account. If an accountant, spouse or "business partner" calls,
+politely explain you can only speak to listed users, and that the owner can add them in the app. Never confirm
+whether a business is an Acme Pay customer to someone who isn't a listed user.
+
+## Tone of voice
+
+Write the way you'd talk to a busy shop owner: short sentences, no jargon, and always say what happens next and when.
+If you don't know, say so and give a time you'll come back by.

@@ -42,3 +42,25 @@ ISO 27001 commitments.
 Report suspected security incidents in #security-incidents within 1 hour: a phishing click, a lost device, data sent
 to the wrong person, or a stranger in the office. Don't investigate on your own and don't delete evidence. The
 security team will take it from there.
+
+## AI tools
+
+- Only use AI tools on the approved list in the IT portal. Never paste customer data, card details, account numbers
+  or internal code into a tool that isn't on the list.
+- Anonymise before you ask: "a merchant in Leeds disputes a £300 refund" is fine; their name and account number are
+  not.
+- You are responsible for anything an AI tool writes for you. Check facts against our policies before sending it to a
+  customer.
+
+## Passwords and multi-factor authentication
+
+- Use the company password manager. Never reuse your Acme Pay password anywhere else.
+- Never approve a multi-factor prompt you didn't start. Unexpected prompts mean someone has your password: report it
+  in #security-incidents.
+- IT will never ask for your password or a one-time code, by phone, chat or email.
+
+## Clean desk and screens
+
+- Lock your screen whenever you step away (Windows key + L).
+- Don't leave printed customer information on your desk. Use the confidential shredding bins.
+- On calls in public places, don't read out customer details where others can hear.

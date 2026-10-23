@@ -16,7 +16,8 @@
     "demo:reset": "tsx scripts/demo-reset.ts",
     "eval": "tsx scripts/eval.ts",
     "personas": "tsx scripts/personas.ts",
-    "smoke": "tsx scripts/smoke.ts"
+    "smoke": "tsx scripts/smoke.ts",
+    "bulk-grade": "tsx scripts/bulk-grade.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.11",

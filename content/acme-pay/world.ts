@@ -166,6 +166,19 @@ export const acmePay: WorldSpec = {
           isBoss: true,
         },
         {
+          type: "free_text",
+          competency: "data-handling",
+          prompt:
+            "A colleague wants to paste a merchant's angry email, including their name and account number, into a free AI chatbot to help draft a reply. What do you tell them?",
+          source: security("AI tools"),
+          rubric: {
+            signals: [["approved", "approved list", "it portal"], ["anonymise", "anonymize", "remove the name", "strip", "no names"], ["check", "responsible", "review"]],
+            redFlags: ["that's fine", "go ahead", "paste it in"],
+          },
+          expertAnswer:
+            "Don't paste it. Only approved AI tools can be used, and never with customer names or account numbers. Anonymise the details first, and check anything the tool writes against our policies before it goes to the merchant.",
+        },
+        {
           type: "phish_email",
           competency: "phishing-response",
           prompt:
@@ -258,6 +271,19 @@ export const acmePay: WorldSpec = {
           ],
           answerIdx: 2,
           source: support("Identity checks"),
+        },
+        {
+          type: "free_text",
+          competency: "account-security",
+          prompt:
+            "Someone calls saying they're the accountant for one of our merchants and needs last month's payout amounts for the tax return. They aren't a listed user. What do you do?",
+          source: support("Third parties on the account"),
+          rubric: {
+            signals: [["listed user", "listed users", "only speak"], ["add them", "owner can add", "in the app"], ["confirm", "won't confirm", "can't confirm", "not confirm"]],
+            redFlags: ["give them the amounts", "read out", "since they're the accountant"],
+          },
+          expertAnswer:
+            "I politely explain I can only discuss the account with listed users, and that the owner can add their accountant in the app. I don't share any amounts, or even confirm the business is a customer.",
         },
         {
           type: "free_text",

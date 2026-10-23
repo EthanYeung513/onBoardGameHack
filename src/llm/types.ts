@@ -1,4 +1,4 @@
-export type TaskName = "grade" | "generate";
+export type TaskName = "grade" | "generate" | "persona";
 
 export interface ChatRequest<M = unknown> {
   task: TaskName;

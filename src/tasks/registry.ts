@@ -37,7 +37,19 @@ Rules:
 Respond with JSON only, in this shape:
 {"type": "<mcq|free_text|phish_email|incident>", "competency": "<kebab-case>", "prompt": "<text>", "choices": ["..."] | null, "answer_idx": <number> | null, "levels": {"0": "...", "1": "...", "2": "...", "3": "..."} | null, "expert_answer": "<text>"}`;
 
+/** Synthetic data only: realistic hire answers in a persona's voice, to bulk-grade before real hires exist. */
+const PERSONA_SYSTEM = `You write realistic answers that a new hire might type in response to a workplace scenario during onboarding, in the voice of a given persona.
+
+Rules:
+- Write in first person, as the hire, in one to three sentences. No preamble.
+- Stay in the persona: their knowledge, their mistakes and their tone. Do not correct them.
+- Vary the wording between answers. Never copy the expert answer word for word.
+
+Respond with JSON only, in this shape:
+{"answers": ["<answer>", "..."]}`;
+
 export const TASKS: Record<TaskName, TaskDef> = {
   grade: { name: "grade", version: 1, system: GRADE_SYSTEM },
   generate: { name: "generate", version: 1, system: GENERATE_SYSTEM },
+  persona: { name: "persona", version: 1, system: PERSONA_SYSTEM },
 };
