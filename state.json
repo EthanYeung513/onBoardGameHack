@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:10:51.428Z",
+  "updated_at": "2026-10-23T23:15:17.754Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T4",
-    "step": "T4.2",
-    "substep": "T4.2.1"
+    "task": "T6",
+    "step": "T6.2",
+    "substep": "T6.2.1"
   },
   "tasks": [
     {
@@ -323,12 +323,12 @@
     {
       "id": "T5",
       "title": "Corrections API + retrieval (fast path) + FeedbackSink",
-      "status": "pending",
+      "status": "done",
       "depends_on": [
         "T4"
       ],
       "acceptance": "Test: after a correction, a similar answer's grade prompt contains that correction (top-k)",
-      "commit": null,
+      "commit": "543087c",
       "steps": [
         {
           "id": "T5.1",
@@ -396,7 +396,7 @@
     {
       "id": "T6",
       "title": "Review queue UI",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T5"
       ],
@@ -406,22 +406,22 @@
         {
           "id": "T6.1",
           "title": "APIs",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T6.1.1",
               "title": "GET review queue (ungraded-by-human grades, draft cards)",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "GET /api/review",
               "decision_refs": []
             },
             {
               "id": "T6.1.2",
               "title": "Card approve/edit/reject API",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "POST /api/cards/[id]/review, card_reviews row",
               "decision_refs": []
             }
           ]
@@ -429,30 +429,30 @@
         {
           "id": "T6.2",
           "title": "UI",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T6.2.1",
               "title": "ReviewQueue component (override score + reason, approve)",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "ReviewQueue: approve, override 0-3 + reason, live polling",
               "decision_refs": []
             },
             {
               "id": "T6.2.2",
               "title": "Admin page wiring",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "AdminConsole tabs shell",
               "decision_refs": []
             },
             {
               "id": "T6.2.3",
               "title": "Component test",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "review.test.tsx (jsdom) + review-service.test.ts; added RTL cleanup",
               "decision_refs": []
             }
           ]

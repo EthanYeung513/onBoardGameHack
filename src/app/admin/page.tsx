@@ -1,3 +1,7 @@
+import { AdminConsole } from "@/components/admin/AdminConsole";
+
+export const metadata = { title: "Manager console · GymQuest" };
+
 export default function AdminPage() {
-  return <main className="p-4">Manager console coming soon.</main>;
+  return <AdminConsole />;
 }
