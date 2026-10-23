@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:21:59.479Z",
+  "updated_at": "2026-10-23T23:25:32.512Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T11",
-    "step": "T11.1",
-    "substep": "T11.1.1"
+    "task": "T8",
+    "step": "T8.1",
+    "substep": "T8.1.1"
   },
   "tasks": [
     {
@@ -505,7 +505,7 @@
     {
       "id": "T8",
       "title": "Phaser overworld",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T1"
       ],
@@ -515,22 +515,24 @@
         {
           "id": "T8.1",
           "title": "Pure logic",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T8.1.1",
               "title": "Map data (tile grid, buildings, doors, grass)",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
-              "decision_refs": []
+              "notes": "30x20 char grid, 6 buildings, long grass patch",
+              "decision_refs": [
+                "D-8"
+              ]
             },
             {
               "id": "T8.1.2",
               "title": "Grid movement + collision + door/grass detection with tests",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "parseMap + step (walls, doors, locked, rng grass)",
               "decision_refs": []
             }
           ]
@@ -538,38 +540,38 @@
         {
           "id": "T8.2",
           "title": "Phaser",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T8.2.1",
               "title": "Typed event bus between Phaser and React",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "typed EventBus + worldState catch-up",
               "decision_refs": []
             },
             {
               "id": "T8.2.2",
               "title": "WorldScene: tiles, player, input, encounters",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "WorldScene: procedural tiles, hero texture, tweened grid moves, keys + bus",
               "decision_refs": []
             },
             {
               "id": "T8.2.3",
               "title": "Client-only GameCanvas mount",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "GameCanvas dynamic import + touch d-pad",
               "decision_refs": []
             },
             {
               "id": "T8.2.4",
               "title": "Test: logic emits enter:gym and encounter:phish",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "game-logic.test.ts covers enter:gym/locked/encounter:phish; browser render check deferred to T9",
               "decision_refs": []
             }
           ]
@@ -697,12 +699,12 @@
     {
       "id": "T11",
       "title": "Eval harness + regression gate",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T4"
       ],
       "acceptance": "npm run eval -- --model X writes eval/results JSON; gate test blocks a lower-agreement candidate",
-      "commit": null,
+      "commit": "99e3ba7",
       "steps": [
         {
           "id": "T11.1",
