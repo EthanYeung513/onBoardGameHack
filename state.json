@@ -2,7 +2,7 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:08:05.290Z",
+  "updated_at": "2026-10-23T23:10:51.428Z",
   "branch": "auto/gymquest-mvp",
   "current": {
     "task": "T4",
@@ -256,13 +256,13 @@
     {
       "id": "T4",
       "title": "grade task + /api/grade",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T2",
         "T3"
       ],
       "acceptance": "Fixture tests with mocked LLM pass; invalid JSON retried once then rejected; evidence_quote must be a substring of the answer",
-      "commit": null,
+      "commit": "a16d5de",
       "steps": [
         {
           "id": "T4.1",
@@ -333,22 +333,22 @@
         {
           "id": "T5.1",
           "title": "Retrieval",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T5.1.1",
               "title": "Cosine top-k retrieval over stored correction embeddings",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "cosine top-3, min 0.35, same competency, skips needsReview",
               "decision_refs": []
             },
             {
               "id": "T5.1.2",
               "title": "Corrections service: create, embed, link to grade",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "createCorrection: validate, embed, mark reviewed, update attempt",
               "decision_refs": []
             }
           ]
@@ -356,22 +356,22 @@
         {
           "id": "T5.2",
           "title": "Feedback",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T5.2.1",
               "title": "FeedbackSink interface: MubitFeedbackSink + DistilSink fallback",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "MubitFeedbackSink (MUBIT_FEEDBACK_URL) + DistilSink",
               "decision_refs": []
             },
             {
               "id": "T5.2.2",
               "title": "POST /api/corrections route",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "POST /api/corrections + /api/grades/[id]/approve",
               "decision_refs": []
             }
           ]
@@ -379,14 +379,14 @@
         {
           "id": "T5.3",
           "title": "Verify",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T5.3.1",
               "title": "Test: correction retrieved into next similar prompt",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "tests/corrections.test.ts",
               "decision_refs": []
             }
           ]
