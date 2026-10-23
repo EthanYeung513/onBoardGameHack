@@ -2,12 +2,12 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:01:24.077Z",
+  "updated_at": "2026-10-23T23:08:05.290Z",
   "branch": "auto/gymquest-mvp",
   "current": {
-    "task": "T3",
-    "step": "T3.2",
-    "substep": "T3.2.1"
+    "task": "T4",
+    "step": "T4.2",
+    "substep": "T4.2.1"
   },
   "tasks": [
     {
@@ -186,12 +186,12 @@
     {
       "id": "T3",
       "title": "LLM client + task registry with fixed system prompts",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T1"
       ],
       "acceptance": "Snapshot test fails if a system prompt changes; mocked client test passes",
-      "commit": null,
+      "commit": "a5aca0a",
       "steps": [
         {
           "id": "T3.1",
@@ -256,7 +256,7 @@
     {
       "id": "T4",
       "title": "grade task + /api/grade",
-      "status": "pending",
+      "status": "in_progress",
       "depends_on": [
         "T2",
         "T3"
@@ -267,30 +267,30 @@
         {
           "id": "T4.1",
           "title": "Grader core",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T4.1.1",
               "title": "Zod Grade schema + evidence substring validation",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "zod schema; evidence must be a (case/space-normalised) quote",
               "decision_refs": []
             },
             {
               "id": "T4.1.2",
               "title": "Build grade user message (pack, rubric, scenario, policy, answer, corrections)",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "markdown sections, rulings included",
               "decision_refs": []
             },
             {
               "id": "T4.1.3",
               "title": "gradeAnswer: call, validate, retry once, record latency/cost/request id",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "retry once with error note, sums latency/cost",
               "decision_refs": []
             }
           ]
@@ -298,22 +298,22 @@
         {
           "id": "T4.2",
           "title": "API",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T4.2.1",
               "title": "POST /api/grade: persist Attempt + Grade",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "submitAnswer service + thin route + handle() error mapping",
               "decision_refs": []
             },
             {
               "id": "T4.2.2",
               "title": "Fixture tests",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "grade.test + api-grade.test",
               "decision_refs": []
             }
           ]
