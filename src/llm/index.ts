@@ -1,3 +1,4 @@
+import { offlineGenerate } from "@/tasks/offline-generate";
 import { offlineGrade } from "@/tasks/offline-grade";
 import { mubitConfigFromEnv } from "./env";
 import { MubitClient } from "./mubit";
@@ -10,7 +11,7 @@ let client: LlmClient | undefined;
 export function getLlm(): LlmClient {
   if (!client) {
     const config = mubitConfigFromEnv();
-    client = config ? new MubitClient(config) : new OfflineClient({ grade: offlineGrade });
+    client = config ? new MubitClient(config) : new OfflineClient({ grade: offlineGrade, generate: offlineGenerate });
   }
   return client;
 }

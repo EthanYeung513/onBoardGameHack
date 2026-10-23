@@ -2,7 +2,7 @@
   "goal": "Build the GymQuest MVP from PLAN.md: correction loop first, then game layer",
   "phase": "executing",
   "started_at": "2026-10-23T21:26:06.315Z",
-  "updated_at": "2026-10-23T23:15:17.754Z",
+  "updated_at": "2026-10-23T23:17:53.172Z",
   "branch": "auto/gymquest-mvp",
   "current": {
     "task": "T6",
@@ -396,12 +396,12 @@
     {
       "id": "T6",
       "title": "Review queue UI",
-      "status": "in_progress",
+      "status": "done",
       "depends_on": [
         "T5"
       ],
       "acceptance": "Component test passes; an override creates a Correction row",
-      "commit": null,
+      "commit": "753c56a",
       "steps": [
         {
           "id": "T6.1",
@@ -472,30 +472,30 @@
         {
           "id": "T7.1",
           "title": "Generator",
-          "status": "pending",
+          "status": "done",
           "substeps": [
             {
               "id": "T7.1.1",
               "title": "Card schemas per type (mcq, free_text, phish_email, incident)",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "zod schema with per-type refinements",
               "decision_refs": []
             },
             {
               "id": "T7.1.2",
               "title": "generateCard(chunk, role, type) with citation + rubric",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "generateCard + createCardFromChunk (draft, cites chunk+version); offline template writer",
               "decision_refs": []
             },
             {
               "id": "T7.1.3",
               "title": "Fixture tests",
-              "status": "pending",
+              "status": "done",
               "attempts": 0,
-              "notes": "",
+              "notes": "tests/generate.test.ts",
               "decision_refs": []
             }
           ]
