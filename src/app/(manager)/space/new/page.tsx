@@ -1,0 +1,97 @@
+"use client";
+
+import { useAuthActions } from "@convex-dev/auth/react";
+import { useMutation, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { api } from "@convex/_generated/api";
+import { SplitHero } from "@/components/manager/Logo";
+
+// space.html steps 1–2: welcome → name + company website → create the space and start its scan.
+export default function NewSpacePage() {
+  const viewer = useQuery(api.users.viewer);
+  const createSpace = useMutation(api.spaces.create);
+  const updateProfile = useMutation(api.users.updateProfile);
+  const { signOut } = useAuthActions();
+  const router = useRouter();
+  const [step, setStep] = useState<"welcome" | "info">("welcome");
+  const [nameInput, setName] = useState<string | null>(null);
+  const name = nameInput ?? viewer?.name ?? "";
+  const [company, setCompany] = useState("");
+  const [site, setSite] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!name.trim() || !site.trim()) return setError("Please enter your name and a website.");
+    setBusy(true);
+    try {
+      await updateProfile({ name });
+      const companyName = company.trim() || site.trim().replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[./]/)[0];
+      const { spaceId } = await createSpace({ name: companyName, website: site });
+      // S5 replaces this with the live scan screen (`/space/:id/scan`).
+      router.push(`/dashboard?space=${spaceId}`);
+    } catch (err) {
+      setError(err instanceof ConvexError ? (err.data as { message: string }).message : "Couldn't create the space. Please try again.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="split">
+      <SplitHero />
+      <div className="right" style={{ position: "relative" }}>
+        <button className="btn btn-ghost logout" onClick={() => void signOut().then(() => router.push("/"))}>
+          Logout
+        </button>
+        <div className="card">
+          {step === "welcome" ? (
+            <div className="auth-step">
+              <h1>
+                Welcome to
+                <br />
+                Orthogonal
+              </h1>
+              <div className="hintbox">
+                <p>Create your first Space to get started.</p>
+                <button className="btn btn-primary btn-block" onClick={() => setStep("info")}>
+                  Create a Space
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form className="auth-step" onSubmit={submit} noValidate>
+              <h1>
+                Create Orthogonal
+                <br />
+                Space
+              </h1>
+              <div className="field">
+                <label htmlFor="mgr-name">Your name *</label>
+                <input id="mgr-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Dana Kim" />
+              </div>
+              <div className="field">
+                <label htmlFor="mgr-site">Company website *</label>
+                <input id="mgr-site" value={site} onChange={(e) => setSite(e.target.value)} placeholder="e.g. mubit.ai" />
+              </div>
+              <div className="field">
+                <label htmlFor="mgr-company">Company name</label>
+                <input id="mgr-company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Defaults to the website name" />
+              </div>
+              {error && <p className="auth-err" role="alert">{error}</p>}
+              <button className="btn btn-primary btn-block btn-big" type="submit" disabled={busy}>
+                {busy ? "Creating…" : "Scan my company →"}
+              </button>
+              <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 14 }}>
+                Our agents will read your public site to learn your brand and seed your company brain.
+              </p>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

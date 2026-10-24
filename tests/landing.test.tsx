@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { render, screen, within } from "@testing-library/react";
-import { NextRequest } from "next/server";
+import { NextRequest, type NextFetchEvent } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import LandingPage from "@/app/(site)/page";
 import { proxy } from "@/proxy";
@@ -17,20 +17,23 @@ describe("landing page", () => {
   });
 });
 
-describe("proxy without Supabase keys", () => {
+describe("proxy with no keys", () => {
   afterEach(() => vi.unstubAllEnvs());
 
   const status = async (path: string) => {
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "");
-    return (await proxy(new NextRequest(`http://localhost${path}`))).status;
+    vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "");
+    const event = {} as NextFetchEvent;
+    return ((await proxy(new NextRequest(`http://localhost${path}`), event)) as Response).status;
   };
 
   it("lets public pages render", async () => {
     for (const path of ["/", "/classic", "/classic/assets/uniplay.css", "/try", "/landing/game-road.mp4"]) expect(await status(path), path).toBe(200);
   });
 
-  it("still refuses gated pages", async () => {
-    for (const path of ["/studio", "/admin", "/trying"]) expect(await status(path), path).toBe(503);
+  it("refuses the legacy studio without Supabase and manager pages without Convex", async () => {
+    for (const path of ["/studio", "/admin", "/api/gen/projects"]) expect(await status(path), path).toBe(503);
+    for (const path of ["/dashboard", "/space/new", "/login"]) expect(await status(path), path).toBe(503);
   });
 });

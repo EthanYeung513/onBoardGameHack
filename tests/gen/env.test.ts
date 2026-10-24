@@ -11,6 +11,8 @@ describe("env", () => {
   it("accepts the alternate variable names used by the hosting environment", () => {
     process.env.MUBIT_API_KEY = "";
     process.env.MUBIT_API_TOKEN = "mbt_x";
+    // Real keys in the shell would win over the aliases under test.
+    for (const k of ["CLOUDFLARE_API_TOKEN", "VERCEL_TOKEN", "ANTHROPIC_MODEL"]) delete process.env[k];
     process.env.CLOUDFLARE_WEB_CRAWLER_API = "cf_x";
     process.env.VERCEL_API_KEY = "vck_x";
     resetEnvCache();

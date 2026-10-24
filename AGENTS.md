@@ -22,9 +22,9 @@ process (backlog format, decisions log, PR rules) is in
 
 ## Local development
 
-`npm install && npx convex dev --local && npm run db:seed && npm run dev` is
-the required entry point (Convex local deployment first — see
-`skills/run-local-stack`). It
+`npm install && npm run dev` is the required entry point: it boots the local
+Convex backend (Docker), pushes functions, seeds the demo space and starts Next —
+see `skills/run-local-stack`. It
 must start everything implemented and print URLs and login instructions. Local
 startup must work with **no provider keys** (offline stand-ins — see below).
 Whenever a service or script is added, wire it into the default path in the same
