@@ -178,7 +178,7 @@ footer .flinks { display: flex; gap: 34px; opacity: .85; }
 .kpi .v b { color: var(--brand); font-weight: 500; }
 .panel { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; margin-bottom: 16px; }
 .panel h3 { font-size: 17px; letter-spacing: -0.01em; margin-bottom: 14px; }
-.panel .ptitle { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.ptitle { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .hire-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
