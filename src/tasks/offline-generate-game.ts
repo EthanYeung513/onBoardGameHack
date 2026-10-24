@@ -106,7 +106,7 @@ function dilemma(input: GenerateGameInput) {
       title: clamp(s.heading, 40),
       setting: (["office", "meeting-room", "reception", "video-call", "courtroom"] as const)[i % 5],
       lines: [
-        { speaker: npc, text: clamp(`Quick one — "${s.heading}" says you should ${rule}`, 220), mood: "neutral" },
+        { speaker: npc, text: clamp(`Quick one — "${s.heading}" says: ${rule}`, 220), mood: "neutral" },
         { speaker: "player", text: "(They're asking about a rule from the course.)" },
       ],
       question: { speaker: npc, text: "Can you just skip it this once? I'm in a hurry.", mood: "sweating" },
