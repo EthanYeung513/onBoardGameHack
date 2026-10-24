@@ -21,7 +21,8 @@
     "check:env": "node scripts/run-ts.mjs scripts/check-env.ts",
     "supabase:bootstrap": "node scripts/run-ts.mjs scripts/supabase-bootstrap.ts",
     "crawl:sample": "node scripts/run-ts.mjs scripts/crawl-sample.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "deploy:modal": "modal deploy deploy/modal_app.py"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.87",

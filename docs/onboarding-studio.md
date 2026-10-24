@@ -61,6 +61,16 @@ npm run dev
 
 Accounts are created in Supabase Auth. Users sign in with a password or an email link.
 
+## Deploy on Modal
+
+`deploy/modal_app.py` builds a container with Node 22 and the Chromium that dembrandt uses, runs `next build` and serves `next start` on one warm container. On Modal the design tokens therefore come from dembrandt rather than the HTML and CSS fallback, and there is no function time limit on pipeline slices.
+
+The app reads its settings from a Modal secret named `onboarding-studio`. It holds the same variables as `.env.local`, which are `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `MUBIT_API_KEY`, `CLOUDFLARE_API_TOKEN` and optionally `CLOUDFLARE_ACCOUNT_ID`, `ANTHROPIC_API_KEY` and `APP_URL`. Set `APP_URL` to the Modal URL after the first deploy so the pipeline calls itself on the public HTTPS address.
+
+To deploy from a machine with the Modal CLI, create the secret in the Modal dashboard (or with `modal secret create`) and run `npm run deploy:modal`. To deploy from GitHub, add `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET` as repository secrets. The `Deploy to Modal` workflow then deploys every push to the feature branch. When the app variables above are also stored as repository secrets, the workflow writes them into the Modal secret first. Without the Modal tokens the workflow skips the deploy.
+
+After the first deploy, run `npm run supabase:bootstrap -- --redirect <modal url>` so email sign-in links can return to the Modal address. Password sign-in works without it.
+
 ## Checks and tests
 
 `npm run check:env` makes one real call to each service and prints a pass or fail table. The same checks appear on the signed-in `/status` page.
@@ -110,6 +120,8 @@ The Cloudflare free plan allows about ten minutes of browser time a day and few 
 The full FlowSpec is too large for constrained decoding, and the model does not accept a forced tool choice. Flow generation therefore offers a single `submit_result` tool whose input schema is the FlowSpec and asks the model to call it. The API returns the tool input as parsed JSON, and Zod validation with feedback retries catches anything else.
 
 The constructor's Push to GitHub button returns an error for live projects, because opening pull requests on a customer's repository is outside this MVP. Its per-step colours are not carried into the published FlowSpec, which keeps one theme for the whole flow, so a published page uses the site's tokens rather than the colours chosen in the workbench.
+
+The Modal client talks to Modal over gRPC, which some locked-down networks and HTTPS proxies do not pass, so deploys may need to run from GitHub Actions or a developer machine rather than a sandbox.
 
 The live preview uses Sandpack, which loads its bundler from CodeSandbox's servers, so the Files tab preview needs internet access in the browser.
 

@@ -1,0 +1,58 @@
+name: Deploy to Modal
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/onboarding-generator]
+
+concurrency:
+  group: deploy-modal
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      MUBIT_API_KEY: ${{ secrets.MUBIT_API_KEY }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - name: Skip when Modal is not configured
+        id: gate
+        run: |
+          if [ -z "$MODAL_TOKEN_ID" ] || [ -z "$MODAL_TOKEN_SECRET" ]; then
+            echo "MODAL_TOKEN_ID and MODAL_TOKEN_SECRET repository secrets are not set; skipping deploy."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.skip != 'true'
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.skip != 'true'
+        with:
+          python-version: "3.12"
+      - run: pip install modal
+        if: steps.gate.outputs.skip != 'true'
+      - name: Sync the app secret
+        # Only runs when the app settings are stored in GitHub; otherwise the Modal secret
+        # "onboarding-studio" must already exist in the Modal workspace.
+        if: steps.gate.outputs.skip != 'true' && env.SUPABASE_SERVICE_ROLE_KEY != ''
+        run: |
+          python - <<'PY'
+          import os, subprocess
+          keys = ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "MUBIT_API_KEY",
+                  "CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID", "ANTHROPIC_API_KEY"]
+          pairs = [f"{k}={os.environ[k]}" for k in keys if os.environ.get(k)]
+          pairs += ["ANTHROPIC_MODEL=claude-opus-5-5", "ANTHROPIC_EFFORT=medium", "MUBIT_ENDPOINT=https://api.mubit.ai",
+                    "MUBIT_GATEWAY_ENABLED=true", "MEMORY_PROVIDER=supabase"]
+          subprocess.run(["modal", "secret", "create", "onboarding-studio", "--force", *pairs], check=True, stdout=subprocess.DEVNULL)
+          print(f"Modal secret onboarding-studio updated with {len(pairs)} values")
+          PY
+      - run: modal deploy deploy/modal_app.py
+        if: steps.gate.outputs.skip != 'true'
