@@ -8,7 +8,7 @@ const pickVerdict = (s: ReturnType<typeof createDilemma>, verdict: "best" | "acc
 describe("dilemma spec", () => {
   it("validates the sample, fills defaults and is instantiable", () => {
     const parsed = dilemmaSpecSchema.parse({ ...spec, player: undefined, credibility: undefined });
-    expect(parsed.player).toEqual({ name: "You" });
+    expect(parsed.player).toEqual({ name: "You", character: "phoenix" });
     expect(parsed.credibility).toBe(5);
     expect(instantiateGame({ game: "dilemma", spec }).ok).toBe(true);
   });

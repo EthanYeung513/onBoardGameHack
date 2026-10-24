@@ -17,7 +17,8 @@
     "eval": "tsx scripts/eval.ts",
     "personas": "tsx scripts/personas.ts",
     "smoke": "tsx scripts/smoke.ts",
-    "bulk-grade": "tsx scripts/bulk-grade.ts"
+    "bulk-grade": "tsx scripts/bulk-grade.ts",
+    "fetch:ace-attorney": "node scripts/fetch-ace-attorney.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.11",

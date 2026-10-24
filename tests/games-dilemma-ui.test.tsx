@@ -20,7 +20,7 @@ describe("DilemmaGame", () => {
     fireEvent.click(screen.getByRole("button", { name: "▶ BEGIN" }));
     expect(screen.getByText("The Urgent Call")).toBeInTheDocument();
     fireEvent.click(stage());
-    expect(screen.getByTestId("textbox")).toHaveTextContent("Riley from IT here");
+    expect(screen.getByTestId("textbox")).toHaveTextContent("Wendy from IT here");
     expect(screen.getByText("suspicious logins")).toHaveClass(/emphasis/);
 
     toChoices();

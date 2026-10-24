@@ -1,5 +1,10 @@
 import { z } from "zod";
 import { gameBaseSchema, sourceRefSchema, type GameSpecDefinition } from "../core/types";
+import { CHARACTER_IDS } from "./sprites";
+
+const characterSchema = z
+  .enum(CHARACTER_IDS)
+  .describe("Ace Attorney character to show: phoenix, maya, redd-white, dee-vasquez, wendy-oldbag or judge");
 
 export const MOODS = ["neutral", "happy", "thinking", "shocked", "angry", "sweating", "sad", "confident"] as const;
 export const moodSchema = z.enum(MOODS).describe("Facial expression while the line is spoken");
@@ -26,6 +31,7 @@ export const castMemberSchema = z.object({
   name: z.string().min(1).max(18).describe("Shown on the name tag"),
   role: z.string().max(40).optional().describe("e.g. 'IT Support (claims)'"),
   voice: z.enum(["low", "mid", "high"]).default("mid").describe("Pitch of the text blips"),
+  character: characterSchema.optional().describe("Which Ace Attorney character plays this role. Omit to draw a generated character from `look`"),
   look: lookSchema.optional(),
   portraitUrl: z.url().optional().describe("Optional image to show instead of the drawn character"),
 });
@@ -65,7 +71,9 @@ export type Scene = z.output<typeof sceneSchema>;
 
 export const dilemmaSpecSchema = gameBaseSchema
   .extend({
-    player: z.object({ name: z.string().min(1).max(18).default("You"), look: lookSchema.optional() }).default({ name: "You" }),
+    player: z
+      .object({ name: z.string().min(1).max(18).default("You"), character: characterSchema.default("phoenix"), look: lookSchema.optional() })
+      .default({ name: "You", character: "phoenix" }),
     cast: z.array(castMemberSchema).min(1).max(6),
     scenes: z.array(sceneSchema).min(1).max(6),
     credibility: z.number().int().min(2).max(8).default(5).describe("Wrong answers allowed before the game is lost"),
@@ -90,13 +98,13 @@ const infosec = (section: string) => ({ doc: "Information Security Policy v4.0",
 export const dilemmaSample: DilemmaSpec = dilemmaSpecSchema.parse({
   title: "Turnabout Onboarding",
   intro: "Four people will try to talk you into breaking policy this week. Hold your ground.",
-  player: { name: "You", look: { hair: "#1d1d2b", hairStyle: "spiky", outfit: "#2a4bd1", accent: "#e8e8f0" } },
+  player: { name: "Phoenix", character: "phoenix" },
   credibility: 4,
   cast: [
-    { id: "caller", name: "Riley", role: "\"IT Support\"", voice: "mid", look: { hair: "#c76b2a", hairStyle: "short", outfit: "#3d3d46", accent: "#79c143", glasses: true } },
-    { id: "prospect", name: "Dana Price", role: "Head of AI, prospect", voice: "high", look: { hair: "#2b1a12", hairStyle: "bob", outfit: "#7a1f3d", accent: "#f2d2a9" } },
-    { id: "vendor", name: "Chris Vale", role: "Supplier, in a tender", voice: "low", look: { hair: "#e3c35b", hairStyle: "short", outfit: "#1f5e3a", accent: "#d63c3c" } },
-    { id: "colleague", name: "Priya", role: "Teammate", voice: "high", look: { hair: "#101018", hairStyle: "long", outfit: "#5b3fc4", accent: "#ffd166" } },
+    { id: "caller", name: "Wendy Oldbag", role: "\"IT Support\"", voice: "high", character: "wendy-oldbag" },
+    { id: "prospect", name: "Dee Vasquez", role: "Head of AI, prospect", voice: "mid", character: "dee-vasquez" },
+    { id: "vendor", name: "Redd White", role: "Supplier, in a tender", voice: "low", character: "redd-white" },
+    { id: "colleague", name: "Maya Fey", role: "Teammate", voice: "high", character: "maya" },
   ],
   scenes: [
     {
@@ -104,7 +112,7 @@ export const dilemmaSample: DilemmaSpec = dilemmaSpecSchema.parse({
       title: "The Urgent Call",
       setting: "video-call",
       lines: [
-        { speaker: "caller", text: "Hi! Riley from IT here. We're seeing *suspicious logins* on your account right now.", mood: "sweating" },
+        { speaker: "caller", text: "Hello, dearie! Wendy from IT here. We're seeing *suspicious logins* on your account right now!", mood: "sweating" },
         { speaker: "player", text: "(An unexpected call, and it's urgent... that's a warning sign.)" },
       ],
       question: { speaker: "caller", text: "I just need the *six-digit code* from your authenticator to lock them out. Quick, before they get in!", mood: "angry" },
@@ -246,6 +254,7 @@ export const dilemmaGame: GameSpecDefinition<DilemmaSpec> = {
     "Make the wrong answer tempting: it should sound helpful or polite.",
     "Put the rule in `feedback` and cite it in `source`. Wrap key words in *asterisks*; write the player's thoughts in (parentheses).",
     "Pick a setting per scene: office, meeting-room, reception, video-call or courtroom.",
+    "Cast an Ace Attorney character for each role with `character`: redd-white (smooth schemer), dee-vasquez (cool executive), wendy-oldbag (pushy busybody), maya (friendly teammate) or judge. The player is Phoenix Wright by default.",
   ],
   schema: dilemmaSpecSchema,
   sample: dilemmaSample,

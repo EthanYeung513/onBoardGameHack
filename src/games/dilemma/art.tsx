@@ -295,6 +295,49 @@ export function Backdrop({ setting, label }: { setting: string; label?: string }
   );
 }
 
+/**
+ * The furniture in front of a sprite, drawn to match the Trilogy HD courtroom: the defense bench, the witness
+ * stand, or the judge's bench. Sprites are cut off at the waist and rely on this to hide the edge.
+ */
+export function Desk({ kind }: { kind: "defense" | "witness" | "judge" }) {
+  const cls = `${styles.deskSvg} ${kind === "defense" ? styles.deskDefense : kind === "witness" ? styles.deskWitness : styles.deskJudge}`;
+  if (kind === "witness")
+    return (
+      <svg viewBox="0 0 300 60" preserveAspectRatio="none" className={cls} aria-hidden>
+        <defs>
+          <linearGradient id="standWood" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#a8682f" />
+            <stop offset="1" stopColor="#5a3214" />
+          </linearGradient>
+        </defs>
+        <path d="M58 60 L70 12 Q150 -2 230 12 L242 60 Z" fill="url(#standWood)" stroke="#2e1606" strokeWidth="2" />
+        <path d="M70 12 Q150 -2 230 12 Q150 5 70 12 Z" fill="#e2a663" stroke="#2e1606" strokeWidth="1.5" />
+        {[110, 150, 190].map((x) => (
+          <path key={x} d={`M${x} 14 L${x + (x - 150) * 0.12} 60`} stroke="#3e200a" strokeWidth="2" opacity="0.6" />
+        ))}
+      </svg>
+    );
+  const top = kind === "judge" ? "#7a4520" : "#c98a46";
+  const bottom = kind === "judge" ? "#2e1606" : "#5a3214";
+  return (
+    <svg viewBox="0 0 300 60" preserveAspectRatio="none" className={cls} aria-hidden>
+      <defs>
+        <linearGradient id={`${kind}Wood`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={kind === "judge" ? "#6a3a18" : "#9a5d2c"} />
+          <stop offset="1" stopColor={bottom} />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="8" width="300" height="52" fill={`url(#${kind}Wood)`} />
+      <rect x="0" y="0" width="300" height="9" fill={top} stroke="#2e1606" strokeWidth="1.5" />
+      <rect x="0" y="8.5" width="300" height="1.5" fill="#ffd9a0" opacity="0.4" />
+      {[50, 100, 150, 200, 250].map((x) => (
+        <rect key={x} x={x - 1} y="12" width="2" height="48" fill="#2e1606" opacity="0.35" />
+      ))}
+      {kind === "judge" && <circle cx="150" cy="34" r="12" fill="#c99a3d" stroke="#5a3a12" strokeWidth="2" />}
+    </svg>
+  );
+}
+
 /** Spiky shout balloon points, deterministic. */
 const BUBBLE = Array.from({ length: 28 }, (_, i) => {
   const a = (i / 28) * Math.PI * 2;

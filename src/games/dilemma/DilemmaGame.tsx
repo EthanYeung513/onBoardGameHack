@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { blip, sweep, thud } from "../core/sound";
 import type { GameProps } from "../core/types";
 import { useTypewriter } from "../core/useTypewriter";
-import { Backdrop, Portrait, ShoutBubble } from "./art";
+import { Backdrop, Desk, Portrait, ShoutBubble } from "./art";
 import { choose, createDilemma, displayedOptions, isThought, maxScore, parseRich, resolveLook, sliceRich, type DilemmaState } from "./logic";
 import type { CastMember, DilemmaSpec, Line, Mood } from "./spec";
+import { backgroundFor, preloadList, SHOUTS, spriteFor, viewForSetting, type CharacterId, type View } from "./sprites";
 import styles from "./dilemma.module.css";
 
 type Beat =
@@ -17,13 +18,20 @@ type Beat =
   | { kind: "penalty" }
   | { kind: "verdict" };
 
+type Anim = "" | "enter" | "jolt" | "lean" | "pointing";
+
 interface StageState {
+  /** A cast id, "player", or "judge" (the verdict). */
   who: string;
   mood: Mood;
   pose?: "point";
-  anim: string;
+  anim: Anim;
   key: number;
 }
+
+/** Animation classes for drawn characters (centred box) and for full-frame sprites. */
+const DRAWN_ANIM: Record<Anim, string> = { "": "", enter: styles.enter, jolt: styles.jolt, lean: styles.lean, pointing: styles.pointing };
+const SPRITE_ANIM: Record<Anim, string> = { "": "", enter: styles.layerEnter, jolt: styles.layerJolt, lean: styles.layerLean, pointing: styles.layerPoint };
 
 const VOICE_HZ = { low: 210, mid: 320, high: 470 } as const;
 const BANNER_MS = 1700;
@@ -52,6 +60,7 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
   const [trust, setTrust] = useState(spec.credibility);
   const [breaking, setBreaking] = useState<number | null>(null);
   const [sound, setSound] = useState(!instant);
+  const [brokenPacks, setBrokenPacks] = useState<CharacterId[]>([]);
   const stageRef = useRef<HTMLDivElement>(null);
   const busyUntil = useRef(0);
   const keySeq = useRef(0);
@@ -77,7 +86,7 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
 
   const show = useCallback((who: string, mood: Mood, pose?: "point") => {
     setStage((s) => {
-      const anim = s.who !== who ? styles.enter : pose ? styles.pointing : mood === "shocked" ? styles.jolt : mood === "angry" ? styles.lean : "";
+      const anim: Anim = s.who !== who ? "enter" : pose ? "pointing" : mood === "shocked" ? "jolt" : mood === "angry" ? "lean" : "";
       return { who, mood, pose, anim, key: s.who !== who || anim ? ++keySeq.current : s.key };
     });
   }, []);
@@ -125,6 +134,8 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
           });
           break;
         case "verdict":
+          // The Judge delivers it, nodding or shaking his head, when the game uses Ace Attorney sprites.
+          if (spec.player.character) show("judge", game.status === "won" ? "happy" : "sad");
           sfx(() =>
             (game.status === "won" ? [523, 659, 784, 1047, 1319] : [392, 330, 262, 196]).forEach((f, i) =>
               timers.current.push(setTimeout(() => blip(f, 180, "square", 0.045), i * 140)),
@@ -133,7 +144,7 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
           break;
       }
     },
-    [spec.scenes, castById, show, sfx, shake, instant, game.status, trust],
+    [spec.scenes, spec.player.character, castById, show, sfx, shake, instant, game.status, trust],
   );
 
   const play = useCallback(
@@ -181,6 +192,11 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
 
   const start = () => {
     startedAt.current = Date.now();
+    if (!instant && typeof Image !== "undefined") {
+      // Warm the cache so expressions swap without a blank frame.
+      const ids = [spec.player.character, "judge" as const, ...spec.cast.map((c) => c.character)].filter((c): c is CharacterId => !!c);
+      for (const src of preloadList(ids)) new Image().src = src;
+    }
     setPhase("play");
     play(sceneScript(spec, 0));
   };
@@ -229,8 +245,14 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
 
   const scene = spec.scenes[sceneIdx];
   const setting = scene.setting;
-  const onStage = stage.who === "player" ? null : castById(stage.who);
+  const onStage = stage.who === "player" || stage.who === "judge" ? null : castById(stage.who);
   const look = stage.who === "player" ? resolveLook("player", spec.player.look) : resolveLook(stage.who, onStage?.look);
+  // Ace Attorney sprites when the character on stage has a pack (and its images load); drawn characters otherwise.
+  const pack: CharacterId | undefined = stage.who === "player" ? spec.player.character : stage.who === "judge" ? "judge" : onStage?.character;
+  const sprite = pack && !brokenPacks.includes(pack) ? pack : undefined;
+  const view: View = stage.who === "player" ? "defense" : stage.who === "judge" ? "witness" : viewForSetting(setting);
+  const desk = view === "defense" ? "defense" : view === "witness" ? (stage.who === "judge" ? "judge" : "witness") : null;
+  const shoutImage = beat?.kind === "shout" && spec.player.character ? (beat.text === "HOLD IT!" ? SHOUTS.holdIt : SHOUTS.objection) : null;
   const talking = !!line && !typer.done && !thought && line.speaker === stage.who;
   const name = line ? (line.speaker === "narrator" ? null : line.speaker === "player" ? spec.player.name : (speakerCast?.name ?? line.speaker)) : null;
   const options = beat?.kind === "question" && typer.done ? displayedOptions(game, spec) : [];
@@ -240,24 +262,45 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
   return (
     <div ref={stageRef} className={styles.stage} onClick={advance} data-testid="dilemma">
       <div className={styles.backdrop}>
-        <Backdrop setting={setting} label={onStage?.name} />
+        {sprite ? (
+          // eslint-disable-next-line @next/next/no-img-element -- static game art served from /public
+          <img className={styles.backgroundImg} src={backgroundFor(view)} alt="" />
+        ) : (
+          <Backdrop setting={setting} label={onStage?.name} />
+        )}
       </div>
       {beat?.kind === "shout" && <div className={styles.speedlines} />}
       {beat?.kind === "penalty" && <div className={`${styles.speedlines} ${styles.speedlinesRed}`} />}
 
-      {phase === "play" && (
-        <div key={`char-${stage.key}`} className={`${styles.character} ${setting === "video-call" && stage.who !== "player" ? styles.characterCall : ""} ${stage.anim}`}>
-          <div className={styles.characterInner}>
-            {onStage?.portraitUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element -- spec-supplied portrait, any host
-              <img className={styles.portraitImg} src={onStage.portraitUrl} alt={onStage.name} />
-            ) : (
-              <Portrait look={look} mood={stage.mood} talking={talking} pose={stage.pose} />
-            )}
+      {phase === "play" &&
+        (sprite ? (
+          <div key={`char-${stage.key}`} className={`${styles.spriteLayer} ${SPRITE_ANIM[stage.anim]}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF sprites, served as-is */}
+            <img
+              className={styles.spriteImg}
+              src={spriteFor(sprite, stage.mood, talking, stage.pose)}
+              alt={stage.who === "player" ? spec.player.name : (onStage?.name ?? "Judge")}
+              onError={() => setBrokenPacks((b) => [...b, sprite])}
+              draggable={false}
+            />
           </div>
-        </div>
+        ) : (
+          <div key={`char-${stage.key}`} className={`${styles.character} ${setting === "video-call" && stage.who !== "player" ? styles.characterCall : ""} ${DRAWN_ANIM[stage.anim]}`}>
+            <div className={styles.characterInner}>
+              {onStage?.portraitUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- spec-supplied portrait, any host
+                <img className={styles.portraitImg} src={onStage.portraitUrl} alt={onStage.name} />
+              ) : (
+                <Portrait look={look} mood={stage.mood} talking={talking} pose={stage.pose} />
+              )}
+            </div>
+          </div>
+        ))}
+      {sprite ? (
+        desk && <Desk kind={desk} />
+      ) : (
+        <div className={`${styles.desk} ${setting === "reception" ? styles.counter : ""} ${setting === "video-call" ? styles.noDesk : ""}`} />
       )}
-      <div className={`${styles.desk} ${setting === "reception" ? styles.counter : ""} ${setting === "video-call" ? styles.noDesk : ""}`} />
 
       {phase === "play" && (
         <div className={styles.trust} aria-label={`Trust ${trust} of ${spec.credibility}`}>
@@ -301,7 +344,12 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
 
       {beat?.kind === "shout" && (
         <div className={styles.shout}>
-          <ShoutBubble text={beat.text} colour={beat.colour} />
+          {shoutImage ? (
+            // eslint-disable-next-line @next/next/no-img-element -- the games' own shout graphic
+            <img className={styles.shoutImg} src={shoutImage} alt={beat.text} />
+          ) : (
+            <ShoutBubble text={beat.text} colour={beat.colour} />
+          )}
         </div>
       )}
       {flash && <div key={`flash-${flash.key}`} className={`${styles.flash} ${flash.red ? styles.flashRed : ""}`} />}
