@@ -36,6 +36,31 @@ Stardew-style course start menu when entering a building.
 - **Mobile** — virtual joystick (bottom-left) + "A" interact button
   (bottom-right), shown only on coarse-pointer devices.
 
+## Session 2 — playtest fixes (2026-10-24)
+
+Verified the full flow end-to-end in the browser (title → login → char select
+→ town → NPC dialog → building hover → door → course menu) and fixed the
+bugs found:
+
+- **Ground rendered empty** — `buildGround()` drew tile canvases into a
+  RenderTexture via `rt.draw(canvas)`, which silently no-ops for raw
+  canvas elements. `tileset.png` now loads as a spritesheet and tiles are
+  drawn with `rt.drawFrame('tiles', frame, x, y)`.
+- **Player could walk while dialogs/menus were open** — destroyed Phaser
+  games (React StrictMode remounts) leave zombie `TownScene` instances
+  subscribed to `bus`. Their `ui-open` handler threw (`player` undefined),
+  which killed the emit before it reached the live scene. Handlers are now
+  named, removed by reference on shutdown, and guard on `sys.isActive()`.
+- **Stale building tooltip** — hover was only recomputed on `pointermove`,
+  so camera pans left a tooltip floating over whatever the cursor had been
+  on. `update()` now re-evaluates the hover every frame from
+  `input.activePointer`.
+- **Door interact radius too tight** (`T*1.6`) — raised to `T*2.5`; the
+  Enter hint and E/tap trigger are much friendlier.
+- **Renderer** — switched `Phaser.AUTO` → `Phaser.CANVAS`: no WebGL features
+  are used (no shaders/lights), and it sidesteps SwiftShader compositing
+  stalls seen in headless/VM browsers.
+
 ## What's deliberately NOT done (later phases)
 
 - **Minigames per course** — the "Start Course" button is a disabled
@@ -103,4 +128,6 @@ Build: `npm run build` (tsc + vite). Assets regenerate:
 - Logo is baked per-company via the gen script; regenerate or swap to a
   runtime canvas render if company names vary per deploy.
 - NPC sprites only face down (single-frame); fine for wander, could add rows.
+- Town hall door does nothing (it's not a course building) — could become
+  a progress/overview screen later.
 - `tsc -b` passes clean; no tests yet.

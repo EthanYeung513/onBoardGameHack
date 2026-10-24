@@ -36,13 +36,21 @@ export class TownScene extends Phaser.Scene {
   private uiActive = false;
   private lastHover: Course | null = null;
   private enterHint: Phaser.GameObjects.Text | null = null;
+  // Zombie scene instances (created then destroyed before their first shutdown,
+  // e.g. React StrictMode remounts) keep their bus subscriptions — guard them off.
+  private onUiOpen = () => {
+    if (!this.sys.isActive()) return;
+    this.uiActive = true;
+    this.player?.anims.stop();
+  };
+  private onUiClose = () => { if (this.sys.isActive()) this.uiActive = false; };
 
   constructor() { super('town'); }
 
   init(data: { charRow?: number }) { this.charRow = data.charRow ?? 0; }
 
   preload() {
-    this.load.image('tiles', 'assets/tileset.png');
+    this.load.spritesheet('tiles', 'assets/tileset.png', { frameWidth: T, frameHeight: T });
     this.load.image('tree_oak', 'assets/tree_oak.png');
     this.load.image('tree_pine', 'assets/tree_pine.png');
     this.load.image('bush', 'assets/bush.png');
@@ -114,17 +122,9 @@ export class TownScene extends Phaser.Scene {
 
   private buildGround() {
     const rt = this.add.renderTexture(0, 0, MAP_W * T, MAP_H * T).setOrigin(0).setDepth(-10);
-    const tileset = this.textures.get('tiles').getSourceImage() as HTMLImageElement;
-    const canvas = document.createElement('canvas');
-    canvas.width = T; canvas.height = T;
-    const ctx = canvas.getContext('2d')!;
     for (let y = 0; y < MAP_H; y++) {
       for (let x = 0; x < MAP_W; x++) {
-        const idx = this.tileAt(x, y);
-        const sx = (idx % 8) * T, sy = Math.floor(idx / 8) * T;
-        ctx.clearRect(0, 0, T, T);
-        ctx.drawImage(tileset, sx, sy, T, T, 0, 0, T, T);
-        rt.draw(canvas, x * T, y * T);
+        rt.drawFrame('tiles', this.tileAt(x, y), x * T, y * T);
       }
     }
     // crops on tilled field
@@ -237,9 +237,9 @@ export class TownScene extends Phaser.Scene {
     (this.wasd.SPACE as Phaser.Input.Keyboard.Key).on('down', () => this.tryInteract());
 
     // overlays pause movement
-    bus.on('ui-open', () => { this.uiActive = true; this.player.anims.stop(); });
-    bus.on('ui-close', () => { this.uiActive = false; });
-    this.events.once('shutdown', () => { bus.off('ui-open'); bus.off('ui-close'); });
+    bus.on('ui-open', this.onUiOpen);
+    bus.on('ui-close', this.onUiClose);
+    this.events.once('shutdown', () => { bus.off('ui-open', this.onUiOpen); bus.off('ui-close', this.onUiClose); });
   }
 
   private onHover(p: Phaser.Input.Pointer) {
@@ -272,7 +272,7 @@ export class TownScene extends Phaser.Scene {
     // standing on/near a door?
     for (const dz of this.doorZones) {
       const dx = dz.x * T + T / 2, dy = dz.y * T + T / 2;
-      if (dist(pc, { x: dx, y: dy }) < T * 1.6) {
+      if (dist(pc, { x: dx, y: dy }) < T * 2.5) {
         this.enterBuilding(dz.course);
         this.interactCooldown = 400;
         return;
@@ -287,7 +287,7 @@ export class TownScene extends Phaser.Scene {
   private nearDoor(): Course | null {
     const pc = this.player.getCenter();
     for (const dz of this.doorZones) {
-      if (dist(pc, { x: dz.x * T + T / 2, y: dz.y * T + T / 2 }) < T * 1.6) return dz.course;
+      if (dist(pc, { x: dz.x * T + T / 2, y: dz.y * T + T / 2 }) < T * 2.5) return dz.course;
     }
     return null;
   }
@@ -346,6 +346,10 @@ export class TownScene extends Phaser.Scene {
     if (door) hintText = `Enter ${door.name}`;
     else if (npcNear) hintText = 'Talk';
     bus.emit('hint', { text: hintText });
+
+    // re-evaluate hover every frame: the world moves under a stationary
+    // pointer as the camera pans, so pointermove alone goes stale
+    this.onHover(this.input.activePointer);
 
     // --- NPC wander ---
     for (const n of this.npcs) {

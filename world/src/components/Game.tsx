@@ -117,7 +117,7 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
   useEffect(() => {
     if (!host.current) return;
     const game = new Phaser.Game({
-      type: Phaser.AUTO,
+      type: Phaser.CANVAS,
       parent: host.current,
       width: 960,
       height: 540,
