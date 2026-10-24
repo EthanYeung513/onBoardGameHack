@@ -5,7 +5,7 @@ import type { GameSpecDefinition } from "./core/types";
 
 // game:word-match import
 
-// game:dilemma import
+import { dilemmaGame } from "./dilemma/spec";
 
 /** Every registered game's schema, sample and guidance. Server-safe: no React. */
 export const catalog: GameSpecDefinition<unknown>[] = [
@@ -13,5 +13,5 @@ export const catalog: GameSpecDefinition<unknown>[] = [
 
   // game:word-match entry
 
-  // game:dilemma entry
+  dilemmaGame as GameSpecDefinition<unknown>,
 ];

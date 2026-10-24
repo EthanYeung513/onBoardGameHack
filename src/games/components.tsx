@@ -7,7 +7,7 @@ import type { GameComponent, GameId } from "./core/types";
 
 // game:word-match import
 
-// game:dilemma import
+import { DilemmaGame } from "./dilemma/DilemmaGame";
 
 /** The client component for each registered game. */
 export const components: Partial<Record<GameId, GameComponent<unknown>>> = {
@@ -15,5 +15,5 @@ export const components: Partial<Record<GameId, GameComponent<unknown>>> = {
 
   // game:word-match entry
 
-  // game:dilemma entry
+  dilemma: DilemmaGame as GameComponent<unknown>,
 };
