@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log in — Orthogonal</title>
+<style>
+:root{--blue:#2E98FF;--ink:#111;--muted:#6b7280;--border:#d9dce1}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
+.page{display:flex;min-height:100vh}
+.hero{display:none;position:relative;width:50%;overflow:hidden;background:#000}
+@media(min-width:768px){.hero{display:block}}
+.hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero-logo{position:absolute;top:40px;left:40px;z-index:2;display:flex;align-items:center;gap:12px;font-family:"Gdgaio","Space Grotesk",sans-serif;font-weight:600;font-size:26px;letter-spacing:-.02em;color:#fff;text-decoration:none}
+.panel{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{width:100%;max-width:28rem}
+.mlogo{display:none;margin-bottom:32px;font-weight:600;font-size:26px;letter-spacing:-.02em}
+@media(max-width:767px){.mlogo{display:block}}
+h1{font-size:36px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px}
+.sub{color:var(--muted);font-size:15px}
+.head{margin-bottom:44px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:44px}
+.tile{border:1px solid var(--border);border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;transition:border-color .2s}
+.tile:hover{border-color:var(--blue)}
+.tile svg{width:26px;height:26px;display:block;margin:0 auto 6px}
+.tile span{font-size:13px;font-weight:500}
+.btn{width:100%;height:56px;border:0;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;transition:background .15s}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#1e86f0}
+.btn-dark{background:#1f2937;color:#fff}
+.btn-dark:hover{background:#111827}
+.btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--border)}
+.btn-ghost:hover{background:#f5f6f8}
+.note{margin-top:10px;font-size:13px;color:var(--muted)}
+.divider{display:flex;align-items:center;gap:12px;margin:22px 0 14px;color:#999;font-size:13px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.field{width:100%;height:52px;border:1px solid var(--border);border-radius:8px;padding:0 14px;font-size:15px;margin-top:8px;outline:none;background:#fff;color:var(--ink)}
+.field:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(46,152,255,.15)}
+.lbl{font-size:13px;font-weight:500;display:block;margin-top:16px}
+.swap{margin-top:16px;font-size:14px;color:var(--muted);text-align:center}
+.swap a{color:var(--blue);text-decoration:none;cursor:pointer;font-weight:500}
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:20px;background:none;border:0}
+.back:hover{color:var(--ink)}
+.err{display:none;margin-top:12px;padding:10px 12px;border-radius:8px;background:#fef2f2;color:#b91c1c;font-size:13px}
+.msg{display:none;margin-top:12px;padding:12px;border-radius:8px;background:#eff6ff;color:#1d4ed8;font-size:14px;text-align:center}
+.hidden{display:none !important}
+.step{animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.mark{display:inline-flex;vertical-align:middle;margin-right:10px}
+/* ------- overlay screens ------- */
+.ov{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;animation:fade .25s ease}
+.ov.dark{background:#000}
+.ov.gdark{background:#202124}
+/* auth0 card */
+.acard{background:#fff;border-radius:8px;padding:32px 36px 28px;width:min(400px,92vw);box-shadow:0 4px 24px rgba(0,0,0,.4)}
+.acard .alogo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:26px;letter-spacing:-.02em;margin-bottom:22px}
+.acard h2{font-size:22px;font-weight:600;margin-bottom:6px}
+.acard .asub{font-size:14px;color:#333;margin-bottom:20px}
+.acard .field{border-radius:6px}
+.acard .btn{height:48px;border-radius:6px}
+.acard .osbtn{width:100%;height:48px;border:1px solid var(--border);border-radius:6px;background:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;margin-top:10px}
+.acard .osbtn:hover{background:#f7f7f7}
+/* google chooser */
+.gcard{background:#000;border-radius:24px;width:min(880px,94vw);min-height:520px;padding:26px 34px;color:#e8eaed;display:flex;flex-direction:column}
+.ghead{display:flex;align-items:center;gap:12px;font-size:19px;color:#e8eaed;padding-bottom:20px;border-bottom:1px solid #2e2f31}
+.ghead img{width:22px;height:22px}
+.gbody{display:flex;flex:1;gap:40px;padding-top:36px;flex-wrap:wrap}
+.gleft{flex:1;min-width:220px}
+.gleft h2{font-size:34px;font-weight:400;color:#fff;margin-bottom:12px}
+.gleft p{color:#9aa0a6;font-size:15px}
+.gleft a{color:#8ab4f8;text-decoration:none}
+.gright{flex:1.2;min-width:280px}
+.acct{display:flex;align-items:center;gap:14px;padding:13px 6px;cursor:pointer;border-bottom:1px solid #2e2f31}
+.acct:hover{background:#171717}
+.acct:last-of-type{border-bottom:0}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:#fff;flex:none}
+.acct .nm{font-size:15px;color:#e8eaed}
+.acct .em{font-size:14px;color:#9aa0a6}
+.gfine{color:#9aa0a6;font-size:13px;margin-top:34px}
+.gfine a{color:#8ab4f8;text-decoration:none}
+.gfoot{display:flex;justify-content:space-between;align-items:center;margin-top:26px;font-size:13px;color:#9aa0a6}
+.gfoot .links a{color:#9aa0a6;text-decoration:none;margin-left:28px}
+/* apple card */
+.apcard{background:#fbfbfd;border-radius:12px;width:min(380px,92vw);padding:40px 32px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.5)}
+.apcard svg{margin-bottom:14px}
+.apcard h2{font-size:21px;font-weight:600;margin-bottom:6px}
+.apcard p{font-size:14px;color:#555;margin-bottom:18px}
+.apcard .field{text-align:left;margin-top:0;margin-bottom:10px}
+.apcard .btn{margin-top:6px;height:46px}
+@media(max-width:767px){.gleft h2{font-size:26px}.gbody{gap:16px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hero">
+    <video autoplay loop muted playsinline><source src="assets/web-hero.mp4" type="video/mp4"></video>
+    <a class="hero-logo" href="index.html">
+      <svg width="30" height="30" viewBox="0 0 30 30"><rect x="0" y="0" width="14" height="14" rx="3" fill="#2E98FF"/><rect x="16" y="0" width="14" height="14" rx="3" fill="#FF613F"/><rect x="0" y="16" width="14" height="14" rx="3" fill="#37C978"/><rect x="16" y="16" width="14" height="14" rx="3" fill="#FFC700"/></svg>
+      Orthogonal
+    </a>
+  </div>
+  <div class="panel">
+    <div class="card">
+      <div class="mlogo">
+        <svg width="26" height="26" viewBox="0 0 30 30" style="vertical-align:middle;margin-right:10px"><rect x="0" y="0" width="14" height="14" rx="3" fill="#2E98FF"/><rect x="16" y="0" width="14" height="14" rx="3" fill="#FF613F"/><rect x="0" y="16" width="14" height="14" rx="3" fill="#37C978"/><rect x="16" y="16" width="14" height="14" rx="3" fill="#FFC700"/></svg>Orthogonal
+      </div>
+      <div id="s-welcome" class="step">
+        <div class="head">
+          <h1>Welcome to Orthogonal</h1>
+          <p class="sub">The AI-powered onboarding platform for your team</p>
+        </div>
+        <div class="tiles">
+          <div class="tile"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M152 224a8 8 0 01-8 8h-32a8 8 0 010-16h32a8 8 0 018 8zm-24-116a12 12 0 100-24 12 12 0 000 24zm91.6 52.1l-12.3 55.4a16 16 0 01-10.3 11.6 16 16 0 01-15.3-2.6L154 198h-52l-27.6 26.4a16 16 0 01-25.6-9l-12.3-55.4a16 16 0 013.3-13.7L69 111.4C73.7 61 107.8 35.4 121.6 24.6a8 8 0 019.6 0c13.8 10.8 47.9 36.4 52.6 86.8l29.2 35a16 16 0 013.3 13.7z"/></svg><span>Fast Setup</span></div>
+          <div class="tile"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M176 112h-24a8 8 0 010-16h24a8 8 0 010 16zm-72-16h-8v-8a8 8 0 00-16 0v8h-8a8 8 0 000 16h8v8h-8a8 8 0 000 16h8v8a8 8 0 0016 0v-8h8a8 8 0 000-16zm133.5 100a40 40 0 01-65.7-12.5L150 164h-44l-21.8 19.5A40 40 0 1144 172l14-84a64 64 0 0162-52h16a64 64 0 0162 52l14 84a40 40 0 0125.5 24z"/></svg><span>Fun Games</span></div>
+          <div class="tile"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M224 200h-12V48a8 8 0 00-8-8h-48a8 8 0 00-8 8v40h-48a8 8 0 00-8 8v40H48a8 8 0 00-8 8v48H32a8 8 0 000 16h192a8 8 0 000-16zm-60-144h32v144h-32zm-64 56h32v88h-32zm-64 64h32v24H36z"/></svg><span>Analytics</span></div>
+          <div class="tile"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M197.6 59.4l-20.5 7.2-7.2 20.5a8 8 0 01-15.2 0l-7.2-20.5-20.5-7.2a8 8 0 010-15.2l20.5-7.2 7.2-20.5a8 8 0 0115.2 0l7.2 20.5 20.5 7.2a8 8 0 010 15.2zM146 148l-16.8 6-6 16.8a8 8 0 01-15.2 0l-6-16.8-16.8-6a8 8 0 010-15.2l16.8-6 6-16.8a8 8 0 0115.2 0l6 16.8 16.8 6a8 8 0 010 15.2zm74-20l-12.4 4.4-4.4 12.4a8 8 0 01-15.2 0l-4.4-12.4L171 128a8 8 0 010-15.2l12.6-4.4 4.4-12.6a8 8 0 0115.2 0l4.4 12.6 12.6 4.4a8 8 0 010 15.2z"/></svg><span>AI Powered</span></div>
+        </div>
+        <button class="btn btn-primary" id="b-login">Login</button>
+        <button class="btn btn-dark" id="b-google"><img class="gicon" src="assets/google.svg" alt="" width="26" height="26">Login with Google</button>
+        <button class="btn btn-dark" id="b-work">Login with work account</button>
+        <p class="note">Only if your company's IT team has set up Orthogonal sign-in. Otherwise, use Login above.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Auth0-style overlay -->
+<div id="ov-auth" class="ov dark hidden">
+  <div class="acard">
+    <div class="alogo">
+      <svg width="26" height="26" viewBox="0 0 30 30"><rect x="0" y="0" width="14" height="14" rx="3" fill="#2E98FF"/><rect x="16" y="0" width="14" height="14" rx="3" fill="#FF613F"/><rect x="0" y="16" width="14" height="14" rx="3" fill="#37C978"/><rect x="16" y="16" width="14" height="14" rx="3" fill="#FFC700"/></svg>Orthogonal
+    </div>
+
+    <div id="a-email">
+      <h2>Welcome</h2>
+      <p class="asub" id="a-sub">Log in to Orthogonal to continue to Orthogonal Admin.</p>
+      <input class="field" id="f-email" type="email" autocomplete="email" placeholder="Email address*">
+      <div class="err" id="email-err"></div>
+      <div class="msg" id="email-msg"></div>
+      <button class="btn btn-primary" id="b-continue" style="margin-top:16px">Continue</button>
+      <div class="divider sso-hide">OR</div>
+      <button class="osbtn sso-hide" id="a-google"><img src="assets/google.svg" width="20" height="20" alt="">Continue with Google</button>
+      <button class="osbtn sso-hide" id="a-apple"><svg width="18" height="18" viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.5-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>Continue with Apple</button>
+      <div class="swap sso-hide">Don't have an account? <a id="a-signup">Sign up</a></div>
+    </div>
+
+    <div id="a-pass" class="hidden">
+      <h2>Welcome back</h2>
+      <p class="asub" id="pass-sub"></p>
+      <input class="field" id="f-pass" type="password" autocomplete="current-password" placeholder="Password*">
+      <div class="err" id="pass-err"></div>
+      <button class="btn btn-primary" id="b-do-login" style="margin-top:16px">Continue</button>
+    </div>
+
+    <div id="a-signup-form" class="hidden">
+      <h2>Sign up</h2>
+      <p class="asub">Create your Orthogonal account.</p>
+      <input class="field" id="f-name" type="text" autocomplete="name" placeholder="Full name*">
+      <input class="field" id="f-semail" type="email" autocomplete="email" placeholder="Email address*">
+      <input class="field" id="f-spass" type="password" autocomplete="new-password" placeholder="Password (8+ characters)*">
+      <div class="err" id="signup-err"></div>
+      <button class="btn btn-primary" id="b-do-signup" style="margin-top:16px">Continue</button>
+      <div class="swap">Already have an account? <a id="a-back-login">Log in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- Google account chooser overlay -->
+<div id="ov-google" class="ov gdark hidden">
+  <div>
+    <div class="gcard">
+      <div class="ghead"><img src="assets/google.svg" alt="">Sign in with Google</div>
+      <div class="gbody">
+        <div class="gleft">
+          <h2>Choose an account</h2>
+          <p>to continue to <a href="#">orthogonal.io</a></p>
+        </div>
+        <div class="gright">
+          <div id="g-accts"></div>
+          <div class="acct" id="g-other">
+            <div class="avatar" style="background:#3c4043"><svg width="20" height="20" viewBox="0 0 24 24" fill="#e8eaed"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z"/></svg></div>
+            <div><div class="nm">Use another account</div></div>
+          </div>
+          <div class="gfine">Before using this app, you can review orthogonal.io's <a href="#">Privacy Policy</a> and <a href="#">Terms of Service</a>.</div>
+        </div>
+      </div>
+    </div>
+    <div class="gfoot">
+      <div>English (United Kingdom) ▾</div>
+      <div class="links"><a href="#">Help</a><a href="#">Privacy</a><a href="#">Terms</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- Apple overlay -->
+<div id="ov-apple" class="ov dark hidden" style="background:#1c1c1e">
+  <div class="apcard">
+    <svg width="34" height="34" viewBox="0 0 384 512" fill="#000"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.5-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+    <h2>Sign in to Apple Account</h2>
+    <p>to continue to Orthogonal</p>
+    <input class="field" id="f-apple-id" type="email" placeholder="Apple Account or Email Address">
+    <input class="field" id="f-apple-pass" type="password" placeholder="Password">
+    <div class="err" id="apple-err"></div>
+    <button class="btn btn-primary" id="b-apple-signin">Sign In</button>
+    <div class="swap"><a id="a-apple-back">← Back to other sign-in options</a></div>
+  </div>
+</div>
+
+<script src="state.js?v=3"></script>
+<script>
+(function seed(){
+  const s = OB.get();
+  if (!s.users) OB.patch({ users: [
+    { email:'manager@mubit.ai', name:'Faisal Lawan', pass:'demo1234' },
+    { email:'faisal@mubit.ai', name:'Faisal Lawan', pass:'demo1234' },
+    { email:'newhire@mubit.ai', name:'New Hire', pass:'demo1234' }
+  ]});
+})();
+
+const $=id=>document.getElementById(id);
+const AV=['#7b1fa2','#1976d2','#c2185b','#00796b','#e65100','#455a64'];
+let pendingEmail='',ssoMode=false;
+function show(id){
+  ['ov-auth','ov-google','ov-apple'].forEach(o=>$(o).classList.add('hidden'));
+  if(id)$(id).classList.remove('hidden');
+}
+function authStep(s){['a-email','a-pass','a-signup-form'].forEach(x=>$(x).classList.toggle('hidden',x!==s));}
+function err(id,t){const e=$(id);e.textContent=t;e.style.display=t?'block':'none';}
+function emailOK(v){return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);}
+function users(){return OB.get().users||[];}
+function findUser(e){return users().find(u=>u.email===e.toLowerCase());}
+function finish(u){OB.patch({manager:{name:u.name},user:{email:u.email,name:u.name}});location.href=OB.get().brand?'dashboard.html':'space.html';}
+
+function sso(on){ssoMode=on;document.querySelectorAll('.sso-hide').forEach(e=>e.style.display=on?'none':'');}
+$('b-login').onclick=()=>{$('a-sub').textContent='Log in to Orthogonal to continue to Orthogonal Admin.';sso(false);authStep('a-email');show('ov-auth');};
+$('b-work').onclick=()=>{$('a-sub').textContent='Enter your work email to continue to your company sign-in.';sso(true);authStep('a-email');show('ov-auth');};
+$('b-google').onclick=openGoogle;
+$('a-google').onclick=openGoogle;
+$('a-apple').onclick=()=>show('ov-apple');
+$('a-apple-back').onclick=()=>show('ov-auth');
+$('a-signup').onclick=()=>authStep('a-signup-form');
+$('a-back-login').onclick=()=>authStep('a-email');
+$('g-other').onclick=()=>{authStep('a-email');show('ov-auth');};
+
+function openGoogle(){
+  const box=$('g-accts');box.innerHTML='';
+  users().forEach((u,ix)=>{
+    const d=document.createElement('div');d.className='acct';
+    d.innerHTML='<div class="avatar" style="background:'+AV[ix%AV.length]+'">'+u.name[0].toUpperCase()+'</div><div><div class="nm">'+u.name+'</div><div class="em">'+u.email+'</div></div>';
+    d.onclick=()=>finish(u);box.appendChild(d);
+  });
+  show('ov-google');
+}
+
+$('b-continue').onclick=()=>{
+  const em=$('f-email').value.trim().toLowerCase();
+  err('email-err','');$('email-msg').style.display='none';
+  if(!emailOK(em)){err('email-err','Please enter a valid email address.');return;}
+  pendingEmail=em;
+  const u=findUser(em);
+  if(u){$('pass-sub').textContent='Enter the password for '+em;authStep('a-pass');$('f-pass').focus();}
+  else{
+    const m=$('email-msg');
+    m.innerHTML=ssoMode?'No account found for <b>'+em+'</b> — check with your IT team that SSO is set up.':'No account found for <b>'+em+'</b>. <a style="color:#1d4ed8;font-weight:600;cursor:pointer" id="a-newacct">Sign up</a>';
+    m.style.display='block';
+    const na=$('a-newacct');if(na)na.onclick=()=>{$('f-semail').value=em;authStep('a-signup-form');};
+  }
+};
+$('b-do-login').onclick=()=>{
+  const u=findUser(pendingEmail);
+  if(!u){authStep('a-email');return;}
+  if($('f-pass').value!==u.pass){err('pass-err','Incorrect password. Try again.');return;}
+  finish(u);
+};
+$('b-do-signup').onclick=()=>{
+  const name=$('f-name').value.trim(),em=$('f-semail').value.trim().toLowerCase(),pw=$('f-spass').value;
+  if(!name){err('signup-err','Please enter your name.');return;}
+  if(!emailOK(em)){err('signup-err','Please enter a valid email address.');return;}
+  if(pw.length<8){err('signup-err','Password must be at least 8 characters.');return;}
+  if(findUser(em)){err('signup-err','An account with this email already exists.');return;}
+  const s=OB.get();s.users.push({email:em,name,pass:pw});OB.patch({users:s.users});
+  finish({email:em,name});
+};
+$('b-apple-signin').onclick=()=>{
+  const em=$('f-apple-id').value.trim().toLowerCase();
+  if(!emailOK(em)){err('apple-err','Enter a valid Apple Account email.');return;}
+  const u=findUser(em);
+  if(u){finish(u);return;}
+  const s=OB.get();const name=em.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  s.users.push({email:em,name,pass:$('f-apple-pass').value});OB.patch({users:s.users});
+  finish({email:em,name});
+};
+document.addEventListener('keydown',e=>{if(e.key==='Enter'){
+  if(!$('ov-apple').classList.contains('hidden')){$('b-apple-signin').click();return;}
+  if($('ov-auth').classList.contains('hidden'))return;
+  if(!$('a-email').classList.contains('hidden'))$('b-continue').click();
+  else if(!$('a-pass').classList.contains('hidden'))$('b-do-login').click();
+  else $('b-do-signup').click();
+}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')show(null)});
+</script>
+</body>
+</html>
