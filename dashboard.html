@@ -69,10 +69,9 @@
     <section id="tab-tools" hidden>
       <div class="top"><div><h1>Connect your tools</h1><p>Agents read connected tools to build the company brain. Nothing is stored outside your space.</p></div></div>
       <div class="panel">
-        <h3>Company brain</h3>
+        <div class="ptitle"><h3>Company brain</h3><button class="btn btn-dark" onclick="location.href='brain.html'">View brain</button></div>
         <div class="pbar"><i id="brain-bar" style="width:0%"></i></div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px" id="brain-meta">0 facts learned</div>
-        <div id="brain-facts"></div>
+        <div style="font-size:12px;color:var(--muted)" id="brain-meta">0 facts learned</div>
       </div>
       <div class="grid2" id="tool-cards"></div>
     </section>
@@ -302,8 +301,6 @@ function renderTools(){
   const pct = Math.min(100, (Object.keys(st).length/OB.TOOLS.length)*100);
   document.getElementById('brain-bar').style.width = Math.max(pct, 15)+'%';
   document.getElementById('brain-meta').textContent = (brainFacts.length||OB.BRAIN_FACTS.length)+' facts learned · brain updates as tools connect';
-  const facts = brainFacts.length ? brainFacts : OB.BRAIN_FACTS;
-  document.getElementById('brain-facts').innerHTML = facts.map(f=>`<div class="fact"><span class="cat">${f.cat}</span><span>${f.text}</span></div>`).join('');
 }
 function connectTool(id){
   const t = OB.TOOLS.find(x=>x.id===id);
