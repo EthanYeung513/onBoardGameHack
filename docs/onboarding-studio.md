@@ -105,7 +105,7 @@ dembrandt drives a local Chromium, which Vercel functions do not have. On Vercel
 
 The Cloudflare free plan allows about ten minutes of browser time a day and few requests per minute. The crawler uses the browser only for thin pages and caps screenshots at five per project, and the cached crawl lets a site be reused for 24 hours without browser time. The current Cloudflare token expires on 31 October 2026, after which browser fallbacks and screenshots fail until it is replaced.
 
-The full FlowSpec is too large for constrained decoding, so flow generation sends the JSON Schema in the prompt and relies on Zod validation with feedback retries.
+The full FlowSpec is too large for constrained decoding, and the model does not accept a forced tool choice. Flow generation therefore offers a single `submit_result` tool whose input schema is the FlowSpec and asks the model to call it. The API returns the tool input as parsed JSON, and Zod validation with feedback retries catches anything else.
 
 The live preview uses Sandpack, which loads its bundler from CodeSandbox's servers, so the Files tab preview needs internet access in the browser.
 

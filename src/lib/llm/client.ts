@@ -80,6 +80,13 @@ async function withFallback<T>(ctx: CallContext, fn: (client: Anthropic, route: 
   throw lastErr;
 }
 
+function appendToLastUser(messages: Anthropic.MessageParam[], text: string) {
+  const last = messages[messages.length - 1];
+  if (last?.role === "user" && typeof last.content === "string") messages[messages.length - 1] = { role: "user", content: `${last.content}\n\n${text}` };
+  else if (last?.role === "user" && Array.isArray(last.content)) messages[messages.length - 1] = { role: "user", content: [...last.content, { type: "text", text }] };
+  else messages.push({ role: "user", content: text });
+}
+
 /** The outermost JSON object in a reply, ignoring any fences or prose around it. */
 export function extractJson(raw: string): string {
   const start = raw.indexOf("{");
@@ -112,28 +119,44 @@ export async function completeJson<S extends z.ZodType>(
     validate?: (v: z.infer<S>) => string[];
     /**
      * "constrained" uses structured outputs. "prompted" sends the JSON Schema in the user message
-     * instead, for schemas too large for constrained decoding; Zod still validates the result.
+     * instead. "tool" asks for the object as the input of a single tool call, so the API returns
+     * parsed JSON without compiling a grammar; use it for large schemas. Zod validates every mode.
      */
-    mode?: "constrained" | "prompted";
+    mode?: "constrained" | "prompted" | "tool";
     jsonSchema?: unknown;
   },
 ): Promise<{ data: z.infer<S>; route: Route; attempts: number }> {
   const retries = ctx.retries ?? 2;
   const prompted = ctx.mode === "prompted";
+  const viaTool = ctx.mode === "tool";
+  const toolDef = viaTool
+    ? {
+        name: "submit_result",
+        description: "Submit the complete result object.",
+        input_schema: (ctx.jsonSchema ?? z.toJSONSchema(schema)) as Anthropic.Tool.InputSchema,
+      }
+    : null;
   const messages = [...params.messages];
+  if (viaTool) appendToLastUser(messages, `Return the result by calling the ${toolDef!.name} tool once with the complete object. Do not reply with text.`);
   if (prompted) {
-    const instruction = `Respond with a single JSON object that conforms to this JSON Schema, with no prose and no code fences.\n\n${JSON.stringify(ctx.jsonSchema ?? z.toJSONSchema(schema))}`;
-    const last = messages[messages.length - 1];
-    if (last?.role === "user" && typeof last.content === "string") messages[messages.length - 1] = { role: "user", content: `${last.content}\n\n${instruction}` };
-    else if (last?.role === "user" && Array.isArray(last.content)) messages[messages.length - 1] = { role: "user", content: [...last.content, { type: "text", text: instruction }] };
-    else messages.push({ role: "user", content: instruction });
+    appendToLastUser(messages, `Respond with a single JSON object that conforms to this JSON Schema, with no prose and no code fences.\n\n${JSON.stringify(ctx.jsonSchema ?? z.toJSONSchema(schema))}`);
   }
   let lastErrors: string[] = [];
   for (let attempt = 0; attempt <= retries; attempt++) {
     const { value: msg, route, ms } = await withFallback(ctx, (c) =>
-      c.messages.create(withDefaults(prompted ? { ...params, messages } : { ...params, messages, output_config: { format: zodOutputFormat(schema) } }, ctx)),
+      c.messages.create(
+        withDefaults(
+          viaTool
+            ? { ...params, messages, tools: [toolDef!], tool_choice: { type: "auto" } }
+            : prompted
+              ? { ...params, messages }
+              : { ...params, messages, output_config: { format: zodOutputFormat(schema) } },
+          ctx,
+        ),
+      ),
     );
-    const raw = textOf(msg);
+    const toolUse = msg.content.find((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
+    const raw = viaTool ? (toolUse ? JSON.stringify(toolUse.input) : "") : textOf(msg);
     let errors: string[] = [];
     let data: z.infer<S> | undefined;
     try {
@@ -145,7 +168,7 @@ export async function completeJson<S extends z.ZodType>(
         errors = parsed.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`);
       }
     } catch (err) {
-      errors = [`Response was not valid JSON: ${(err as Error).message}`];
+      errors = viaTool && !toolUse ? [`No ${toolDef!.name} tool call was made; call the tool with the complete object`] : [`Response was not valid JSON: ${(err as Error).message}`];
     }
     await ctx.log?.(errors.length ? "warn" : "info", `Model call ${ctx.task} via ${route} (attempt ${attempt + 1})`, {
       ms,
@@ -155,11 +178,14 @@ export async function completeJson<S extends z.ZodType>(
     });
     if (data !== undefined && errors.length === 0) return { data, route, attempts: attempt + 1 };
     lastErrors = errors;
-    messages.push({ role: "assistant", content: raw || "(empty)" });
-    messages.push({
-      role: "user",
-      content: `That output failed validation. Fix every problem and return the complete corrected JSON.\n\n${errors.slice(0, 30).map((e) => `- ${e}`).join("\n")}`,
-    });
+    const feedback = `That output failed validation. Fix every problem and return the complete corrected result.\n\n${errors.slice(0, 30).map((e) => `- ${e}`).join("\n")}`;
+    if (viaTool && toolUse) {
+      messages.push({ role: "assistant", content: msg.content as Anthropic.ContentBlockParam[] });
+      messages.push({ role: "user", content: [{ type: "tool_result", tool_use_id: toolUse.id, is_error: true, content: feedback }] });
+    } else {
+      messages.push({ role: "assistant", content: raw || "(empty)" });
+      messages.push({ role: "user", content: feedback });
+    }
   }
   throw new Error(`Output failed validation after ${retries + 1} attempts: ${lastErrors.slice(0, 5).join("; ")}`);
 }

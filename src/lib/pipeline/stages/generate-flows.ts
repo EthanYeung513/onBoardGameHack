@@ -58,7 +58,7 @@ export const generateFlowsStage: StageDefinition = {
       {
         projectId: project.id,
         task: "generate_flow",
-        mode: "prompted",
+        mode: "tool",
         jsonSchema: flowSpecJsonSchema,
         log: (l, m, d) => ctx.event(l, m, d),
         validate: (spec) => {

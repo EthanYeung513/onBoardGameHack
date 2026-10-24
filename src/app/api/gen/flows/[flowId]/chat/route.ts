@@ -86,7 +86,7 @@ export async function POST(request: Request, ctx: { params: Promise<{ flowId: st
               system: "You rewrite a single onboarding step as JSON for a fixed renderer. Keep the same id and type. Return only the step object.",
               messages: [{ role: "user", content: `Instruction: ${instruction}\n\nCurrent step:\n${JSON.stringify(old, null, 1)}\n\nCompany model:\n${JSON.stringify(model.data?.model_json ?? {}, null, 1)}` }],
             },
-            { projectId, task: "regenerate_step", mode: "prompted", validate: (s) => (s.id !== old.id || s.type !== old.type ? ["Keep the same id and type"] : []) },
+            { projectId, task: "regenerate_step", mode: "tool", validate: (s) => (s.id !== old.id || s.type !== old.type ? ["Keep the same id and type"] : []) },
           );
           return apply("regenerate_step", updateStep(spec(), stepId, data as Record<string, unknown>));
         },
