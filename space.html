@@ -124,6 +124,14 @@ function startScan(){
   }
   tick();
 }
+
+// re-scan from dashboard: skip the name/website form, run the scan straight away
+if(new URLSearchParams(location.search).get('rescan')==='1'){
+  const _s = OB.get();
+  document.getElementById('mgr-name').value = _s.manager?.name || 'Manager';
+  document.getElementById('mgr-site').value = _s.brand?.host || '';
+  if(_s.brand?.host) startScan(); else showStep('step-info');
+}
 </script>
 </body>
 </html>

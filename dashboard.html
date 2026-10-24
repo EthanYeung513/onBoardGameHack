@@ -4,6 +4,14 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Orthogonal — Dashboard</title>
 <link rel="stylesheet" href="styles.css">
+<style>
+#ai-fab{position:fixed;right:26px;bottom:26px;width:56px;height:56px;border-radius:50%;background:var(--brand,#2E98FF);color:#fff;font-size:22px;border:0;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:40;transition:transform .15s}
+#ai-fab:hover{transform:scale(1.07)}
+#ai-pop{position:fixed;right:26px;bottom:94px;width:min(380px,calc(100vw - 40px));background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.22);z-index:40;animation:pop .18s ease}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#ai-pop ul{list-style:none;max-height:280px;overflow-y:auto}
+@media (max-width:900px){.side .logo #brand-name{display:none}}
+</style>
 </head>
 <body>
 <div class="dash">
@@ -31,20 +39,8 @@
         <span class="pill" id="brand-pill">—</span>
       </div>
       <div class="cards" id="kpis"></div>
-      <div class="grid2" style="grid-template-columns:2fr 1fr">
-        <div>
-          <div class="ptitle"><h3>Team onboarding overview</h3><button class="btn btn-ghost" onclick="invite()">+ Invite</button></div>
-          <div class="grid2" id="hire-cards"></div>
-        </div>
-        <div class="ai-box">
-          <div class="ai-tag">✦ AI Assistant — insights</div>
-          <ul id="ai-insights"></ul>
-          <div style="margin-top:14px;display:flex;gap:8px">
-            <input style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px" placeholder="Ask a question…" onkeydown="if(event.key==='Enter')askAI(this)">
-            <button class="btn btn-primary" onclick="askAI(this.previousElementSibling)">→</button>
-          </div>
-        </div>
-      </div>
+      <div class="ptitle"><h3>Team onboarding overview</h3><button class="btn btn-ghost" onclick="invite()">+ Invite</button></div>
+      <div class="grid2" id="hire-cards"></div>
     </section>
 
     <!-- ============ COURSES ============ -->
@@ -107,6 +103,16 @@
       </div>
     </section>
   </main>
+</div>
+
+<button id="ai-fab" onclick="toggleAI()" title="AI Assistant">✦</button>
+<div id="ai-pop" hidden>
+  <div class="ai-tag">✦ AI Assistant — insights</div>
+  <ul id="ai-insights"></ul>
+  <div style="margin-top:14px;display:flex;gap:8px">
+    <input style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px" placeholder="Ask a question…" onkeydown="if(event.key==='Enter')askAI(this)">
+    <button class="btn btn-primary" onclick="askAI(this.previousElementSibling)">→</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -307,7 +313,8 @@ function renderSettings(){
       <span class="swatch"><i style="background:${B.bg}"></i>${B.bg}</span>
       <span>Style: ${B.style}</span><span>Pages read: ${B.pages}</span></div>`;
 }
-function rescan(){ location.href='space.html'; }
+function toggleAI(){ const p=document.getElementById('ai-pop'); p.hidden=!p.hidden; }
+function rescan(){ location.href='space.html?rescan=1'; }
 function wipe(){ if(confirm('Wipe all demo data and start over?')){ OB.reset(); location.href='index.html'; } }
 
 function renderAll(){ renderKPIs(); renderHires(); renderAI(); renderCourses(); renderTools(); renderTeam(); renderRewards(); renderSettings(); }
