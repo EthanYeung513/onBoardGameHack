@@ -42,3 +42,11 @@ remote clips), `core/GameResults.tsx`.
 
 `content/mubit-onboarding/` holds the synthetic Mubit onboarding pack (PDFs and text extracts) the samples are written
 from. Each sample item cites its document and section.
+
+## Generating a game from a course
+
+`POST /api/games/instance` turns a course (a content pack: `{ "packId": "...", "game": "<id?>" }`) into a
+`{ game, spec }` through the `generate-game` task. The spec is regenerated on every call, so when the dashboard
+changes a course's documents, the next game's dialogue reflects the new content. Omit `game` to let the model pick.
+`GET /api/games` lists the installed games for the dashboard. Play a generated spec at `/games/<id>?pack=<packId>`.
+Like `generate`, it goes through Mubit when `MUBIT_API_KEY` is set and a deterministic writer offline.

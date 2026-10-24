@@ -1,5 +1,6 @@
 import { offlinePersona } from "@/data/personas";
 import { offlineGenerate } from "@/tasks/offline-generate";
+import { offlineGenerateGame } from "@/tasks/offline-generate-game";
 import { offlineGrade } from "@/tasks/offline-grade";
 import { mubitConfigFromEnv } from "./env";
 import { MubitClient } from "./mubit";
@@ -12,7 +13,9 @@ let client: LlmClient | undefined;
 export function getLlm(): LlmClient {
   if (!client) {
     const config = mubitConfigFromEnv();
-    client = config ? new MubitClient(config) : new OfflineClient({ grade: offlineGrade, generate: offlineGenerate, persona: offlinePersona });
+    client = config
+      ? new MubitClient(config)
+      : new OfflineClient({ grade: offlineGrade, generate: offlineGenerate, persona: offlinePersona, "generate-game": offlineGenerateGame });
   }
   return client;
 }

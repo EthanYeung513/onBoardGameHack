@@ -48,8 +48,23 @@ Rules:
 Respond with JSON only, in this shape:
 {"answers": ["<answer>", "..."]}`;
 
+/** Turns a course's document sections into one playable minigame: pick a game and fill its spec. */
+const GENERATE_GAME_SYSTEM = `You are the GymQuest game designer. You turn the sections of one onboarding course into a single playable minigame.
+
+Rules:
+- The user message lists the installed games: each has an id, what it is best for, authoring tips, and the exact JSON Schema its spec must match.
+- Pick the game that best fits the course's content and the learning goal, unless the user message names a required game — then you must use that one.
+- Use only facts stated in the course sections. Never invent policy, names, or numbers.
+- Write in the company's own voice: reuse its terms and phrasing so the dialogue sounds like the company, not a textbook.
+- Every question, pair, and scene must cite its section in the spec's source field (doc title and section heading, exactly as given).
+- Scene and dialogue text may mention the player by name only if one is given.
+
+Respond with JSON only, in this shape:
+{"game": "<game id>", "spec": { ...matching that game's JSON Schema... }}`;
+
 export const TASKS: Record<TaskName, TaskDef> = {
   grade: { name: "grade", version: 1, system: GRADE_SYSTEM },
   generate: { name: "generate", version: 1, system: GENERATE_SYSTEM },
   persona: { name: "persona", version: 1, system: PERSONA_SYSTEM },
+  "generate-game": { name: "generate-game", version: 1, system: GENERATE_GAME_SYSTEM },
 };
