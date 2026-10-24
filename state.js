@@ -1,8 +1,8 @@
-/* DayOne mockup — shared fake "backend" backed by localStorage.
+/* Orthogonal mockup — shared fake "backend" backed by localStorage.
    Every page imports this. It simulates: space creation, website scraping,
    brand extraction, the company "brain", courses, hires and game progress. */
 (function () {
-  const KEY = 'dayone_state_v1';
+  const KEY = 'orthogonal_state_v1';
 
   function load() {
     try { return JSON.parse(localStorage.getItem(KEY)) || {}; }

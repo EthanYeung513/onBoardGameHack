@@ -1,8 +1,8 @@
-# DayOne — Gamified Onboarding
+# Orthogonal — Gamified Onboarding
 
 Built for Night Shift × Mubit hackathon. Restarted from scratch — the previous GymQuest code was removed.
 
-**Concept:** onboarding that teaches the tribe, not just the product. DayOne reads a company's website, tools and docs into a "company brain" (knowledge graph), generates a curriculum, and publishes a Stardew-style explorable world where new hires meet NPC coworkers and play company-specific minigames. Progress flows back to a hiring-manager dashboard with rewards.
+**Concept:** onboarding that teaches the tribe, not just the product. Orthogonal reads a company's website, tools and docs into a "company brain" (knowledge graph), generates a curriculum, and publishes a Stardew-style explorable world where new hires meet NPC coworkers and play company-specific minigames. Progress flows back to a hiring-manager dashboard with rewards.
 
 ## Run it
 

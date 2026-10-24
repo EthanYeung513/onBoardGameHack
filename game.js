@@ -1,4 +1,4 @@
-/* DayOne world — procedural top-down pixel world + minigames.
+/* Orthogonal world — procedural top-down pixel world + minigames.
    The same "world spec" (buildings per course, NPC positions, trivia)
    is what real agents would generate per-company. */
 let CV, CX, running = false, HIRE_REF = null;
