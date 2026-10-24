@@ -48,7 +48,7 @@ function NpcDialog({ npc, onClose }: { npc: Npc; onClose: () => void }) {
   return (
     <div className="dialog-wrap">
       <div className="sd-panel dialog">
-        <img src="assets/portraits.png" style={{ objectFit: 'none', objectPosition: `-${npc.sprite * 40}px 0` }} alt={npc.name} />
+        <img src="assets/portraits.png" style={{ objectFit: 'none', objectPosition: `-${npc.sprite * 64}px 0`, width: 64, height: 64 }} alt={npc.name} />
         <div style={{ flex: 1 }}>
           <span className="d-name">{npc.name}</span>
           <span className="d-role">{npc.role} · {COMPANY.name}</span>

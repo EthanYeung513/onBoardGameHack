@@ -9,14 +9,14 @@ export default function CharSelect({ name, onDone }: { name: string; onDone: (ro
 
   useEffect(() => {
     const img = new Image();
-    img.src = 'assets/characters.png';
+    img.src = `assets/p${row}.png`;
     img.onload = () => {
       const c = ref.current!;
       const ctx = c.getContext('2d')!;
       ctx.imageSmoothingEnabled = false;
       ctx.clearRect(0, 0, c.width, c.height);
-      // idle-down frame = col 0 of the row; scale 16x32 -> 128x256
-      ctx.drawImage(img, 0, row * 32, 16, 32, 0, 0, 128, 256);
+      // idle-down frame = first frame of the sheet; scale 16x32 -> 128x256
+      ctx.drawImage(img, 0, 0, 16, 32, 0, 0, 128, 256);
     };
   }, [row]);
 
@@ -30,7 +30,7 @@ export default function CharSelect({ name, onDone }: { name: string; onDone: (ro
           <canvas ref={ref} className="char-preview" width={128} height={192} />
           <button className="sd-btn char-arrow" onClick={() => setRow((row + 1) % VARIANTS)}>›</button>
         </div>
-        <div className="char-label">look {row + 1} of {VARIANTS}</div>
+        <div className="char-label">{['Sam', 'Sebastian', 'Abigail', 'Emily', 'Maru', 'Alex'][row]}</div>
         <div className="char-opts">
           <button className="sd-btn" onClick={() => onDone(row)}>Start Day One</button>
         </div>

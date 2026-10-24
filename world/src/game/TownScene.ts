@@ -59,25 +59,34 @@ export class TownScene extends Phaser.Scene {
     this.load.image('crops', 'assets/crops.png');
     this.load.image('sign', 'assets/sign.png');
     this.load.image('mailbox', 'assets/mailbox.png');
-    ['b_townhall', 'b_barn', 'b_cottage', 'b_green', 'b_shop', 'b_dojo'].forEach(k =>
+    ['b_townhall', 'b_barn', 'b_coop', 'b_stable', 'b_silo', 'b_well'].forEach(k =>
       this.load.image(k, `assets/${k}.png`));
-    this.load.spritesheet('chars', 'assets/characters.png', { frameWidth: 16, frameHeight: 32 });
-    this.load.spritesheet('npcs', 'assets/npcs.png', { frameWidth: 16, frameHeight: 32 });
+    // real Stardew Valley villager sheets (4 cols x N rows of 16x32; rows: down/right/up/left)
+    for (let i = 0; i < 6; i++)
+      this.load.spritesheet(`p${i}`, `assets/p${i}.png`, { frameWidth: 16, frameHeight: 32 });
+    for (let i = 0; i < 4; i++)
+      this.load.spritesheet(`n${i}`, `assets/n${i}.png`, { frameWidth: 16, frameHeight: 32 });
   }
 
   // ---------- map building ----------
   private layout(): BuildingSpec[] {
     const b: BuildingSpec[] = [];
-    // town hall centered at top
-    const th = { key: 'b_townhall', x: MAP_W / 2 - 4, y: 2, w: 7, h: 6, doorX: MAP_W / 2 - 1, doorY: 8, townHall: true };
+    // town hall centered at top (farmhouse sprite 136x144 = 8.5x9 tiles)
+    const th = { key: 'b_townhall', x: MAP_W / 2 - 4, y: 1, w: 8, h: 9, doorX: MAP_W / 2 - 1, doorY: 10, townHall: true };
     b.push(th);
-    // course slots: left col x=5, right col x=49 (6 tiles wide, 5 tall), rows y=2,14,26
+    // real building sprite sizes in tiles: barn 112x128, coop 96x128,
+    // stable 64x96, silo 48x128, well 48x80
+    const SIZE: Record<string, [number, number]> = {
+      b_barn: [7, 8], b_coop: [6, 8], b_stable: [4, 6], b_silo: [3, 8], b_well: [3, 5],
+    };
+    // course slots: left col x=5, right col x=48, rows y=2,14,26
     const rows = [2, 14, 26];
     COURSES.forEach((c, i) => {
       const left = i % 2 === 0;
       const row = rows[Math.floor(i / 2) % rows.length];
-      const x = left ? 5 : MAP_W - 11;
-      b.push({ course: c, key: c.building, x, y: row, w: 6, h: 5, doorX: x + 2, doorY: row + 5 });
+      const [w, h] = SIZE[c.building] ?? [6, 8];
+      const x = left ? 5 : MAP_W - 7 - w;
+      b.push({ course: c, key: c.building, x, y: row, w, h, doorX: x + Math.floor(w / 2), doorY: row + h });
     });
     return b;
   }
@@ -188,23 +197,24 @@ export class TownScene extends Phaser.Scene {
     for (let x = 0; x < MAP_W; x++) { this.blocked.add(`${x},-1`); this.blocked.add(`${x},${MAP_H}`); }
     for (let y = 0; y < MAP_H; y++) { this.blocked.add(`-1,${y}`); this.blocked.add(`${MAP_W},${y}`); }
 
-    // player anims — characters.png: 16 frames/row = down(0-3) up(4-7) left(8-11) right(12-15)
-    const base = this.charRow * 16;
-    (['down', 'up', 'left', 'right'] as const).forEach((dir, di) => {
+    // player anims — SDV sheet: down(0-3) right(4-7) up(8-11) left(12-15)
+    const pkey = `p${this.charRow}`;
+    const ROWS = { down: 0, right: 4, up: 8, left: 12 } as const;
+    (Object.keys(ROWS) as (keyof typeof ROWS)[]).forEach(dir => {
       this.anims.create({
         key: `walk-${dir}`,
-        frames: this.anims.generateFrameNumbers('chars', { start: base + di * 4, end: base + di * 4 + 3 }),
+        frames: this.anims.generateFrameNumbers(pkey, { start: ROWS[dir], end: ROWS[dir] + 3 }),
         frameRate: 8, repeat: -1,
       });
     });
 
     // player spawn: plaza below town hall
-    this.player = this.add.sprite(MAP_W / 2 * T, 13 * T, 'chars', base).setDepth(13 * T);
+    this.player = this.add.sprite(MAP_W / 2 * T, 13 * T, pkey, 0).setDepth(13 * T);
 
     // NPCs wander the plaza
     NPCS.forEach((spec, i) => {
       const x = (MAP_W / 2 - 8 + i * 5) * T, y = (11 + (i % 2)) * T;
-      const s = this.add.sprite(x, y, 'npcs', spec.sprite).setDepth(y);
+      const s = this.add.sprite(x, y, `n${spec.sprite}`, 0).setDepth(y);
       this.npcs.push({ spec, sprite: s, dir: new Phaser.Math.Vector2(0, 0), timer: 0, home: { x, y } });
     });
 
@@ -334,8 +344,8 @@ export class TownScene extends Phaser.Scene {
       this.player.anims.play(`walk-${this.facing}`, true);
     } else {
       this.player.anims.stop();
-      const base = this.charRow * 16 + ({ down: 0, up: 4, left: 8, right: 12 } as const)[this.facing];
-      this.player.setFrame(base);
+      const idle = ({ down: 0, right: 4, up: 8, left: 12 } as const)[this.facing];
+      this.player.setFrame(idle);
     }
     this.player.setDepth(this.player.y);
 

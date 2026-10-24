@@ -4,14 +4,14 @@
 export interface Course {
   id: string;
   name: string;
-  building: 'b_townhall' | 'b_barn' | 'b_cottage' | 'b_green' | 'b_shop' | 'b_dojo';
+  building: 'b_townhall' | 'b_barn' | 'b_coop' | 'b_stable' | 'b_silo' | 'b_well';
   completion: number; // 0-100
 }
 
 export interface Npc {
   name: string;
   role: string;
-  sprite: number; // row in npcs.png
+  sprite: number; // index into n{0-3}.png / portraits strip
   facts: string[];
 }
 
@@ -20,7 +20,7 @@ export const COMPANY = {
   tagline: 'Learn the tribe, not just the tools',
 };
 
-const BUILDING_CYCLE: Course['building'][] = ['b_shop', 'b_barn', 'b_cottage', 'b_green', 'b_dojo'];
+const BUILDING_CYCLE: Course['building'][] = ['b_coop', 'b_barn', 'b_stable', 'b_silo', 'b_well'];
 
 function loadCourses(): Course[] {
   // Dashboard integration hook: if the manager dashboard saved a world spec, use it.
@@ -39,11 +39,11 @@ function loadCourses(): Course[] {
     }
   } catch { /* fall through */ }
   return [
-    { id: 'c1', name: 'Company Values & Culture', building: 'b_shop', completion: 80 },
-    { id: 'c2', name: 'Security & Compliance', building: 'b_dojo', completion: 45 },
-    { id: 'c3', name: 'Product Deep Dive', building: 'b_cottage', completion: 15 },
+    { id: 'c1', name: 'Company Values & Culture', building: 'b_coop', completion: 80 },
+    { id: 'c2', name: 'Security & Compliance', building: 'b_silo', completion: 45 },
+    { id: 'c3', name: 'Product Deep Dive', building: 'b_stable', completion: 15 },
     { id: 'c4', name: 'Tools & Workflow', building: 'b_barn', completion: 0 },
-    { id: 'c5', name: 'Your First Week', building: 'b_green', completion: 0 },
+    { id: 'c5', name: 'Your First Week', building: 'b_well', completion: 0 },
   ];
 }
 
@@ -51,7 +51,7 @@ export const COURSES: Course[] = loadCourses();
 
 export const NPCS: Npc[] = [
   {
-    name: 'Ada',
+    name: 'Lewis',
     role: 'CEO',
     sprite: 0,
     facts: [
@@ -61,7 +61,7 @@ export const NPCS: Npc[] = [
     ],
   },
   {
-    name: 'Marcus',
+    name: 'Gus',
     role: 'Head of People',
     sprite: 1,
     facts: [
@@ -71,7 +71,7 @@ export const NPCS: Npc[] = [
     ],
   },
   {
-    name: 'Priya',
+    name: 'Harvey',
     role: 'IT Lead',
     sprite: 2,
     facts: [
@@ -81,7 +81,7 @@ export const NPCS: Npc[] = [
     ],
   },
   {
-    name: 'Tom',
+    name: 'Pierre',
     role: 'Ops Manager',
     sprite: 3,
     facts: [

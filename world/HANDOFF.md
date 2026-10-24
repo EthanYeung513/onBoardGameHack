@@ -131,3 +131,23 @@ Build: `npm run build` (tsc + vite). Assets regenerate:
 - Town hall door does nothing (it's not a course building) — could become
   a progress/overview screen later.
 - `tsc -b` passes clean; no tests yet.
+
+## Session 3 — real Stardew Valley assets (2026-10-24)
+
+Replaced every generated placeholder with actual game sprites (extracted from
+the SDV asset dump; see `tools/build_real_assets.py` — it takes the extracted
+Content folder as argv[1] and composes `public/assets`).
+
+- tileset.png: same 8x5 layout/indices, pixels now from `spring_outdoorsTileSheet`
+  + `hoeDirt` (TILL). sign/mailbox/crops/bush/rock/fence cropped from real sheets.
+- Buildings: `b_townhall` = farmhouse crop from `Buildings/houses.png`;
+  courses use real Barn/Coop/Stable/Silo/Well sprites with per-building
+  footprints (`SIZE` map in `TownScene.layout()`).
+- Player: 6 real villager sheets `p0..p5` (Sam, Sebastian, Abigail, Emily,
+  Maru, Alex). NPCs: `n0..n3` = Lewis, Gus, Harvey, Pierre + real 64x64
+  portraits in `portraits.png`.
+- Frame layout changed: SDV sheets are 4 cols x N rows of 16x32 —
+  down 0-3 / right 4-7 / up 8-11 / left 12-15 (standing = first of each row).
+- CharSelect loads `assets/p{row}.png`; dialog portraits are 64px cells.
+- `logo.png` kept (already rendered in the real Stardew font). `title_bg.png`
+  still AI-generated — swap for a real SDV background later if wanted.
