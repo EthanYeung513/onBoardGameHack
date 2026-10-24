@@ -4,7 +4,7 @@
 export interface Course {
   id: string;
   name: string;
-  building: 'b_townhall' | 'b_shop' | 'b_saloon' | 'b_clinic' | 'b_green' | 'b_house' | 'b_house2' | 'b_trailer';
+  building?: string; // key into worldgen BUILDINGS; omitted -> BUILDING_CYCLE
   completion: number; // 0-100
 }
 
@@ -20,19 +20,20 @@ export const COMPANY = {
   tagline: 'Learn the tribe, not just the tools',
 };
 
-const BUILDING_CYCLE: Course['building'][] = ['b_shop', 'b_saloon', 'b_clinic', 'b_green', 'b_house', 'b_house2', 'b_trailer'];
-
 function loadCourses(): Course[] {
+  // dev-only: ?courses=N fakes N courses to eyeball how the world scales
+  const n = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get('courses')) : 0;
+  if (n > 0) return Array.from({ length: n }, (_, i) => ({ id: `d${i}`, name: `Course ${i + 1}`, completion: (i * 37) % 100 }));
   // Dashboard integration hook: if the manager dashboard saved a world spec, use it.
   try {
     const raw = localStorage.getItem('ob_courses');
     if (raw) {
-      const arr = JSON.parse(raw) as { id?: string; name: string; completion?: number }[];
+      const arr = JSON.parse(raw) as { id?: string; name: string; completion?: number; building?: string }[];
       if (Array.isArray(arr) && arr.length) {
         return arr.map((c, i) => ({
           id: c.id ?? `c${i}`,
           name: c.name,
-          building: BUILDING_CYCLE[i % BUILDING_CYCLE.length],
+          building: c.building, // optional; worldgen cycles buildings when absent
           completion: c.completion ?? 0,
         }));
       }
@@ -43,7 +44,7 @@ function loadCourses(): Course[] {
     { id: 'c2', name: 'Security & Compliance', building: 'b_clinic', completion: 45 },
     { id: 'c3', name: 'Product Deep Dive', building: 'b_saloon', completion: 15 },
     { id: 'c4', name: 'Tools & Workflow', building: 'b_green', completion: 0 },
-    { id: 'c5', name: 'Your First Week', building: 'b_house', completion: 0 },
+    { id: 'c5', name: 'Your First Week', building: 'b_farmhouse', completion: 0 },
   ];
 }
 

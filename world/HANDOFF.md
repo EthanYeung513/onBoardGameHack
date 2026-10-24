@@ -180,3 +180,80 @@ Town environment now matches how the actual game builds maps:
 - Weather: `src/weather.ts` resolves ?weather= > ob_weather > auto-detect
   (ob_geo lat,lon or ipapi.co -> open-meteo, WMO code -> sunny/cloudy/rain/
   storm/snow) > sunny. Scene dims + falls rain/snow via `raindrop.png`.
+
+## Session 4: composed farm-town worldgen (2026-10-24)
+
+Goal: make the town read like the real game (fenced pens, cluttered dirt yards,
+cliffs, lake, crops, dense trees) instead of buildings on a green grid.
+
+**Layout** (`generateWorld`, top to bottom): forest edge; a raised plateau with the
+town hall (now the real Pelican Town community center), a cobble plaza with a
+fountain, lamps and benches, a pond and park trees; a 4-row rock **cliff wall**
+with wooden stairs; the cobble main street with **one lot per course** on
+alternating sides; then a lake and a fenced crop field with a barn and silo. A
+forest frames everything. Map height grows with course count (64 x 66 for 1–2
+courses, 64 x 104 for 5, 64 x 161 for 12). The layout is deterministic per seed
+(`?seed=N` in dev).
+
+**Each course lot** has the building, a dirt yard in front of the door, a winding
+dirt trail to the street, a mailbox and a **themed yard**. Themes come from
+`LOT_THEMES` and are cycled in a seeded order:
+`paddock` (fenced dirt pen with a gate, coop/stable/silo/well, debris),
+`crops` (tilled rows of mature crops, scarecrow, fence), `orchard` (fruit trees +
+meadow), `wild` (stumps, logs, boulders, heavy weeds/stones/twigs), and `garden`
+(blossom tree, hedge, bench, lamp, flower pots). Lots are separated by fence runs
+and groves, and a fill pass puts groves and bushes on any leftover open grass.
+
+**Agent API** (`src/worldgen.ts`, the renderer makes no layout decisions):
+- `BUILDINGS`: sprite size, door column and `solidH` (only the bottom rows block,
+  so you can walk behind roofs). `PROPS`: every prop is `{tex, rect}` on a real
+  SDV sheet (objects, craftables, crops, bushes, fruit trees, Fence1), plus
+  footprint, solid and flat flags.
+- `Builder` toolkit: `place`, `building`, `fence`/`fenceRect` (gates;
+  fences that cross a walkway turn into gates automatically), `blob`, `trail`,
+  `thicken`, `lake`, `cliff`, `forest`, `grove`, `scatter`, `meadow`, `field`.
+- To add a new kind of lot, add a function to `LOT_THEMES`. `WorldOptions` has
+  `clutter`, `forestDepth`, `lake` and `themes`.
+- `ensureReachable()` BFS-checks every course door from spawn and cuts through
+  soft blockers (props/fences) if a door is ever sealed off. Tested 1–20 courses
+  x 4 seeds: every door is reachable and generation takes under 15 ms.
+- `WorldSpec` = `{w, h, ground (tile frames), blocked, buildings, props, lots,
+  spawn, npcHomes}`.
+
+**Autotiles** (same neighbour logic as the game; tile names are generated into
+`src/tiles.gen.ts`, so no hard-coded indices): dirt with inner corners, sandy
+lake shoreline (water + rim baked together; the NE inner corner is a mirrored
+NW), tilled soil (`HoeDirt.drawGuide`), cliff lip/face/base with end caps,
+stairs. Fences use `Fence.fenceDrawGuide` neighbour sums, exactly like the game.
+
+**Renderer** (`TownScene`): one RenderTexture for ground tiles plus flat decals
+(debris, tall grass). Other props are y-sorted images, culled to the camera
+because the canvas renderer draws everything. Collision now samples the
+player's feet. Player and NPC depth = feet. Weather overlay depth raised to 1e6:
+props use pixel-y depths, which used to cover the tint and rain on larger maps.
+
+**Assets** (`tools/build_real_assets.py`, needs the SDV dump in /tmp):
+- Rebuilt tileset by name.
+- Copies the raw sheets (objects, craftables, Fence1, bushes, fruitTrees, crops,
+  town).
+- Full trees are canopy + stump (`Tree.draw` alignment). New `tree_maple`, and
+  `tree_big`/`tree_blossom`/`fountain`/`bench`/`lamp` are extracted from the map
+  sheets.
+- Real farm buildings replace the placeholders: Big Barn, Coop, Silo, Well,
+  Stable, Shed, farmhouses, greenhouse.
+- Town building crops now use connected-component extraction. The old crops
+  had half-houses, clipped porches and neighbouring props attached. New:
+  `b_house3`, `b_house4`, `b_smithy`.
+- `b_house` (blue) still has roof clutter, so it was removed from `BUILDINGS`.
+
+**Config:** `Course.building` is now an optional key into `BUILDINGS`. `ob_courses`
+entries may include `building`; otherwise `BUILDING_CYCLE` picks one.
+
+**Dev-only URL params** (`import.meta.env.DEV`): `?auto=1` skips
+title/login/char select; `?courses=N` fakes N courses; `?seed=N`; `?at=tx,ty`
+teleports the player; `?zoom=Z`; `?debug=1` shows blocked tiles in red and doors
+in blue.
+
+**Caveat:** `npm run assets` (`gen_assets.py`) still writes old placeholder
+`tileset.png`/`fence.png`/`crops.png`/`b_*.png`, which breaks the world. After
+it, run `python3 tools/build_real_assets.py` (or only regenerate the logo).

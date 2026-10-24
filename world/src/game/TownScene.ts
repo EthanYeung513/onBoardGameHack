@@ -1,11 +1,7 @@
 import Phaser from 'phaser';
 import { COURSES, NPCS, type Course, type Npc } from '../config';
 import { bus, input } from './bridge';
-import {
-  T, MAP_W, MAP_H, G, G_TUFT, G_FLO_W, G_FLO_Y, DIRT, WATER, TILL, DGRASS,
-  ST_N, ST_S, ST_W, ST_E, PLAZA, D_N, D_S, D_W, D_E, D_NW, D_NE, D_SW, D_SE, D_INT,
-  generateWorld, key2, type WorldSpec, type BuildingSpec,
-} from '../worldgen';
+import { T, BUILDINGS, PROPS, generateWorld, type WorldSpec, type BuildingSpec } from '../worldgen';
 import type { WeatherMode } from '../weather';
 
 const SPEED = 85;
@@ -16,7 +12,8 @@ export class TownScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: Record<string, Phaser.Input.Keyboard.Key>;
   private keyE!: Phaser.Input.Keyboard.Key;
-  private blocked = new Set<string>();
+  private blocked!: Uint8Array;
+  private sprites: Phaser.GameObjects.Image[] = [];
   private buildings: BuildingSpec[] = [];
   private npcs: { spec: Npc; sprite: Phaser.GameObjects.Sprite; dir: Phaser.Math.Vector2; timer: number; home: { x: number; y: number } }[] = [];
   private doorZones: { x: number; y: number; course: Course }[] = [];
@@ -47,17 +44,10 @@ export class TownScene extends Phaser.Scene {
 
   preload() {
     this.load.spritesheet('tiles', 'assets/tileset.png', { frameWidth: T, frameHeight: T });
-    this.load.image('tree_oak', 'assets/tree_oak.png');
-    this.load.image('tree_pine', 'assets/tree_pine.png');
-    this.load.image('bush', 'assets/bush.png');
-    this.load.image('rock', 'assets/rock.png');
-    this.load.image('fence', 'assets/fence.png');
-    this.load.image('crops', 'assets/crops.png');
-    this.load.image('sign', 'assets/sign.png');
-    this.load.image('mailbox', 'assets/mailbox.png');
     this.load.image('raindrop', 'assets/raindrop.png');
-    ['b_townhall', 'b_shop', 'b_saloon', 'b_clinic', 'b_green', 'b_house', 'b_house2', 'b_trailer'].forEach(k =>
-      this.load.image(k, `assets/${k}.png`));
+    // every texture the world DB references (props are rects on real SDV sheets)
+    const texs = new Set<string>([...Object.values(PROPS).map(p => p.tex), 'fence', ...Object.keys(BUILDINGS)]);
+    texs.forEach(k => this.load.image(k, `assets/${k}.png`));
     // real Stardew Valley villager sheets (4 cols x N rows of 16x32; rows: down/right/up/left)
     for (let i = 0; i < 6; i++)
       this.load.spritesheet(`p${i}`, `assets/p${i}.png`, { frameWidth: 16, frameHeight: 32 });
@@ -65,120 +55,58 @@ export class TownScene extends Phaser.Scene {
       this.load.spritesheet(`n${i}`, `assets/n${i}.png`, { frameWidth: 16, frameHeight: 32 });
   }
 
-  // ---------- map building ----------
-  private isPaved(tx: number, ty: number) { return this.world.paved.has(key2(tx, ty)); }
-  private isDirt(tx: number, ty: number) { return this.world.dirt.has(key2(tx, ty)); }
-  private isPath(tx: number, ty: number) { return this.isPaved(tx, ty) || this.isDirt(tx, ty); }
-
-  // SDV-style autotile: pick the edge/corner variant by which neighbours
-  // aren't path — this is what makes trails blur into the grass
-  private edgeTile(tx: number, ty: number, set: [number, number, number, number, number, number, number, number], interior: number): number {
-    const [N, S, W, E, NW, NE, SW, SE] = set;
-    const n = this.isPath(tx, ty - 1), s = this.isPath(tx, ty + 1);
-    const w = this.isPath(tx - 1, ty), e = this.isPath(tx + 1, ty);
-    if (!n && w && e && s) return N;
-    if (!s && w && e && n) return S;
-    if (!w && n && s && e) return W;
-    if (!e && n && s && w) return E;
-    if (!n && !w && s && e) return NW;
-    if (!n && !e && s && w) return NE;
-    if (!s && !w && n && e) return SW;
-    if (!s && !e && n && w) return SE;
-    return interior;
-  }
-
-  private tileAt(tx: number, ty: number): number {
-    if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) return DGRASS;
-    if (this.isPaved(tx, ty)) {
-      const t = this.edgeTile(tx, ty, [ST_N, ST_S, ST_W, ST_E, ST_N, ST_N, ST_S, ST_S], PLAZA);
-      return t;
-    }
-    if (this.isDirt(tx, ty)) {
-      const t = this.edgeTile(tx, ty, [D_N, D_S, D_W, D_E, D_NW, D_NE, D_SW, D_SE],
-        D_INT[(tx * 7 + ty * 13) % D_INT.length]);
-      return t;
-    }
-    // pond bottom-left
-    const dx = tx - 4, dy = ty - 35;
-    if (dx * dx / 22 + dy * dy / 10 < 1) return WATER;
-    // crop field bottom-right
-    if (tx >= 44 && tx <= 56 && ty >= 36 && ty <= 38) return TILL;
-    const h = (tx * 73856093 ^ ty * 19349663) >>> 0;
-    const r = h % 100;
-    if (r < 4) return G_FLO_W;
-    if (r < 8) return G_FLO_Y;
-    if (r < 26) return G_TUFT;
-    return G;
+  // ---------- map drawing (layout comes entirely from worldgen) ----------
+  private frameFor(tex: string, r: [number, number, number, number]) {
+    const name = r.join(',');
+    const t = this.textures.get(tex);
+    if (!t.has(name)) t.add(name, 0, r[0], r[1], r[2], r[3]);
+    return name;
   }
 
   private buildGround() {
-    const rt = this.add.renderTexture(0, 0, MAP_W * T, MAP_H * T).setOrigin(0).setDepth(-10);
-    for (let y = 0; y < MAP_H; y++) {
-      for (let x = 0; x < MAP_W; x++) {
-        rt.drawFrame('tiles', this.tileAt(x, y), x * T, y * T);
-      }
+    const { w, h, ground } = this.world;
+    // ground tiles + flat decals (debris, tall grass) baked into one texture
+    const rt = this.add.renderTexture(0, 0, w * T, h * T).setOrigin(0).setDepth(-10);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++)
+      rt.drawFrame('tiles', ground[y * w + x], x * T, y * T);
+    for (const p of this.world.props) {
+      if (!p.flat) continue;
+      rt.drawFrame(p.tex, this.frameFor(p.tex, p.rect), Math.round(p.px), Math.round(p.py));
     }
-    // crops on tilled field
-    for (let y = 36; y <= 38; y++) for (let x = 44; x <= 56; x++)
-      rt.draw('crops', x * T, y * T);
   }
 
-  private decorate() {
-    // tree border
-    const tree = (x: number, y: number, pine = false) => {
-      this.add.image(x * T, y * T, pine ? 'tree_pine' : 'tree_oak').setOrigin(0.5, 1).setDepth(y * T + 2);
-      this.blocked.add(`${x},${y}`);
-    };
-    for (let x = 0; x < MAP_W; x += 2) {
-      if (x < 27 || x > 32) tree(x, 0, x % 4 === 0);
+  private placeProps() {
+    for (const p of this.world.props) {
+      if (p.flat) continue;
+      this.sprites.push(this.add.image(Math.round(p.px), Math.round(p.py), p.tex, this.frameFor(p.tex, p.rect))
+        .setOrigin(0).setDepth(p.depth));
     }
-    for (let y = 4; y < MAP_H; y += 3) { tree(0, y, y % 6 === 1); tree(MAP_W - 1, y, y % 6 === 4); }
-    // scattered props
-    const props: [string, number, number, boolean][] = [
-      ['bush', 12, 12, false], ['bush', 44, 12, false], ['rock', 20, 17, true], ['rock', 38, 29, true],
-      ['bush', 16, 30, false], ['bush', 42, 18, false], ['sign', 26, 11, true], ['sign', 32, 23, true],
-      ['tree_oak', 14, 7, true], ['tree_pine', 46, 7, true], ['tree_oak', 12, 21, true],
-      ['tree_pine', 47, 21, true], ['tree_oak', 20, 33, true], ['tree_pine', 39, 33, true],
-      ['mailbox', 33, 8, true],
-    ];
-    for (const [k, x, y, solid] of props) {
-      this.add.image(x * T, y * T + (k.startsWith('tree') ? 14 : 8), k).setOrigin(0.5, 1).setDepth(y * T + 4);
-      if (solid) this.blocked.add(`${x},${y}`);
-    }
-    // fences around crop field
-    for (let x = 43; x <= 57; x++) {
-      this.add.image(x * T, 35 * T, 'fence').setDepth(35 * T);
-      this.blocked.add(`${x},${35}`);
-    }
-    // water blocks
-    for (let y = 33; y < MAP_H; y++) for (let x = 0; x < 10; x++) {
-      const dx = x - 4, dy = y - 35;
-      if (dx * dx / 22 + dy * dy / 10 < 1) this.blocked.add(`${x},${y}`);
-    }
-    // till blocks
-    for (let y = 36; y <= 38; y++) for (let x = 44; x <= 56; x++) this.blocked.add(`${x},${y}`);
   }
 
   create() {
-    this.world = generateWorld(COURSES);
+    const q = new URLSearchParams(location.search);
+    this.world = generateWorld(COURSES, Number(q.get('seed')) || undefined);
     this.buildings = this.world.buildings;
+    this.blocked = this.world.blocked;
     this.buildGround();
-    this.decorate();
+    this.placeProps();
+    if (import.meta.env.DEV && q.has('debug')) {
+      // dev overlay: red = blocked, blue = door tiles
+      const g = this.add.graphics().setDepth(1e6 + 2);
+      g.fillStyle(0xff0000, 0.3);
+      for (let i = 0; i < this.blocked.length; i++) if (this.blocked[i])
+        g.fillRect((i % this.world.w) * T, Math.floor(i / this.world.w) * T, T, T);
+      g.fillStyle(0x0066ff, 0.7);
+      for (const bd of this.buildings) g.fillRect(bd.doorX * T, bd.doorY * T, T, T);
+    }
 
     // buildings
     for (const bd of this.buildings) {
       const img = this.add.image((bd.x + bd.w / 2) * T, (bd.y + bd.h) * T, bd.key)
         .setOrigin(0.5, 1).setDepth((bd.y + bd.h) * T);
       img.setInteractive({ useHandCursor: true });
-      // block footprint
-      for (let y = bd.y; y < bd.y + bd.h; y++) for (let x = bd.x; x < bd.x + bd.w; x++)
-        this.blocked.add(`${x},${y}`);
       if (bd.course) this.doorZones.push({ x: bd.doorX, y: bd.doorY, course: bd.course });
     }
-
-    // border walls
-    for (let x = 0; x < MAP_W; x++) { this.blocked.add(`${x},-1`); this.blocked.add(`${x},${MAP_H}`); }
-    for (let y = 0; y < MAP_H; y++) { this.blocked.add(`-1,${y}`); this.blocked.add(`${MAP_W},${y}`); }
 
     // player anims — SDV sheet: down(0-3) right(4-7) up(8-11) left(12-15)
     const pkey = `p${this.charRow}`;
@@ -191,20 +119,23 @@ export class TownScene extends Phaser.Scene {
       });
     });
 
-    // player spawn: plaza below town hall
-    this.player = this.add.sprite(MAP_W / 2 * T, 13 * T, pkey, 0).setDepth(13 * T);
+    // player spawn: plaza below town hall (dev: ?at=tx,ty to jump around)
+    const at = q.get('at')?.split(',').map(Number);
+    const sp = at && at.length === 2 ? { x: at[0], y: at[1] } : this.world.spawn;
+    this.player = this.add.sprite(sp.x * T + T / 2, sp.y * T, pkey, 0).setDepth(sp.y * T);
 
     // NPCs wander the plaza
     NPCS.forEach((spec, i) => {
-      const x = (MAP_W / 2 - 8 + i * 5) * T, y = (11 + (i % 2)) * T;
+      const home = this.world.npcHomes[i % this.world.npcHomes.length];
+      const x = home.x * T + T / 2, y = home.y * T;
       const s = this.add.sprite(x, y, `n${spec.sprite}`, 0).setDepth(y);
       this.npcs.push({ spec, sprite: s, dir: new Phaser.Math.Vector2(0, 0), timer: 0, home: { x, y } });
     });
 
     // camera
-    this.cameras.main.setBounds(0, 0, MAP_W * T, MAP_H * T);
+    this.cameras.main.setBounds(0, 0, this.world.w * T, this.world.h * T);
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
-    this.cameras.main.setZoom(2.4);
+    this.cameras.main.setZoom(Number(q.get('zoom')) || 2.4);
 
     // input
     this.cursors = this.input.keyboard!.createCursorKeys();
@@ -249,12 +180,12 @@ export class TownScene extends Phaser.Scene {
     };
     const [col, a] = tints[this.weather];
     if (a > 0) this.add.rectangle(0, 0, width * 2, height * 2, col, a)
-      .setOrigin(0).setScrollFactor(0).setDepth(900);
+      .setOrigin(0).setScrollFactor(0).setDepth(1e6);
     if (this.weather === 'rain' || this.weather === 'storm' || this.weather === 'snow') {
       const n = this.weather === 'storm' ? 90 : 50;
       for (let i = 0; i < n; i++) {
         const d = this.add.image(Math.random() * width, Math.random() * height, 'raindrop')
-          .setScrollFactor(0).setDepth(950).setAlpha(0.8);
+          .setScrollFactor(0).setDepth(1e6 + 1).setAlpha(0.8);
         if (this.weather === 'snow') d.setTint(0xffffff).setAlpha(0.9);
         this.drops.push(d);
       }
@@ -317,19 +248,29 @@ export class TownScene extends Phaser.Scene {
   }
 
   private tileBlocked(px: number, py: number) {
-    return this.blocked.has(`${Math.floor(px / T)},${Math.floor(py / T)}`);
+    const tx = Math.floor(px / T), ty = Math.floor(py / T);
+    if (tx < 0 || ty < 0 || tx >= this.world.w || ty >= this.world.h) return true;
+    return this.blocked[ty * this.world.w + tx] === 1;
   }
 
   private collides(x: number, y: number) {
-    // sample a small box around the player's feet
-    for (const [ox, oy] of [[-5, 0], [5, 0], [-5, 8], [5, 8], [0, 8]]) {
+    // sample a small box around the player's feet (sprite is 32 tall, origin centre)
+    for (const [ox, oy] of [[-5, 7], [5, 7], [-5, 14], [5, 14], [0, 14]]) {
       if (this.tileBlocked(x + ox, y + oy)) return true;
     }
     return false;
   }
 
+  // canvas renderer draws every visible child — hide props outside the camera
+  private cull() {
+    const v = this.cameras.main.worldView, m = 96;
+    for (const s of this.sprites)
+      s.setVisible(s.x < v.right + m && s.x + s.width > v.x - m && s.y < v.bottom + m && s.y + s.height > v.y - m);
+  }
+
   update(_t: number, dt: number) {
     const d = Math.min(dt, 50) / 1000;
+    this.cull();
     if (this.interactCooldown > 0) this.interactCooldown -= dt;
     if (this.uiActive) return;
 
@@ -356,7 +297,7 @@ export class TownScene extends Phaser.Scene {
       const idle = ({ down: 0, right: 4, up: 8, left: 12 } as const)[this.facing];
       this.player.setFrame(idle);
     }
-    this.player.setDepth(this.player.y);
+    this.player.setDepth(this.player.y + 14); // feet, for y-sorting vs props
 
     // --- hint near door / npc ---
     const door = this.nearDoor();
@@ -398,8 +339,8 @@ export class TownScene extends Phaser.Scene {
       const nx = s.x + n.dir.x * 18 * d, ny = s.y + n.dir.y * 18 * d;
       // stay within 4 tiles of home and off blocked tiles
       if (Math.abs(nx - n.home.x) < 5 * T && Math.abs(ny - n.home.y) < 5 * T &&
-          !this.tileBlocked(nx, ny + 8)) {
-        s.x = nx; s.y = ny; s.setDepth(ny);
+          !this.tileBlocked(nx, ny + 12)) {
+        s.x = nx; s.y = ny; s.setDepth(ny + 14);
       } else n.timer = 0;
     }
   }
