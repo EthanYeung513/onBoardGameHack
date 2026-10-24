@@ -7,7 +7,7 @@ export type LoginState = { error?: string; sent?: string };
 
 function safeNext(v: FormDataEntryValue | null): string {
   const s = typeof v === "string" ? v : "";
-  return s.startsWith("/") && !s.startsWith("//") ? s : "/studio";
+  return s.startsWith("/") && !s.startsWith("//") ? s : "/";
 }
 
 export async function signInWithPassword(_: LoginState, form: FormData): Promise<LoginState> {

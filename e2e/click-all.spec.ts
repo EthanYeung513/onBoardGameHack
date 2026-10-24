@@ -6,7 +6,7 @@ import { signIn, watchErrors } from "./helpers";
 
 test("signed out visitors are sent to sign in", async ({ page }) => {
   const errors = watchErrors(page);
-  for (const path of ["/", "/studio", "/status", "/play"]) {
+  for (const path of ["/", "/studio", "/status", "/play", "/gymquest"]) {
     await page.goto(path);
     await expect(page).toHaveURL(/\/login/);
   }

@@ -56,7 +56,16 @@ export interface ScanResult {
   ideas: string[];
   /** Proposed step names and how long the flow takes. */
   structure: { outline: string[]; duration: string };
+  /** Set by a live backend: the scan keeps running until status is "ready". Absent for instant results. */
+  status?: LiveStatus;
+  /** 0 to 1 while running. */
+  progress?: number;
+  error?: string;
+  /** Where the full pipeline view for this site lives. */
+  studioUrl?: string;
 }
+
+export type LiveStatus = "running" | "building" | "ready" | "failed";
 
 export interface Field {
   label: string;
@@ -150,6 +159,10 @@ export interface Project {
   levels: Level[];
   assets: Asset[];
   connectors: Connector[];
+  /** Set by a live backend: steps keep arriving until status is "ready". Absent for instant results. */
+  status?: LiveStatus;
+  error?: string;
+  studioUrl?: string;
 }
 
 export interface ScanRequest {

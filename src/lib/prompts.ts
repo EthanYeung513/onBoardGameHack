@@ -13,6 +13,7 @@ Rules:
 - Write for a product designer: concrete, specific, no marketing filler.
 - "gettingStarted" describes what a brand new user most likely does first and what the moment of success looks like.
 - Assets: pick logos, hero images and product shots from URLs that appear in the pages, with their role.
+- Also fill category (a short phrase completing "We think this company is ..."), confidence, three onboardingIdeas, a proposedOutline of four to seven step names, and duration.
 Return only the JSON object for the schema.`;
 
 export const QUESTIONS_SYSTEM_PROMPT = `You choose clarifying questions that help design a gamified onboarding flow for a specific company.

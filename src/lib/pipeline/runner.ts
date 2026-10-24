@@ -172,3 +172,20 @@ export async function rewind(projectId: string, to: StageName) {
   await db.from("jobs").update({ status: "queued", progress: 0, attempt: 0, cursor: {}, error: null, finished_at: null, heartbeat_at: null }).eq("project_id", projectId).in("stage", later);
   await db.from("projects").update({ stage: to, status: "running" }).eq("id", projectId);
 }
+
+/**
+ * Marks `stages` as done without running them and moves the project to `to`. Used when another
+ * screen has already covered those steps, such as the constructor's describe step standing in for
+ * the clarifying questions.
+ */
+export async function skipStages(projectId: string, stages: StageName[], to: StageName, reason: string) {
+  const db = supabaseAdmin();
+  const now = new Date().toISOString();
+  for (const s of stages) {
+    const job = await ensureJob(db, projectId, s);
+    await db.from("jobs").update({ status: "succeeded", progress: 1, finished_at: now, heartbeat_at: now }).eq("id", job.id);
+    await logEvent(db, job, "info", `${stage(s).label} skipped: ${reason}`);
+  }
+  await ensureJob(db, projectId, to);
+  await db.from("projects").update({ stage: to, status: "running", updated_at: now }).eq("id", projectId);
+}

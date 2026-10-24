@@ -33,11 +33,6 @@ export async function proxy(request: NextRequest) {
     to.search = path === "/" ? "" : `?next=${encodeURIComponent(path + request.nextUrl.search)}`;
     return NextResponse.redirect(to);
   }
-  if (path === "/") {
-    const to = request.nextUrl.clone();
-    to.pathname = "/studio";
-    return NextResponse.redirect(to);
-  }
   return response;
 }
 

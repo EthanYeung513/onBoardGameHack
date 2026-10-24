@@ -1,4 +1,4 @@
-import { postJson } from "@/lib/api";
+import { getJson, postJson } from "@/lib/api";
 import type { BuildRequest, Project, PublishResult, PushResult, ScanResult, ShipRequest } from "./types";
 
 /**
@@ -9,7 +9,9 @@ const base = (process.env.NEXT_PUBLIC_ORTHOGONAL_API_URL ?? "/api/orthogonal").r
 
 export const orthogonalApi = {
   scan: (url: string) => postJson<ScanResult>(`${base}/scans`, { url }),
+  getScan: (id: string) => getJson<ScanResult>(`${base}/scans/${encodeURIComponent(id)}`),
   build: (req: BuildRequest) => postJson<Project>(`${base}/projects`, req),
+  getProject: (id: string) => getJson<Project>(`${base}/projects/${encodeURIComponent(id)}`),
   push: (id: string, req: ShipRequest) => postJson<PushResult>(`${base}/projects/${encodeURIComponent(id)}/push`, req),
   publish: (id: string, req: ShipRequest) => postJson<PublishResult>(`${base}/projects/${encodeURIComponent(id)}/publish`, req),
 };

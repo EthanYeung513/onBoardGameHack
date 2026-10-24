@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import type { ScanResult } from "@/lib/orthogonal/types";
+import { LiveProgress } from "./LiveProgress";
 import { BrowserDots, LogLine, Logo } from "./ui";
 import { useTicker } from "./useTicker";
 
@@ -11,15 +13,49 @@ interface Props {
   /** Multiplier on every delay (1 = cinematic). */
   speed: number;
   onDone: () => void;
+  onRetry?: () => void;
 }
 
 /** Plays back the scan log line by line while a wireframe of the site assembles on the right. */
-export function ScanStage({ siteUrl, scan, speed, onDone }: Props) {
+export function ScanStage({ siteUrl, scan, speed, onDone, onRetry }: Props) {
+  // A live backend reports status and keeps the log growing; an instant one is played back line by line.
+  const live = scan?.status !== undefined;
   const log = scan?.log ?? [];
-  const n = useTicker(scan ? log.length : null, 1500 * speed, 2100 * speed, onDone);
+  const n = useTicker(scan && !live ? log.length : null, 1500 * speed, 2100 * speed, onDone);
+  const ready = scan?.status === "ready";
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(onDone, 1800 * speed);
+    return () => clearTimeout(t);
+  }, [ready, speed, onDone]);
   const pct = log.length ? Math.round((n / log.length) * 100) : 0;
   const surface = scan?.palette.find((c) => c.role === "surface")?.hex ?? "#FBF7EE";
   const ink = scan?.palette.find((c) => c.role === "primary")?.hex ?? "#0F3D2E";
+
+  if (live && scan) {
+    return (
+      <LiveProgress
+        siteUrl={scan.siteUrl}
+        trail="scanning"
+        heading={
+          <>
+            Reading your
+            <br />
+            website.
+          </>
+        }
+        lines={log}
+        finished={ready}
+        progress={scan.progress ?? 0}
+        blocks={scan.skeleton}
+        surface={surface}
+        ink={ink}
+        error={scan.status === "failed" ? scan.error : undefined}
+        onRetry={onRetry}
+        studioUrl={scan.studioUrl}
+      />
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col gap-10 px-5 py-7 md:px-11">

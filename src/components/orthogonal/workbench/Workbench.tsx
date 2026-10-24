@@ -83,6 +83,11 @@ export function Workbench({ project, speed }: { project: Project; speed: number 
         </div>
         {done && (
           <div className="flex flex-wrap items-center gap-2">
+            {project.studioUrl && (
+              <a href={project.studioUrl} className="mr-1 text-sm font-semibold text-white/70 hover:text-white" data-testid="open-studio">
+                Open in studio
+              </a>
+            )}
             <div role="group" aria-label="Preview size" className="flex gap-0.5 rounded-[9px] bg-white/8 p-[3px]">
               {(["desktop", "mobile"] as const).map((d) => (
                 <button

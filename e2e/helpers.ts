@@ -21,11 +21,11 @@ export function watchErrors(page: Page) {
   return errors;
 }
 
-export async function signIn(page: Page) {
-  await page.goto("/login");
+export async function signIn(page: Page, next = "/studio") {
+  await page.goto(`/login?next=${encodeURIComponent(next)}`);
   await page.getByTestId("login-email").fill(EMAIL);
   await page.getByTestId("login-password").fill(PASSWORD);
   await page.getByTestId("login-submit").click();
-  await page.waitForURL(/\/studio/);
-  await expect(page.getByRole("heading", { name: "Start from a website" })).toBeVisible();
+  await page.waitForURL((u) => u.pathname === next);
+  if (next === "/studio") await expect(page.getByRole("heading", { name: "Start from a website" })).toBeVisible();
 }

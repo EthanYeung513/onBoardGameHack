@@ -36,5 +36,13 @@ export const ProjectModel = z.object({
     firstSteps: z.array(z.string()).min(1),
     successMoment: z.string(),
   }),
+  /** What the product is, as a phrase that completes "We think X is ...": "a home solar monitoring app". */
+  category: z.string().optional(),
+  confidence: z.enum(["low", "medium", "high"]).optional(),
+  /** Short, specific advice for this company's onboarding. */
+  onboardingIdeas: z.array(z.string()).max(5).optional(),
+  /** Proposed onboarding step names, in order, and how long the flow should take. */
+  proposedOutline: z.array(z.string()).max(10).optional(),
+  duration: z.string().optional(),
 });
 export type ProjectModel = z.infer<typeof ProjectModel>;

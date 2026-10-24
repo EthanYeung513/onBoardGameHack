@@ -87,26 +87,26 @@ for (const mode of ["live", "cached"] as const) {
     }
     await page.waitForURL(/\/studio\/projects\//);
     const id = page.url().split("/").pop()!;
-    await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-timeline.png` });
+    await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-timeline.png`, caret: "initial" });
 
     let s = await waitForStage(page, id, ["awaiting_confirmation"], 6 * 60_000);
     expect(s.pages.filter((p) => p.status === "fetched").length).toBeGreaterThan(2);
     if (mode === "cached") expect(s.pages.every((p) => p.fetch_method === "cache")).toBe(true);
     expect(s.screenshots.length).toBeGreaterThan(0);
     expect(s.tokens).not.toBeNull();
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
     await expect(page.getByTestId("findings")).toBeVisible();
-    await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-findings.png`, fullPage: true });
+    await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-findings.png`, fullPage: true, caret: "initial" });
     await page.getByTestId("confirm-findings").click();
 
     s = await waitForStage(page, id, ["awaiting_answers"], 3 * 60_000);
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
     const questions = page.locator("[data-testid^='question-']");
     await expect(questions.first()).toBeVisible();
     const n = await questions.count();
     expect(n).toBeGreaterThanOrEqual(3);
     for (let i = 0; i < n; i++) await questions.nth(i).locator("button").first().click();
-    await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-questions.png`, fullPage: true });
+    await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-questions.png`, fullPage: true, caret: "initial" });
     await page.getByTestId("submit-answers").click();
 
     s = await waitForStage(page, id, ["ready"], 8 * 60_000);
@@ -117,12 +117,12 @@ for (const mode of ["live", "cached"] as const) {
     for (const f of s.flows) expect(f.status).toBe("valid");
 
     // Each flow can be completed, and the points shown match the deterministic rules.
-    await page.reload();
+    await page.reload({ waitUntil: "networkidle" });
     for (const f of s.flows) {
       await page.getByTestId(`variant-${f.variant_key}`).click();
       const final = await playThrough(page, f.spec_json);
       if (f.spec_json.gamification.mechanics.points) await expect(page.getByTestId("flow-points")).toContainText(String(final.points));
-      await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-flow-${f.variant_key}-end.png` });
+      await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-flow-${f.variant_key}-end.png`, caret: "initial" });
     }
 
     // A chat change creates a new version.
@@ -132,13 +132,13 @@ for (const mode of ["live", "cached"] as const) {
     await page.getByTestId("chat-input").fill(`Change the transition of the step "${quest.spec_json.steps[1].id}" to fade.`);
     await page.getByTestId("chat-send").click();
     await expect(page.getByTestId("latest-version")).toContainText(`Version ${quest.version + 1}`, { timeout: 180_000 });
-    await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-chat.png` });
+    await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-chat.png`, caret: "initial" });
 
     // Memory calls were logged.
     await page.getByTestId("tab-memory").click();
     await expect(page.getByTestId("memory-events").locator("li").first()).toBeVisible({ timeout: 30_000 });
     expect(await page.getByTestId("memory-events").locator("li").count()).toBeGreaterThan(3);
-    await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-memory.png` });
+    await page.screenshot({ path: `artifacts/screenshots/e2e-${mode}-memory.png`, caret: "initial" });
 
     expect(errors).toEqual([]);
   });
