@@ -1,27 +1,15 @@
 import Phaser from 'phaser';
 import { COURSES, NPCS, type Course, type Npc } from '../config';
 import { bus, input } from './bridge';
+import {
+  T, MAP_W, MAP_H, G, G_TUFT, G_FLO_W, G_FLO_Y, DIRT, WATER, TILL, DGRASS,
+  ST_N, ST_S, ST_W, ST_E, PLAZA, D_N, D_S, D_W, D_E, D_NW, D_NE, D_SW, D_SE, D_INT,
+  generateWorld, key2, type WorldSpec, type BuildingSpec,
+} from '../worldgen';
+import type { WeatherMode } from '../weather';
 
-const T = 16;
-const MAP_W = 60;
-const MAP_H = 40;
 const SPEED = 85;
 const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
-
-// tile indices in tileset.png (8 per row)
-const G = 0, G_TUFT = 1, G_FLO_W = 2, G_FLO_Y = 3, DIRT = 4, WATER = 5, TILL = 7;
-const STONE = 8, WOOD = 9, DGRASS = 11;
-// real SDV street tiles: interior + grass-fringe edges + plaza
-const ST_N = 16, ST_S = 17, ST_W = 18, ST_E = 19, PLAZA = 20;
-
-interface BuildingSpec {
-  course?: Course;
-  key: string;
-  x: number; y: number; // tile pos (top-left)
-  w: number; h: number; // tile footprint
-  doorX: number; doorY: number; // tile in front of door
-  townHall?: boolean;
-}
 
 export class TownScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Sprite;
@@ -36,6 +24,9 @@ export class TownScene extends Phaser.Scene {
   private interactCooldown = 0;
   private charRow = 0;
   private uiActive = false;
+  private weather: WeatherMode = 'sunny';
+  private world!: WorldSpec;
+  private drops: Phaser.GameObjects.Image[] = [];
   private lastHover: Course | null = null;
   private enterHint: Phaser.GameObjects.Text | null = null;
   // Zombie scene instances (created then destroyed before their first shutdown,
@@ -49,7 +40,10 @@ export class TownScene extends Phaser.Scene {
 
   constructor() { super('town'); }
 
-  init(data: { charRow?: number }) { this.charRow = data.charRow ?? 0; }
+  init(data: { charRow?: number; weather?: WeatherMode }) {
+    this.charRow = data.charRow ?? 0;
+    this.weather = data.weather ?? 'sunny';
+  }
 
   preload() {
     this.load.spritesheet('tiles', 'assets/tileset.png', { frameWidth: T, frameHeight: T });
@@ -61,6 +55,7 @@ export class TownScene extends Phaser.Scene {
     this.load.image('crops', 'assets/crops.png');
     this.load.image('sign', 'assets/sign.png');
     this.load.image('mailbox', 'assets/mailbox.png');
+    this.load.image('raindrop', 'assets/raindrop.png');
     ['b_townhall', 'b_shop', 'b_saloon', 'b_clinic', 'b_green', 'b_house', 'b_house2', 'b_trailer'].forEach(k =>
       this.load.image(k, `assets/${k}.png`));
     // real Stardew Valley villager sheets (4 cols x N rows of 16x32; rows: down/right/up/left)
@@ -71,60 +66,37 @@ export class TownScene extends Phaser.Scene {
   }
 
   // ---------- map building ----------
-  private layout(): BuildingSpec[] {
-    const b: BuildingSpec[] = [];
-    // town hall (Adventurer's Guild) centered at top: 96x128 = 6x8 tiles
-    const th = { key: 'b_townhall', x: MAP_W / 2 - 3, y: 1, w: 6, h: 8, doorX: MAP_W / 2 - 1, doorY: 9, townHall: true };
-    b.push(th);
-    // real Pelican Town sprite sizes in tiles (from spring_town tilesheet)
-    const SIZE: Record<string, [number, number]> = {
-      b_shop: [10, 9], b_saloon: [7, 8], b_clinic: [5, 8], b_green: [5, 7],
-      b_house: [6, 9], b_house2: [6, 9], b_trailer: [7, 3],
-    };
-    // course slots: left col x=5, right col x=48, rows y=2,14,26
-    const rows = [2, 14, 26];
-    COURSES.forEach((c, i) => {
-      const left = i % 2 === 0;
-      const row = rows[Math.floor(i / 2) % rows.length];
-      const [w, h] = SIZE[c.building] ?? [6, 8];
-      const x = left ? 5 : MAP_W - 7 - w;
-      b.push({ course: c, key: c.building, x, y: row, w, h, doorX: x + Math.floor(w / 2), doorY: row + h });
-    });
-    return b;
-  }
+  private isPaved(tx: number, ty: number) { return this.world.paved.has(key2(tx, ty)); }
+  private isDirt(tx: number, ty: number) { return this.world.dirt.has(key2(tx, ty)); }
+  private isPath(tx: number, ty: number) { return this.isPaved(tx, ty) || this.isDirt(tx, ty); }
 
-  private isPath(tx: number, ty: number) {
-    // vertical main street x=29,30 — horizontal streets y=10,11 / 22,23 / 34,35
-    if (tx === 29 || tx === 30) return true;
-    if (ty === 10 || ty === 11 || ty === 22 || ty === 23 || ty === 34 || ty === 35) return true;
-    // plaza around town hall
-    if (ty === 8 || ty === 9) if (tx >= MAP_W / 2 - 6 && tx <= MAP_W / 2 + 4) return true;
-    // connectors from each door to nearest horizontal street
-    for (const bd of this.buildings) {
-      if (bd.townHall) continue;
-      const rowMid = bd.doorY <= 11 ? 10 : bd.doorY <= 23 ? 22 : 34;
-      if (tx === bd.doorX || tx === bd.doorX + 1) {
-        const lo = Math.min(bd.doorY, rowMid), hi = Math.max(bd.doorY, rowMid);
-        if (ty >= lo && ty <= hi) return true;
-      }
-    }
-    return false;
+  // SDV-style autotile: pick the edge/corner variant by which neighbours
+  // aren't path — this is what makes trails blur into the grass
+  private edgeTile(tx: number, ty: number, set: [number, number, number, number, number, number, number, number], interior: number): number {
+    const [N, S, W, E, NW, NE, SW, SE] = set;
+    const n = this.isPath(tx, ty - 1), s = this.isPath(tx, ty + 1);
+    const w = this.isPath(tx - 1, ty), e = this.isPath(tx + 1, ty);
+    if (!n && w && e && s) return N;
+    if (!s && w && e && n) return S;
+    if (!w && n && s && e) return W;
+    if (!e && n && s && w) return E;
+    if (!n && !w && s && e) return NW;
+    if (!n && !e && s && w) return NE;
+    if (!s && !w && n && e) return SW;
+    if (!s && !e && n && w) return SE;
+    return interior;
   }
 
   private tileAt(tx: number, ty: number): number {
     if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) return DGRASS;
-    if (this.isPath(tx, ty)) {
-      const paved = (ty === 8 || ty === 9) || tx === 29 || tx === 30;
-      if (!paved) return DIRT;
-      // paved streets/plaza: real SDV cobble autotile — grass-fringe edge tiles
-      // on the side that borders grass, interior cobbles at junctions
-      const n = this.isPath(tx, ty - 1), s = this.isPath(tx, ty + 1);
-      const w = this.isPath(tx - 1, ty), e = this.isPath(tx + 1, ty);
-      if (n && s && e && w) return PLAZA;
-      if (!n) return ST_N;
-      if (!s) return ST_S;
-      if (!e) return ST_E;
-      return ST_W;
+    if (this.isPaved(tx, ty)) {
+      const t = this.edgeTile(tx, ty, [ST_N, ST_S, ST_W, ST_E, ST_N, ST_N, ST_S, ST_S], PLAZA);
+      return t;
+    }
+    if (this.isDirt(tx, ty)) {
+      const t = this.edgeTile(tx, ty, [D_N, D_S, D_W, D_E, D_NW, D_NE, D_SW, D_SE],
+        D_INT[(tx * 7 + ty * 13) % D_INT.length]);
+      return t;
     }
     // pond bottom-left
     const dx = tx - 4, dy = ty - 35;
@@ -188,7 +160,8 @@ export class TownScene extends Phaser.Scene {
   }
 
   create() {
-    this.buildings = this.layout();
+    this.world = generateWorld(COURSES);
+    this.buildings = this.world.buildings;
     this.buildGround();
     this.decorate();
 
@@ -260,6 +233,32 @@ export class TownScene extends Phaser.Scene {
     bus.on('ui-open', this.onUiOpen);
     bus.on('ui-close', this.onUiClose);
     this.events.once('shutdown', () => { bus.off('ui-open', this.onUiOpen); bus.off('ui-close', this.onUiClose); });
+
+    this.applyWeather();
+  }
+
+  // ---------- weather ----------
+  private applyWeather() {
+    const { width, height } = this.scale;
+    const tints: Record<WeatherMode, [number, number]> = {
+      sunny: [0x000000, 0],
+      cloudy: [0x2a3a55, 0.18],
+      rain: [0x1a2740, 0.28],
+      storm: [0x101830, 0.42],
+      snow: [0xaabbdd, 0.18],
+    };
+    const [col, a] = tints[this.weather];
+    if (a > 0) this.add.rectangle(0, 0, width * 2, height * 2, col, a)
+      .setOrigin(0).setScrollFactor(0).setDepth(900);
+    if (this.weather === 'rain' || this.weather === 'storm' || this.weather === 'snow') {
+      const n = this.weather === 'storm' ? 90 : 50;
+      for (let i = 0; i < n; i++) {
+        const d = this.add.image(Math.random() * width, Math.random() * height, 'raindrop')
+          .setScrollFactor(0).setDepth(950).setAlpha(0.8);
+        if (this.weather === 'snow') d.setTint(0xffffff).setAlpha(0.9);
+        this.drops.push(d);
+      }
+    }
   }
 
   private onHover(p: Phaser.Input.Pointer) {
@@ -370,6 +369,19 @@ export class TownScene extends Phaser.Scene {
     // re-evaluate hover every frame: the world moves under a stationary
     // pointer as the camera pans, so pointermove alone goes stale
     this.onHover(this.input.activePointer);
+
+    // --- weather drops ---
+    if (this.drops.length) {
+      const vy = this.weather === 'snow' ? 40 : this.weather === 'storm' ? 420 : 300;
+      const vx = this.weather === 'snow' ? 18 : -50;
+      const w = this.scale.width, h = this.scale.height;
+      for (const dr of this.drops) {
+        dr.y += vy * d;
+        dr.x += vx * d;
+        if (dr.y > h + 16) { dr.y = -16; dr.x = Math.random() * w; }
+        if (dr.x < -16) dr.x = w + 8;
+      }
+    }
 
     // --- NPC wander ---
     for (const n of this.npcs) {

@@ -64,6 +64,22 @@ street = {
 }
 for idx, t in street.items():
     img.paste(t, ((idx % 8) * T, (idx // 8) * T))
+# organic dirt autotile from the outdoor clearing blob (grass-fringe edges)
+dirt_t = {
+    24: tile(1, 8),    # N edge
+    25: tile(1, 10),   # S edge
+    26: tile(0, 9),    # W edge
+    27: tile(3, 9),    # E edge
+    28: tile(0, 8),    # NW corner
+    29: tile(3, 8),    # NE corner
+    30: tile(0, 10),   # SW corner
+    31: tile(3, 10),   # SE corner
+    32: tile(1, 9),    # interior A
+    33: tile(2, 9),    # interior B
+    34: tile(2, 8),    # interior C
+}
+for idx, t in dirt_t.items():
+    img.paste(t, ((idx % 8) * T, (idx // 8) * T))
 # tilled soil from hoeDirt (8x4 grid of 16x16)
 hoe = Image.open(p("TerrainFeatures", "hoeDirt..png")).convert("RGBA")
 img.paste(hoe.crop((2 * T, 1 * T, 3 * T, 2 * T)), (7 * T, 0))
@@ -91,6 +107,10 @@ save(fence.crop((16, 16, 32, 32)), "fence.png")
 
 crops = Image.open(p("TileSheets", "crops..png")).convert("RGBA")
 save(crops.crop((10 * T, 4 * T, 11 * T, 6 * T)), "crops.png")
+
+# rain streak frame for the weather overlay
+rain = Image.open(p("TileSheets", "rain..png")).convert("RGBA")
+save(rain.crop((0, 0, 16, 16)), "raindrop.png")
 
 # sign + mailbox: small props harvested from the outdoor sheet (eyeball-tuned)
 save(sheet.crop((11 * T, 18 * T, 12 * T, 20 * T)), "sign.png")

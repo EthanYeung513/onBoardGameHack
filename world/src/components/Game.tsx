@@ -4,6 +4,7 @@ import { TownScene } from '../game/TownScene';
 import { bus, input } from '../game/bridge';
 import { COMPANY, type Course, type Npc } from '../config';
 import type { Hire } from '../App';
+import { resolveWeather } from '../weather';
 
 function Joystick() {
   const ref = useRef<HTMLDivElement>(null);
@@ -127,8 +128,13 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
       scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
       scene: [TownScene],
     });
-    game.scene.start('town', { charRow });
-    return () => game.destroy(true);
+    let cancelled = false;
+    resolveWeather().then(({ mode, where, source }) => {
+      if (cancelled) return;
+      game.scene.start('town', { charRow, weather: mode });
+      if (source === 'auto') bus.emit('weather', { mode, where });
+    });
+    return () => { cancelled = true; game.destroy(true); };
   }, [charRow]);
 
   const anyUi = !!(menu || dialog);

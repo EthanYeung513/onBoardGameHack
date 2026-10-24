@@ -166,3 +166,17 @@ Town environment now matches how the actual game builds maps:
 - Layout stays data-driven: `layout()` derives slots/footprints/doors from
   COURSES (dashboard `ob_courses` hook unchanged); `SIZE` maps each building
   key to its real tile footprint.
+
+## Session 3c — natural paths + weather + worldgen API (2026-10-24)
+
+- `src/worldgen.ts` is the agent-facing layer: `BUILDINGS` asset DB (sprite key
+  -> footprint), `BUILDING_CYCLE`, `generateWorld(courses, seed)` returning
+  buildings + `paved`/`dirt` tile sets. Everything layout-relevant is data.
+- Paths: connectors from each building door to the cobble main street are
+  carved by `carveConnector` — a seeded random-walk trail that wanders within
+  a band, then rendered through the real SDV dirt autotile (edges/corners at
+  tileset indices 24-34, `edgeTile()` picks by path neighbours) so trails have
+  wavy grass-fringe edges like the game's clearings.
+- Weather: `src/weather.ts` resolves ?weather= > ob_weather > auto-detect
+  (ob_geo lat,lon or ipapi.co -> open-meteo, WMO code -> sunny/cloudy/rain/
+  storm/snow) > sunny. Scene dims + falls rain/snow via `raindrop.png`.
