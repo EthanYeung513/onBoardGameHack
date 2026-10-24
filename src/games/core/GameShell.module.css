@@ -108,6 +108,19 @@
      centre vertically like a handheld screen instead of top-anchoring. */
   align-self: center;
 }
+/* Inside a building the game fills the page like the real thing: each game's
+   width cap is lifted as far as the viewport height allows without clipping
+   (ratios measured from each game's real layout). On portrait phones the
+   cap resolves to 100% anyway, so the game keeps filling the screen. */
+.play.battle > * {
+  max-width: min(100%, calc(100dvh * 1.15));
+}
+.play.dilemma > * {
+  max-width: min(100%, calc(100dvh * 1.45));
+}
+.play.word-match > * {
+  max-width: min(100%, calc(100dvh * 1.15));
+}
 
 /* ── Battle: a Pokémon-style title screen ─────────────────────────────── */
 .battle {

@@ -114,8 +114,10 @@
 
 .sprite {
   width: 78%;
-  height: auto;
+  height: 100%;
+  /* Fit inside the frame instead of overflowing its top edge and clipping. */
   object-fit: contain;
+  object-position: bottom center;
   image-rendering: pixelated;
   filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.18));
 }
