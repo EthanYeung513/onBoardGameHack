@@ -1,0 +1,180 @@
+/* The full-page game shell: each game's own title menu, then the game filling the viewport. */
+
+.menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.menuBg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.55) saturate(1.1);
+}
+
+.menuInner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.5rem, 2vh, 1.25rem);
+  padding: clamp(1rem, 4vw, 2rem);
+  text-align: center;
+  max-width: 90vw;
+}
+
+.brand {
+  font-size: clamp(0.6rem, 1.6vw, 0.85rem);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.courseTitle {
+  line-height: 1.1;
+  max-width: 18ch;
+}
+
+.mascot {
+  width: clamp(72px, 14vh, 120px);
+  image-rendering: pixelated;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  min-width: min(340px, 78vw);
+}
+
+.option {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+}
+.option:hover,
+.option:focus-visible {
+  border-color: currentColor;
+  background: rgb(255 255 255 / 8%);
+}
+.optionCursor {
+  opacity: 0;
+}
+.option:hover .optionCursor,
+.option:focus-visible .optionCursor {
+  opacity: 1;
+}
+.optionNote {
+  margin-left: auto;
+  font-size: 0.62em;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 0.7;
+  text-align: right;
+  align-self: center;
+}
+
+/* Play fills the whole viewport, like the real game in a building. */
+.play {
+  display: flex;
+  height: 100dvh;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.play > * {
+  flex: 1;
+  min-height: 0;
+  /* No forced height: games that fill the viewport still do, shorter stages
+     centre vertically like a handheld screen instead of top-anchoring. */
+  align-self: center;
+}
+
+/* ── Battle: a Pokémon-style title screen ─────────────────────────────── */
+.battle {
+  color: #fff;
+  font-family: var(--font-game-text), monospace;
+  background:
+    radial-gradient(ellipse 60% 50% at 70% 15%, rgb(58 90 200 / 55%), transparent 70%),
+    linear-gradient(180deg, #101430 0%, #05060f 100%);
+}
+.battle .courseTitle {
+  font-family: var(--font-pixel-face), monospace;
+  font-size: clamp(1.1rem, 4.5vw, 2.2rem);
+  color: #f8d030;
+  text-shadow: 0 3px 0 #3050a8, 0 6px 0 rgb(0 0 0 / 45%);
+}
+.battle .option {
+  font-size: clamp(0.95rem, 2.6vw, 1.3rem);
+  color: #fff;
+  text-shadow: 0 2px 0 rgb(0 0 0 / 60%);
+}
+
+/* ── Word Match: an arcade cabinet menu ───────────────────────────────── */
+.word-match {
+  color: #f8f4ff;
+  font-family: var(--font-game-text), monospace;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgb(0 0 0 / 18%) 3px 4px),
+    radial-gradient(ellipse 70% 60% at 50% 0%, rgb(140 60 240 / 45%), transparent 70%),
+    linear-gradient(180deg, #1b1030, #0a0716);
+}
+.word-match .courseTitle {
+  font-family: var(--font-pixel-face), monospace;
+  font-size: clamp(1.1rem, 4.5vw, 2.2rem);
+  color: #6ff5ff;
+  text-shadow: 0 0 18px rgb(110 245 255 / 65%), 0 4px 0 rgb(0 0 0 / 50%);
+}
+.word-match .option {
+  font-size: clamp(0.95rem, 2.6vw, 1.3rem);
+}
+
+/* ── Dilemma: an Ace Attorney title card over the office art ──────────── */
+.dilemma {
+  color: #fff;
+  font-family: var(--font-game-text), monospace;
+  background: #0a0f24;
+}
+.dilemma .courseTitle {
+  font-family: Impact, "Arial Black", system-ui, sans-serif;
+  font-size: clamp(1.6rem, 6vw, 3.4rem);
+  letter-spacing: 0.03em;
+  color: #fff;
+  text-shadow:
+    0 0 2px #000,
+    3px 3px 0 #0a0f24,
+    -1px -1px 0 #0a0f24,
+    1px -1px 0 #0a0f24,
+    -1px 1px 0 #0a0f24;
+}
+.dilemma .brand {
+  color: #ffd23e;
+}
+.dilemma .options {
+  background: rgb(10 15 36 / 82%);
+  border: 2px solid rgb(255 255 255 / 35%);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+.dilemma .option {
+  font-size: clamp(1rem, 2.8vw, 1.4rem);
+}
