@@ -1,5 +1,7 @@
 # GymQuest
 
+> This branch also contains Onboarding Studio, which turns a company website into branded, gamified onboarding flows. See [docs/onboarding-studio.md](docs/onboarding-studio.md).
+
 Onboarding for any role, played as a Pokémon-style game. New hires walk the office, battle trainers and dodge phishing
 in the long grass, answering real work situations in their own words. An AI grader scores each answer against company
 policy, managers correct the grades, and every correction becomes a Mubit model update.
