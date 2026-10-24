@@ -5,8 +5,12 @@
   const KEY = 'orthogonal_state_v1';
 
   function load() {
-    try { return JSON.parse(localStorage.getItem(KEY)) || {}; }
-    catch (e) { return {}; }
+    let s;
+    try { s = JSON.parse(localStorage.getItem(KEY)) || {}; }
+    catch (e) { s = {}; }
+    // merge agent-generated courses into the shared curriculum list
+    (s.customCourses || []).forEach(c => { if (!COURSES.find(x => x.id === c.id)) COURSES.push(c); });
+    return s;
   }
   function save(s) { localStorage.setItem(KEY, JSON.stringify(s)); }
   function get() { return load(); }

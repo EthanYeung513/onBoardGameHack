@@ -46,6 +46,15 @@
     <!-- ============ COURSES ============ -->
     <section id="tab-courses" hidden>
       <div class="top"><div><h1>Courses</h1><p>Curriculum generated from your company brain. Each course becomes a building in the world.</p></div></div>
+      <div class="panel">
+        <h3>Create a course with the AI agent</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="ai-course" style="flex:1;min-width:220px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px" placeholder="e.g. Security best practices" onkeydown="if(event.key==='Enter')genCourse()">
+          <button class="btn btn-dark" id="gen-btn" onclick="genCourse()"><i class="svgic" data-ic="sparkle"></i> Generate course</button>
+        </div>
+        <div id="gen-status" style="font-size:13px;color:var(--muted);margin-top:10px"></div>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px">The agent turns the topic into a course using your company brain and connected tools.</p>
+      </div>
       <div class="panel" id="publish-panel" hidden>
         <h3>World published <i class="svgic" data-ic="globe"></i></h3>
         <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Share this link with new hires — they'll log in with their company email.</p>
@@ -223,6 +232,39 @@ function publish(){
   OB.patch({published:true});
   renderCourses();
   toast('World published — share the link with new hires');
+}
+
+const GEN_BUILDINGS=['Hall','Library','Arcade','Conservatory','Foundry','Gallery'];
+const GEN_GAMES=['quiz','inbox','road','scenario'];
+function genCourse(){
+  const inp=document.getElementById('ai-course');
+  const name=inp.value.trim();
+  if(!name){toast('Type a course name first');return;}
+  const btn=document.getElementById('gen-btn'), st=document.getElementById('gen-status');
+  btn.disabled=true;
+  const steps=[
+    'Agent reading company brain & connected tools…',
+    'Drafting lessons for "'+name+'"…',
+    'Placing a building in the world…',
+  ];
+  let i=0;
+  st.textContent=steps[0];
+  const tick=setInterval(()=>{ i++; if(i<steps.length) st.textContent=steps[i]; },800);
+  setTimeout(()=>{
+    clearInterval(tick);
+    const facts=OB.BRAIN_FACTS.slice(0,3).map(f=>f.cat+': '+f.text.slice(0,42)+'…');
+    const c={
+      id:'cx'+Date.now(), title:name,
+      building:GEN_BUILDINGS[Object.keys(state.hires||{}).length + (OB.get().customCourses||[]).length % GEN_BUILDINGS.length],
+      icon:'book', game:GEN_GAMES[(OB.get().customCourses||[]).length % GEN_GAMES.length],
+      desc:'Agent-generated from the company brain.',
+      lessons:facts.length?facts:['Introduction','Key concepts','Wrap-up quiz'],
+    };
+    const s=OB.get();s.customCourses=s.customCourses||[];s.customCourses.push(c);OB.patch({customCourses:s.customCourses});
+    st.textContent='';btn.disabled=false;inp.value='';
+    renderCourses();
+    toast('Course "'+name+'" generated and added to the curriculum');
+  },2400);
 }
 function copyLink(){ navigator.clipboard?.writeText(document.getElementById('play-link').textContent); toast('Link copied'); }
 
