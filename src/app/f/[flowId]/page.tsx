@@ -16,7 +16,7 @@ export default async function PublicFlowPage({ params }: { params: Promise<{ flo
   const tokens = await db.from("design_tokens").select("tokens_json").eq("project_id", flow.data.project_id).order("version", { ascending: false }).limit(1).single();
   if (tokens.error) notFound();
   return (
-    <main className="min-h-screen">
+    <main className="mx-auto flex min-h-screen w-full max-w-3xl items-center px-4 py-10">
       <PublicFlow flowId={flowId} spec={flow.data.spec_json as FlowSpec} tokens={DesignTokens.parse(tokens.data.tokens_json)} />
     </main>
   );

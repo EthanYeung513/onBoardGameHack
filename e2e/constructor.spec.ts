@@ -30,6 +30,7 @@ test("constructor builds and publishes a live onboarding", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Writing your/ })).toBeVisible({ timeout: 30_000 });
   await page.screenshot({ path: "artifacts/screenshots/m5-constructor-building.png", caret: "initial" });
   await expect(page.getByRole("button", { name: "Publish" })).toBeVisible({ timeout: 6 * 60_000 });
+  await page.waitForTimeout(2500); // the workbench plays a short opening animation
   await page.screenshot({ path: "artifacts/screenshots/m5-constructor-workbench.png", caret: "initial" });
 
   await page.getByRole("button", { name: "Publish" }).click();

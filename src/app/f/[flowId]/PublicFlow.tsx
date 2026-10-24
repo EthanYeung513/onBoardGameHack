@@ -6,6 +6,7 @@ import type { DesignTokens } from "@/lib/schemas/tokens";
 export function PublicFlow({ flowId, spec, tokens }: { flowId: string; spec: FlowSpec; tokens: DesignTokens }) {
   return (
     <FlowRenderer
+      className="w-full overflow-hidden rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,.12)]"
       spec={spec}
       tokens={tokens}
       onLead={(email, answers) => {
