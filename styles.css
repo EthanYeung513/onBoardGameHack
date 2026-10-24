@@ -307,7 +307,8 @@ footer .flinks { display: flex; gap: 34px; opacity: .85; }
 .table { white-space: nowrap; }
 .table td, .table th { white-space: nowrap; }
 .icn { vertical-align: -2px; }
-.side a .icn { margin-right: 8px; }
+.side a .icn { margin-right: 8px; width: 22px; height: 22px; }
+@media (max-width: 900px) { .side a .icn { margin-right: 0; width: 26px; height: 26px; } }
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
