@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log in — Orthogonal</title>
+<style>
+:root{--blue:#2E98FF;--ink:#111;--muted:#6b7280;--border:#d9dce1}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
+.page{display:flex;min-height:100vh}
+.hero{display:none;position:relative;width:50%;overflow:hidden;background:#000}
+@media(min-width:768px){.hero{display:block}}
+.hero video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero-logo{position:absolute;top:40px;left:40px;z-index:2;display:flex;align-items:center;gap:12px;font-family:"Gdgaio","Space Grotesk",sans-serif;font-weight:600;font-size:26px;letter-spacing:-.02em;color:#fff;text-decoration:none}
+.panel{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{width:100%;max-width:28rem}
+.mlogo{display:none;margin-bottom:32px;font-family:"Gdgaio",sans-serif;font-weight:600;font-size:26px;letter-spacing:-.02em}
+@media(max-width:767px){.mlogo{display:block}}
+h1{font-size:36px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px}
+.sub{color:var(--muted);font-size:15px}
+.head{margin-bottom:44px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:44px}
+.tile{border:1px solid var(--border);border-radius:10px;padding:12px 6px;text-align:center;cursor:pointer;transition:border-color .2s}
+.tile:hover{border-color:var(--blue)}
+.tile svg{width:26px;height:26px;display:block;margin:0 auto 6px}
+.tile span{font-size:13px;font-weight:500}
+.btn{width:100%;height:56px;border:0;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;transition:background .15s}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#1e86f0}
+.btn-dark{background:#1f2937;color:#fff}
+.btn-dark:hover{background:#111827}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--border)}
+.btn-ghost:hover{background:#f5f6f8}
+.note{margin-top:10px;font-size:13px;color:var(--muted)}
+.divider{display:flex;align-items:center;gap:12px;margin:18px 0 10px;color:var(--muted);font-size:13px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.field{width:100%;height:52px;border:1px solid var(--border);border-radius:8px;padding:0 14px;font-size:15px;margin-top:8px;outline:none}
+.field:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(46,152,255,.15)}
+.lbl{font-size:13px;font-weight:500;display:block;margin-top:16px}
+.swap{margin-top:16px;font-size:14px;color:var(--muted);text-align:center}
+.swap a{color:var(--blue);text-decoration:none;cursor:pointer;font-weight:500}
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:20px;background:none;border:0}
+.back:hover{color:var(--ink)}
+.err{display:none;margin-top:12px;padding:10px 12px;border-radius:8px;background:#fef2f2;color:#b91c1c;font-size:13px}
+.msg{display:none;margin-top:12px;padding:12px;border-radius:8px;background:#eff6ff;color:#1d4ed8;font-size:14px;text-align:center}
+.logo-mark{display:inline-block;width:28px;height:28px;vertical-align:middle;margin-right:10px}
+.gicon{width:26px;height:26px}
+.hidden{display:none}
+.step{animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hero">
+    <video autoplay loop muted playsinline><source src="assets/web-hero.mp4" type="video/mp4"></video>
+    <a class="hero-logo" href="index.html">
+      <svg width="30" height="30" viewBox="0 0 30 30"><rect x="0" y="0" width="14" height="14" rx="3" fill="#2E98FF"/><rect x="16" y="0" width="14" height="14" rx="3" fill="#FF613F"/><rect x="0" y="16" width="14" height="14" rx="3" fill="#37C978"/><rect x="16" y="16" width="14" height="14" rx="3" fill="#FFC700"/></svg>
+      Orthogonal
+    </a>
+  </div>
+  <div class="panel">
+    <div class="card">
+      <div class="mlogo">
+        <svg width="26" height="26" viewBox="0 0 30 30" style="vertical-align:middle;margin-right:10px"><rect x="0" y="0" width="14" height="14" rx="3" fill="#2E98FF"/><rect x="16" y="0" width="14" height="14" rx="3" fill="#FF613F"/><rect x="0" y="16" width="14" height="14" rx="3" fill="#37C978"/><rect x="16" y="16" width="14" height="14" rx="3" fill="#FFC700"/></svg>Orthogonal
+      </div>
+
+      <!-- STEP: welcome -->
+      <div id="s-welcome" class="step">
+        <div class="head">
+          <h1>Welcome to Orthogonal</h1>
+          <p class="sub">The AI-powered onboarding platform for your team</p>
+        </div>
+        <div class="tiles">
+          <div class="tile"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M152 224a8 8 0 01-8 8h-32a8 8 0 010-16h32a8 8 0 018 8zm-24-116a12 12 0 100-24 12 12 0 000 24zm91.6 52.1l-12.3 55.4a16 16 0 01-10.3 11.6 16 16 0 01-15.3-2.6L154 198h-52l-27.6 26.4a16 16 0 01-25.6-9l-12.3-55.4a16 16 0 013.3-13.7L69 111.4C73.7 61 107.8 35.4 121.6 24.6a8 8 0 019.6 0c13.8 10.8 47.9 36.4 52.6 86.8l29.2 35a16 16 0 013.3 13.7z"/></svg><span>Fast Setup</span></div>
+          <div class="tile"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M176 112h-24a8 8 0 010-16h24a8 8 0 010 16zm-72-16h-8v-8a8 8 0 00-16 0v8h-8a8 8 0 000 16h8v8a8 8 0 0016 0v-8h8a8 8 0 000-16zm133.5 100a40 40 0 01-65.7-12.5L150 164h-44l-21.8 19.5A40 40 0 1144 172l14-84a64 64 0 0162-52h16a64 64 0 0162 52l14 84a40 40 0 0125.5 24z"/></svg><span>Fun Games</span></div>
+          <div class="tile"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M224 200h-12V48a8 8 0 00-8-8h-48a8 8 0 00-8 8v40h-48a8 8 0 00-8 8v40H48a8 8 0 00-8 8v48H32a8 8 0 000 16h192a8 8 0 000-16zm-60-144h32v144h-32zm-64 56h32v88h-32zm-64 64h32v24H36z"/></svg><span>Analytics</span></div>
+          <div class="tile"><svg viewBox="0 0 256 256" fill="currentColor"><path d="M197.6 59.4l-20.5 7.2-7.2 20.5a8 8 0 01-15.2 0l-7.2-20.5-20.5-7.2a8 8 0 010-15.2l20.5-7.2 7.2-20.5a8 8 0 0115.2 0l7.2 20.5 20.5 7.2a8 8 0 010 15.2zM146 148l-16.8 6-6 16.8a8 8 0 01-15.2 0l-6-16.8-16.8-6a8 8 0 010-15.2l16.8-6 6-16.8a8 8 0 0115.2 0l6 16.8 16.8 6a8 8 0 010 15.2zm74-20l-12.4 4.4-4.4 12.4a8 8 0 01-15.2 0l-4.4-12.4L171 128a8 8 0 010-15.2l12.6-4.4 4.4-12.6a8 8 0 0115.2 0l4.4 12.6 12.6 4.4a8 8 0 010 15.2z"/></svg><span>AI Powered</span></div>
+        </div>
+        <button class="btn btn-primary" id="b-login">Login</button>
+        <button class="btn btn-dark" id="b-google"><img class="gicon" src="assets/google.svg" alt="">Login with Google</button>
+        <button class="btn btn-dark" id="b-work">Login with work account</button>
+        <p class="note">Only if your company's IT team has set up Orthogonal sign-in. Otherwise, use Login above.</p>
+      </div>
+
+      <!-- STEP: email -->
+      <div id="s-email" class="step hidden">
+        <button class="back" data-back>← Back</button>
+        <div class="head"><h1 id="email-title">Log in</h1><p class="sub" id="email-sub">to continue to Orthogonal</p></div>
+        <label class="lbl" for="f-email">Email address*</label>
+        <input class="field" id="f-email" type="email" autocomplete="email" placeholder="you@company.com">
+        <div class="err" id="email-err"></div>
+        <div class="msg" id="email-msg"></div>
+        <button class="btn btn-primary" id="b-continue" style="margin-top:18px">Continue</button>
+        <div class="swap">Don't have an account? <a id="a-signup">Sign up</a></div>
+      </div>
+
+      <!-- STEP: password -->
+      <div id="s-pass" class="step hidden">
+        <button class="back" data-back>← Back</button>
+        <div class="head"><h1>Welcome back</h1><p class="sub" id="pass-sub"></p></div>
+        <label class="lbl" for="f-pass">Password*</label>
+        <input class="field" id="f-pass" type="password" autocomplete="current-password" placeholder="Your password">
+        <div class="err" id="pass-err"></div>
+        <button class="btn btn-primary" id="b-do-login" style="margin-top:18px">Log in</button>
+      </div>
+
+      <!-- STEP: signup -->
+      <div id="s-signup" class="step hidden">
+        <button class="back" data-back>← Back</button>
+        <div class="head"><h1>Sign up</h1><p class="sub">to continue to Orthogonal</p></div>
+        <label class="lbl" for="f-name">Full name*</label>
+        <input class="field" id="f-name" type="text" autocomplete="name" placeholder="Jane Doe">
+        <label class="lbl" for="f-semail">Email address*</label>
+        <input class="field" id="f-semail" type="email" autocomplete="email" placeholder="you@company.com">
+        <label class="lbl" for="f-spass">Password*</label>
+        <input class="field" id="f-spass" type="password" autocomplete="new-password" placeholder="At least 8 characters">
+        <div class="err" id="signup-err"></div>
+        <button class="btn btn-primary" id="b-do-signup" style="margin-top:18px">Create account</button>
+        <div class="swap">Already have an account? <a id="a-login">Log in</a></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="state.js"></script>
+<script>
+// ---- fake account "database" seeded into localStorage state ----
+(function seed(){
+  const s = OB.get();
+  if (!s.users) OB.patch({ users: [
+    { email:'manager@mubit.ai', name:'Faisal', pass:'demo1234' },
+    { email:'faisal@mubit.ai', name:'Faisal', pass:'demo1234' }
+  ]});
+})();
+
+const $ = id => document.getElementById(id);
+const steps = ['welcome','email','pass','signup'];
+let pendingEmail = '', loginMode = 'login';
+function show(s){ steps.forEach(x=>$('s-'+x).classList.toggle('hidden',x!==s)); }
+function err(id,t){ const e=$(id); e.textContent=t; e.style.display=t?'block':'none'; }
+function emailOK(v){ return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v); }
+function users(){ return OB.get().users||[]; }
+function findUser(e){ return users().find(u=>u.email===e.toLowerCase()); }
+function finish(user){
+  OB.patch({ manager:{name:user.name}, user:{email:user.email,name:user.name} });
+  location.href = OB.get().brand ? 'dashboard.html' : 'space.html';
+}
+
+$('b-login').onclick = ()=>{ loginMode='login'; $('email-title').textContent='Log in'; $('email-sub').textContent='to continue to Orthogonal'; show('email'); $('f-email').focus(); };
+$('b-google').onclick = ()=>{ loginMode='google'; $('email-title').textContent='Log in with Google'; $('email-sub').textContent='Choose the Google account to continue with'; show('email'); };
+$('b-work').onclick = ()=>{ loginMode='work'; $('email-title').textContent='Log in with work account'; $('email-sub').textContent='Enter your company email to continue with SSO'; show('email'); };
+
+$('b-continue').onclick = ()=>{
+  const em = $('f-email').value.trim().toLowerCase();
+  err('email-err',''); $('email-msg').style.display='none';
+  if(!emailOK(em)){ err('email-err','Please enter a valid email address.'); return; }
+  pendingEmail = em;
+  const u = findUser(em);
+  if (u){
+    if (loginMode!=='login'){ finish(u); return; }
+    $('pass-sub').textContent = 'Log in as ' + em;
+    show('pass'); $('f-pass').focus();
+  } else {
+    // account doesn't exist -> offer sign up
+    const m = $('email-msg');
+    m.innerHTML = 'No account found for <b>'+em+'</b>. <a style="color:#1d4ed8;font-weight:600;cursor:pointer" id="a-newacct">Sign up</a>';
+    m.style.display='block';
+    $('a-newacct').onclick = ()=>{ $('f-semail').value=em; show('signup'); };
+  }
+};
+
+$('b-do-login').onclick = ()=>{
+  const u = findUser(pendingEmail);
+  if(!u){ show('email'); return; }
+  if($('f-pass').value !== u.pass){ err('pass-err','Incorrect password. Try again.'); return; }
+  finish(u);
+};
+$('b-do-signup').onclick = ()=>{
+  const name=$('f-name').value.trim(), em=$('f-semail').value.trim().toLowerCase(), pw=$('f-spass').value;
+  if(!name){ err('signup-err','Please enter your name.'); return; }
+  if(!emailOK(em)){ err('signup-err','Please enter a valid email address.'); return; }
+  if(pw.length<8){ err('signup-err','Password must be at least 8 characters.'); return; }
+  if(findUser(em)){ err('signup-err','An account with this email already exists.'); return; }
+  const s = OB.get(); s.users.push({email:em,name,pass:pw}); OB.patch({users:s.users});
+  finish({email:em,name});
+};
+$('a-signup').onclick = ()=>{ $('f-semail').value=$('f-email').value; show('signup'); };
+$('a-login').onclick = ()=>show('email');
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show('welcome'));
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'){
+  if(!$('s-email').classList.contains('hidden')) $('b-continue').click();
+  else if(!$('s-pass').classList.contains('hidden')) $('b-do-login').click();
+  else if(!$('s-signup').classList.contains('hidden')) $('b-do-signup').click();
+}});
+</script>
+</body>
+</html>
