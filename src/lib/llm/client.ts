@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import type { z } from "zod";
+import { z } from "zod";
 import { env, gatewayEnabled } from "@/lib/env";
 
 // The only place an Anthropic client is created. Calls go through the Mubit gateway when it is
@@ -80,6 +80,13 @@ async function withFallback<T>(ctx: CallContext, fn: (client: Anthropic, route: 
   throw lastErr;
 }
 
+/** The outermost JSON object in a reply, ignoring any fences or prose around it. */
+export function extractJson(raw: string): string {
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  return start >= 0 && end > start ? raw.slice(start, end + 1) : raw;
+}
+
 export function textOf(msg: Anthropic.Message): string {
   return msg.content
     .filter((b): b is Anthropic.TextBlock => b.type === "text")
@@ -100,20 +107,37 @@ export async function complete(params: CreateParams, ctx: CallContext) {
 export async function completeJson<S extends z.ZodType>(
   schema: S,
   params: CreateParams,
-  ctx: CallContext & { retries?: number; validate?: (v: z.infer<S>) => string[] },
+  ctx: CallContext & {
+    retries?: number;
+    validate?: (v: z.infer<S>) => string[];
+    /**
+     * "constrained" uses structured outputs. "prompted" sends the JSON Schema in the user message
+     * instead, for schemas too large for constrained decoding; Zod still validates the result.
+     */
+    mode?: "constrained" | "prompted";
+    jsonSchema?: unknown;
+  },
 ): Promise<{ data: z.infer<S>; route: Route; attempts: number }> {
   const retries = ctx.retries ?? 2;
+  const prompted = ctx.mode === "prompted";
   const messages = [...params.messages];
+  if (prompted) {
+    const instruction = `Respond with a single JSON object that conforms to this JSON Schema, with no prose and no code fences.\n\n${JSON.stringify(ctx.jsonSchema ?? z.toJSONSchema(schema))}`;
+    const last = messages[messages.length - 1];
+    if (last?.role === "user" && typeof last.content === "string") messages[messages.length - 1] = { role: "user", content: `${last.content}\n\n${instruction}` };
+    else if (last?.role === "user" && Array.isArray(last.content)) messages[messages.length - 1] = { role: "user", content: [...last.content, { type: "text", text: instruction }] };
+    else messages.push({ role: "user", content: instruction });
+  }
   let lastErrors: string[] = [];
   for (let attempt = 0; attempt <= retries; attempt++) {
     const { value: msg, route, ms } = await withFallback(ctx, (c) =>
-      c.messages.create(withDefaults({ ...params, messages, output_config: { format: zodOutputFormat(schema) } }, ctx)),
+      c.messages.create(withDefaults(prompted ? { ...params, messages } : { ...params, messages, output_config: { format: zodOutputFormat(schema) } }, ctx)),
     );
     const raw = textOf(msg);
     let errors: string[] = [];
     let data: z.infer<S> | undefined;
     try {
-      const parsed = schema.safeParse(JSON.parse(raw));
+      const parsed = schema.safeParse(JSON.parse(prompted ? extractJson(raw) : raw));
       if (parsed.success) {
         data = parsed.data;
         errors = ctx.validate?.(parsed.data) ?? [];
@@ -138,4 +162,24 @@ export async function completeJson<S extends z.ZodType>(
     });
   }
   throw new Error(`Output failed validation after ${retries + 1} attempts: ${lastErrors.slice(0, 5).join("; ")}`);
+}
+
+/**
+ * Vercel AI SDK model for the streaming chat, configured the same way as the client above:
+ * through the Mubit gateway when enabled, with the effort setting and the project session id.
+ */
+export async function chatModel(projectId: string) {
+  const { createAnthropic } = await import("@ai-sdk/anthropic");
+  const e = env();
+  const route = routes()[0];
+  delete process.env.ANTHROPIC_AUTH_TOKEN;
+  const provider =
+    route === "gateway"
+      ? createAnthropic({ apiKey: e.MUBIT_API_KEY, baseURL: `${e.MUBIT_ENDPOINT.replace(/\/$/, "")}/anthropic/v1` })
+      : createAnthropic({ apiKey: e.ANTHROPIC_API_KEY, baseURL: "https://api.anthropic.com/v1" });
+  return {
+    route,
+    model: provider(e.ANTHROPIC_MODEL),
+    providerOptions: { anthropic: { effort: e.ANTHROPIC_EFFORT, metadata: { userId: `project:${projectId}` } } },
+  };
 }

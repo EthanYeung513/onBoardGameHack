@@ -36,6 +36,7 @@
     "cheerio": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dembrandt": "^0.39.2",
     "diff": "^9.0.0",
     "drizzle-orm": "^0.45.4",
     "lucide-react": "^1.61.0",

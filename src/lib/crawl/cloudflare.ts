@@ -41,7 +41,7 @@ export async function renderMarkdown(url: string): Promise<string> {
 }
 
 export async function screenshot(url: string, viewport = { width: 1440, height: 900 }): Promise<Uint8Array> {
-  const res = await call("screenshot", { url, viewport, screenshotOptions: { type: "png" }, gotoOptions: { waitUntil: "networkidle2", timeout: 30000 } });
+  const res = await call("screenshot", { url, viewport, screenshotOptions: { type: "jpeg", quality: 75 }, gotoOptions: { waitUntil: "networkidle2", timeout: 30000 } });
   if (!res.ok || !(res.headers.get("content-type") ?? "").startsWith("image/")) {
     const text = await res.text().catch(() => "");
     throw new Error(`Cloudflare screenshot failed (${res.status}): ${text.slice(0, 200)}`);
