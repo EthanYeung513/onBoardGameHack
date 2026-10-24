@@ -1,0 +1,78 @@
+/* Application shell for the onboarding generator. Scoped to .gen so the existing game UI is untouched. */
+.gen {
+  --g-canvas: #eef1f4;
+  --g-surface: #ffffff;
+  --g-ink: #14213d;
+  --g-slate: #556274;
+  --g-line: #d5dbe3;
+  --g-marigold: #f2b134;
+  --g-marigold-deep: #b97d07;
+  --g-ok: #2e7d57;
+  --g-danger: #b93a26;
+  --g-radius: 10px;
+  background: var(--g-canvas);
+  color: var(--g-ink);
+  font-family: var(--font-gen-body), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  min-height: 100vh;
+}
+.gen h1,
+.gen h2,
+.gen h3 {
+  font-family: var(--font-gen-display), var(--font-gen-body), sans-serif;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+.gen :focus-visible {
+  outline: 2px solid var(--g-marigold-deep);
+  outline-offset: 2px;
+}
+.gen .g-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  background: var(--g-ink);
+  color: #fff;
+  transition: background 120ms ease;
+}
+.gen .g-btn:hover:not(:disabled) {
+  background: #22335c;
+}
+.gen .g-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.gen .g-btn-quiet {
+  background: transparent;
+  color: var(--g-ink);
+  border: 1px solid var(--g-line);
+}
+.gen .g-btn-quiet:hover:not(:disabled) {
+  background: var(--g-surface);
+}
+.gen .g-input {
+  width: 100%;
+  border: 1px solid var(--g-line);
+  background: var(--g-surface);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  color: var(--g-ink);
+}
+.gen .g-panel {
+  background: var(--g-surface);
+  border: 1px solid var(--g-line);
+  border-radius: var(--g-radius);
+}
+.gen .g-muted {
+  color: var(--g-slate);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gen * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
