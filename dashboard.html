@@ -45,15 +45,14 @@
 
     <!-- ============ COURSES ============ -->
     <section id="tab-courses" hidden>
-      <div class="top"><div><h1>Courses</h1><p>Curriculum generated from your company brain. Each course becomes a building in the world.</p></div></div>
+      <div class="top"><div><h1>Courses</h1><p>Curriculum generated from your company brain.</p></div></div>
       <div class="panel">
-        <h3>Create a course with the AI agent</h3>
+        <h3>Create a course</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <input id="ai-course" style="flex:1;min-width:220px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px" placeholder="e.g. Security best practices" onkeydown="if(event.key==='Enter')genCourse()">
           <button class="btn btn-dark" id="gen-btn" onclick="genCourse()"><i class="svgic" data-ic="sparkle"></i> Generate course</button>
         </div>
         <div id="gen-status" style="font-size:13px;color:var(--muted);margin-top:10px"></div>
-        <p style="font-size:12px;color:var(--muted);margin-top:8px">The agent turns the topic into a course using your company brain and connected tools.</p>
       </div>
       <div class="panel" id="publish-panel" hidden>
         <h3>World published <i class="svgic" data-ic="globe"></i></h3>
