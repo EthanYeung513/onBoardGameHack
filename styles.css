@@ -317,6 +317,18 @@ footer .flinks { display: flex; gap: 34px; opacity: .85; }
   .split, .scan { grid-template-columns: 1fr; }
   .side { width: 70px; }
   .side a span, .side .spacename, .side .who { display: none; }
+  .side a { position: relative; justify-content: center; }
+  .side a[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%);
+    background: #171719; color: #fff; font-size: 12px; font-weight: 600;
+    padding: 6px 10px; border-radius: 7px; white-space: nowrap; z-index: 60;
+    box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  }
+  .side a[data-tip]:hover::before {
+    content: ""; position: absolute; left: calc(100% + 4px); top: 50%; transform: translateY(-50%);
+    border: 6px solid transparent; border-right-color: #171719; border-left: 0; z-index: 60;
+  }
   .grid2, .grid3, .frow { grid-template-columns: 1fr; }
   .nav .links { display: none; }
 }
