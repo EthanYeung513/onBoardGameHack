@@ -124,7 +124,7 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
       backgroundColor: '#1a2410',
       pixelArt: true,
       roundPixels: true,
-      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+      scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
       scene: [TownScene],
     });
     game.scene.start('town', { charRow });
