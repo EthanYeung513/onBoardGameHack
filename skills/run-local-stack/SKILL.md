@@ -1,6 +1,6 @@
 ---
 name: run-local-stack
-description: Boot the app locally with a seeded demo space, verify env wiring, and recover from the known gotchas (node PATH, PGlite lockfile, corrupt .data).
+description: Boot the app locally with a seeded demo space, verify env wiring, and recover from the known gotchas (node PATH, Convex local deployment, stale dev servers).
 ---
 
 # Run the local stack
@@ -16,23 +16,23 @@ description: Boot the app locally with a seeded demo space, verify env wiring, a
 ## 2. Boot
 
 ```bash
-npm run db:seed      # local PGlite in .data/, seeded with Acme Pay
-npm run dev          # http://localhost:3000
+npx convex dev --local  # local Convex deployment (no cloud needed)
+npm run db:seed         # seed Acme Pay demo space into it
+npm run dev             # http://localhost:3000
 ```
 
 Entry points: `/` constructor · `/studio` pipeline view · `/play` game ·
 `/admin` manager console · `/status` env health. There is no auth locally when
-Supabase vars are unset; with them, accounts live in Supabase Auth.
+Convex vars are unset; with them, accounts live in Convex Auth.
 
 ## 3. Gotchas
 
-- **PGlite is single-process.** `db:seed`, `bulk-grade`, `eval --record` need
-  the dev server stopped (or point `DATABASE_URL` at Supabase). A stale
-  `.data/pglite.lock` after a killed process means check for stray `node`
-  processes first; the lock refuses a second live opener on purpose.
-- Corrupt DB → `.data/pglite-corrupt-*` folders were moved aside, not deleted;
-  reseed rather than repair.
-- `DATABASE_URL=localhost:5432` is refused on purpose (it was someone's SSH
-  tunnel to work DBs). Use PGlite or a hosted string.
+- **Convex local deployment.** `npx convex dev --local` runs the backend on
+  this machine; `convex dev` against the cloud needs `CONVEX_DEPLOYMENT` +
+  login. Kill stray `convex`/`node` processes if the local port is stuck.
+- Convex function env (LLM keys etc.) lives in the deployment's env —
+  `npx convex env set` or the dashboard — not only in `.env.local`.
+- `.env.local` holds `NEXT_PUBLIC_CONVEX_URL` + `CONVEX_DEPLOYMENT`; a
+  self-hosted backend uses `CONVEX_SELF_HOSTED_URL` + `_ADMIN_KEY`.
 - `next dev` rewrites the Next.js block at the top of `AGENTS.md`. Leave it
   committed; removing it only re-creates the diff.

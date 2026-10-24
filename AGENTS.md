@@ -17,11 +17,14 @@ are building (manager-facing Orthogonal: landing, auth, scan, connectors, compan
 brain, courses, editor, dashboard). Shared interfaces that parallel agents must
 not break are in [docs/BUILD-CONTRACT.md](docs/BUILD-CONTRACT.md). The multi-agent
 process (backlog format, decisions log, PR rules) is in
-[docs/AGENT-BUILD.md](docs/AGENT-BUILD.md).
+[docs/AGENT-BUILD.md](docs/AGENT-BUILD.md). Service accounts and keys:
+[docs/PROVISIONING.md](docs/PROVISIONING.md).
 
 ## Local development
 
-`npm install && npm run db:seed && npm run dev` is the required entry point. It
+`npm install && npx convex dev --local && npm run db:seed && npm run dev` is
+the required entry point (Convex local deployment first — see
+`skills/run-local-stack`). It
 must start everything implemented and print URLs and login instructions. Local
 startup must work with **no provider keys** (offline stand-ins — see below).
 Whenever a service or script is added, wire it into the default path in the same
@@ -93,8 +96,8 @@ before they reach the limit; the same limit applies to test files.
 
 Never commit credentials. Every new env var goes into `.env.example` with a
 comment and a `check:env` entry. Customer credentials (connector tokens,
-internal-app logins) are stored write-only via Supabase Vault and filled at
-runtime; they never appear in logs, prompts or responses.
+internal-app logins) are stored write-only in the `connector_credentials`
+table and filled at runtime; they never appear in logs, prompts or responses.
 
 ## Current documentation
 

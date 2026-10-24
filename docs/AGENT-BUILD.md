@@ -60,7 +60,7 @@ Same shape as PLAN.md §11 (which this supersedes for the site work):
 | --- | --- | --- | --- | --- | --- |
 | S1 | Doc set merged (this PR) | — | PRD + AGENTS + contracts on `feature/onboarding-generator` | Nicole | human |
 | S2 | Landing page in-app | S1 | `/` served by Next.js, `/classic` fallback, CTA → login | — | auto |
-| S3 | Auth + spaces + RLS | S1 | Signup/login/Google; create-space row; member roles | — | auto |
+| S3 | Auth + spaces + roles | S1 | Signup/login/Google; create-space row; `requireRole` checks | — | auto |
 | S4 | Scan → brand_profiles + draft brain | S3 | Real scan of a public site fills `crawl_pages`, `brand_profiles`, draft `facts` | — | auto |
 | S5 | Scan UI live | S4 | `job_events` stream into the scan screen; retry/stall states | — | auto |
 | S6 | File-upload connector | S3 | Dropped PDF/MD lands as `source_items` + `doc_chunks` | — | auto |
@@ -75,7 +75,7 @@ Same shape as PLAN.md §11 (which this supersedes for the site work):
 | S15 | Slack/Notion/Jira/Drive via Nango | S7 | P1 connectors ingest | — | human (OAuth setup) |
 | S16 | Eval corpus `cases/` + runner | S4 | ≥10 sites, `ANSWERS/<site>/RESULT.md`, metrics vs PRD | — | auto |
 | S17 | Railway/Modal production deploy | S3 | Public URL, env matrix filled | — | human (account) |
-| S18 | Internal web app connector (Browserbase) | S7 | Vault creds → browsed pages ingest | — | human (creds) |
+| S18 | Internal web app connector (Browserbase) | S7 | Write-only creds → browsed pages ingest | — | human (creds) |
 
 ## Branch and PR conventions
 
@@ -102,7 +102,7 @@ hits that kind of work (add a pipeline stage, add a connector, verify a UI
 change). One folder per skill with a `SKILL.md` whose frontmatter carries
 `name` and `description`. Write a new skill when the same procedure is about to
 be done a third time, or when a session discovers a non-obvious environment
-gotcha (like the PGlite lockfile or the git wrapper). Runtime agent skills for
+gotcha (like the Node PATH or the git wrapper). Runtime agent skills for
 the product itself are out of scope for now; if they arrive they live under
 `skills/product/`.
 

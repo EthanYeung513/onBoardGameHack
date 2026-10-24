@@ -20,7 +20,7 @@ the `brand_profiles` contract row (BUILD-CONTRACT § scan→brand).
    `UPDATE` the row and `tokens_version += 1` — consumers compare versions.
 4. Bump-side effects: when `tokens_version` changes, set dependent `courses`
    to `stale` (their spec was generated against older tokens).
-5. Logo refs point at stored assets (Supabase Storage), not hotlinks — copy the
+5. Logo refs point at stored assets (Convex file storage), not hotlinks — copy the
    bytes during crawl so they survive the source site changing.
 6. Partial extraction is honest: if only the HTML/CSS fallback ran (no
    Chromium host), set `meta.extraction='fallback'`; the Settings brand preview

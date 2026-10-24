@@ -27,7 +27,8 @@ Two artifacts already exist and this PRD binds them together:
   Cloudflare Browser Rendering fallback), `src/lib/pipeline` (stage registry,
   sliced jobs, watchdog), `src/lib/design` (dembrandt + HTML/CSS fallback),
   `src/lib/flow` (FlowSpec schema, scoring, patches), `src/lib/memory`
-  (MemoryProvider), Supabase schema + RLS, and the Orthogonal constructor UI at
+  (MemoryProvider), a database + auth layer (Supabase-based — being replaced
+  by Convex, see Tech stack), and the Orthogonal constructor UI at
   `/` talking to `POST /api/orthogonal/*`. The constructor backend
   (`src/services/orthogonal/`) has both `demo.ts` (Lumen mock) and `live.ts`
   (real pipeline bridge). The GymQuest game in the same branch is separate and
@@ -106,7 +107,7 @@ the full journey instead of the demo.
 | ID | Requirement | Priority |
 | --- | --- | --- |
 | F1 | Public landing page served by this app (replace the static Webflow export): hero, how-it-works, CTA to sign up, no Webflow JS runtime | P0 |
-| F2 | Manager sign-up and login: email+password and magic link via Supabase Auth; Google OAuth; redirect new users to space creation, returning users to their dashboard | P0 |
+| F2 | Manager sign-up and login: email+password and magic link via Convex Auth; Google OAuth; redirect new users to space creation, returning users to their dashboard | P0 |
 | F3 | Space model: `space` = one company. Owner + manager roles; hires join via invite link or company-email domain match | P0 |
 | F4 | Website scan as the existing stage pipeline: robots.txt, sitemap(s), llms.txt, URL ranking, HTTP fetch ≤30 pages, Cloudflare Browser fallback for thin pages, ≤5 screenshots | P0 |
 | F5 | Brand identity extraction: logo, favicon, palette, typography, shape language, tone of voice → `brand_profiles` row + design tokens consumed by editor and dashboard | P0 |
@@ -165,24 +166,24 @@ the full journey instead of the demo.
 | --- | --- | --- | --- |
 | App | Next.js (App Router) + TypeScript + Tailwind | Decided | Existing branch. UI components stay client-only where they already are |
 | Hosting | Railway (web service + worker + cron) | Decided | Nicole 2026-10-24. Single pane: Next.js service, pipeline worker, scheduled re-sync (F34), and Chromium-capable for dembrandt. `deploy/modal_app.py` stays as fallback. Note: Railway has a one-time trial credit, then Hobby ≈$5/mo — "free" for the demo window, not forever |
-| DB | Supabase Postgres + Drizzle + RLS | Decided | Existing schema; pgvector available on Supabase when embedding volume justifies it (D-6: JS cosine is fine below ~10k rows) |
-| Auth | Supabase Auth: email+password, magic link, Google OAuth | Decided | Wired already (`(gen)/login`, `auth/callback`); company-email domain match for hires P1 |
-| Storage | Supabase Storage | Decided | Buckets exist for pages/screenshots/assets |
+| DB | Convex (document DB + TS functions) | Decided | Nicole 2026-10-24 — replaces the scaffold's Supabase/Postgres/Drizzle layer. Live queries give F7's streamed scan UX for free; built-in vector search covers F17; crons cover F34. No RLS — access rules are enforced inside functions. Local dev via `npx convex dev` (local deployment, no cloud needed) |
+| Auth | Convex Auth (`@convex-dev/auth`): email+password, magic link via Resend, Google OAuth | Decided | Replaces wired Supabase Auth (`(gen)/login`, `auth/callback`); company-email domain match for hires P1 |
+| Storage | Convex file storage | Decided | Pages/screenshots/assets |
 | Crawl | In-repo crawler: robots, sitemap, llms.txt, URL rank, HTTP fetch, cheerio → markdown (turndown) | Decided | `src/lib/crawl`; add firecrawl.dev as optional provider if a site defeats it |
 | Browser rendering | Cloudflare Browser Rendering for thin/JS pages | Decided | Already integrated; free plan ≈ 10 min/day, cached crawl reuses for 24 h |
 | Brand extraction | dembrandt (local Chromium) + LLM normalization into tokens | Decided | Exists; needs a Chromium-capable host — Railway/Modal, not Vercel functions |
 | LLM | Anthropic via Mubit gateway (`MUBIT_*` envs) | Decided | Fixed system prompts in `src/lib/prompts.ts`; everything variable in the user message |
 | Embeddings | `MUBIT_EMBED_MODEL` (hackathon sponsor) primary; Voyage AI (`VOYAGE_API_KEY`) as standby if Mubit can't serve embeddings; offline hashed fallback | Decided | Nicole 2026-10-24. Dimension recorded on the space so the provider can swap |
 | Tool OAuth | Nango (open-source OAuth/token broker) for Slack/Notion/Jira/Drive; direct OAuth app or fine-grained PAT for GitHub | Decided | Nicole 2026-10-24. Self-hostable, free cloud tier for the demo |
-| Internal-web-app browsing | Browserbase + Stagehand | Proposed | P2; credentials write-only in Supabase Vault, filled at runtime, never shown back |
-| Knowledge graph store | Postgres tables (`entities`, `edges`, `facts`, `mentions`) | Decided | A graph DB (SurrealDB/Neo4j) is overkill at this volume; schema keeps a migration path |
+| Internal-web-app browsing | Browserbase + Stagehand | Proposed | P2; credentials write-only in `connector_credentials` (a table only internal functions touch — never returned by queries), filled at runtime, never shown back |
+| Knowledge graph store | Convex tables (`entities`, `edges`, `facts`, `mentions`) | Decided | A graph DB (SurrealDB/Neo4j) is overkill at this volume; documents keep a migration path |
 | Brain graph viz | cosmos.gl | Decided | Nicole 2026-10-24 — GPU-canvas force graph, propadm.in's pick. sigma.js + Graphology stays the documented fallback if cosmos.gl disappoints. Gephi desktop stays an offline analysis/export tool, never a runtime dep |
 | Pipeline/jobs | Existing sliced pipeline (`jobs`, `job_events`, stage registry, heartbeat watchdog) | Decided | Reuse for connector syncs and course generation; Inngest/Trigger.dev only if we outgrow it |
 | Email | Resend (invites, notifications) | Proposed | Any transactional sender works; only invites v1 |
 | Analytics | PostHog | Proposed | propadm.in used it; product + agent-tracing events |
 | Error tracking | Sentry | Proposed | |
 | CI | GitHub Actions | Decided | Exists: lint, typecheck, unit tests, build on every push; add Playwright e2e workflow |
-| Secrets | Env vars + `.env.example` mirror; Supabase Vault for customer credentials | Decided | No secrets in the repo, ever |
+| Secrets | Env vars + `.env.example` mirror; `connector_credentials` write-only table for customer credentials | Decided | No secrets in the repo, ever. Convex function env lives in the Convex dashboard |
 
 ## Tools and services to provision
 
@@ -191,8 +192,8 @@ Actionable checklist — each row becomes an env-var group and a `check:env` ent
 | Tool | For | Needed at | Setup |
 | --- | --- | --- | --- |
 | Railway | Web + worker + cron hosting | Phase 0 — Decided | Project, `RAILWAY_TOKEN`, link repo. Trial credit first; `deploy/modal_app.py` stays as fallback |
-| Supabase | DB, auth, storage, Vault | Phase 0 | Already bootstrapped (`supabase:bootstrap`); add `pgvector` extension, storage bucket `crawl-artifacts` |
-| Google Cloud / OAuth | Google sign-in, Drive connector | Phase 0 / P1 | OAuth client; `SUPABASE_AUTH_GOOGLE_*` |
+| Convex | DB, auth, storage, vector+text search, crons | Phase 0 — Decided | convex.dev → New project (free plan); `npx convex dev` writes `CONVEX_DEPLOYMENT`/`NEXT_PUBLIC_CONVEX_URL`; local deployment for offline |
+| Google Cloud / OAuth | Google sign-in, Drive connector | Phase 0 / P1 | OAuth client; Convex Auth provider envs (`AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`) in the Convex dashboard |
 | GitHub OAuth app | GitHub connector | Phase 3 | Or accept fine-grained PATs for demos |
 | Nango | Slack/Notion/Jira/Drive OAuth | Phase 3 (P1) — Decided | `nango.dev` free cloud tier or self-host; `NANGO_SECRET_KEY` |
 | Cloudflare Browser Rendering | JS-heavy site crawl + screenshots | Phase 1 | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (already in env spec) |
@@ -213,7 +214,7 @@ Actionable checklist — each row becomes an env-var group and a `check:env` ent
 | Mockup element | Simulated today | Real procedure |
 | --- | --- | --- |
 | `index.html` | Webflow export | Rebuilt in-app (or kept static behind `/` redirect); CTAs → real auth |
-| `login.html` | localStorage users, fake Google/Apple pickers | Supabase Auth flows; work-email SSO path hidden until SAML |
+| `login.html` | localStorage users, fake Google/Apple pickers | Convex Auth flows; work-email SSO path hidden until SAML |
 | `space.html` scan | `SCAN_STEPS` timer, `brandFromWebsite()` hash → palette | Live pipeline stages streaming `job_events`; brand from dembrandt + LLM |
 | `editor.html` | Hard-coded `STEPS`, static assets list, color inputs | CourseSpec from brain; Assets tab lists real scraped assets with source URLs; Design tab edits `brand_profiles` tokens |
 | `dashboard.html` Overview | `seedDemoHires()` | `dashboard` aggregate endpoints over `hires`, `facts`, `courses` |
@@ -232,11 +233,12 @@ Keep `index.html` served at `/classic` for reference until F1 ships.
 
 ## Subsystem: auth and spaces
 
-- Supabase Auth is the only auth. `profiles` row per user (name, avatar).
+- Convex Auth is the only auth. `profiles` row per user (name, avatar).
 - `spaces` has `owner_id`, `slug`, `host`, `status
   (created|scanning|ready|error)`, `brand_profile_id`.
 - `space_members(space_id, user_id, role)` with roles `owner`, `manager`,
-  `hire`. RLS: members read their space; only owner/manager write.
+  `hire`. Convex has no RLS: every query/mutation asserts membership
+  in-function via a shared `requireRole(space, user, roles)` helper.
 - First login with no membership → create-space flow (`/space/new`). Login with
   membership → `/dashboard`.
 - Hire invite: `hire_invites(email, space_id, token)`; the play link signs them
@@ -259,7 +261,7 @@ Reuse `src/lib/pipeline` verbatim. Stage order for a space scan:
 - `generate_courses` (new stage, one slice per course): `CourseSpec` drafts.
 - `ready`: memory reflection + dashboard unlock.
 
-The scan screen shows `job_events` (Supabase Realtime + poll fallback) —
+The scan screen shows `job_events` streamed over Convex live queries —
 the mockup's `SCAN_STEPS` become real log lines. Failures: stage retry ×3 with
 backoff, then readable error + Retry; heartbeat stall >60 s → Resume.
 
@@ -275,7 +277,7 @@ cursor, last_synced_at, error}`.
 | `notion` | pages+databases in the shared wiki | Nango OAuth | doc |
 | `jira`/`linear` | projects, issue summaries, board names | Nango OAuth | issue |
 | `drive` | selected folders: Docs/Slides/PDFs | Nango OAuth | doc/file |
-| `webapp` | key pages of an internal tool | Browserbase session + Vault creds | page |
+| `webapp` | key pages of an internal tool | Browserbase session + write-only creds | page |
 | `files` | uploaded PDF/MD/DOCX/TXT | — | file |
 
 Every connector writes `source_items` then `doc_chunks`; the brain builder
@@ -419,7 +421,7 @@ onBoardGameHack/
 │   └── services/orthogonal/   # constructor backend (demo + live)
 ├── world/                     # game world (other stream)
 ├── deploy/modal_app.py        # fallback deploy path (Railway is primary)
-└── supabase/migrations/       # schema + RLS + storage
+└── convex/                    # schema.ts + queries/mutations/actions/crons
 ```
 
 ## Offline and demo contract
@@ -437,7 +439,7 @@ onBoardGameHack/
   (exists); add Playwright e2e on PR.
 - Deploy: one `deploy` workflow per hosting decision (Railway service deploys
   on merge to `feature/onboarding-generator`; Modal workflow already exists).
-- DB migrations run in CI against the preview Supabase project before deploy.
+- `npx convex codegen` + function typecheck run in CI; `convex deploy` on merge to `feature/onboarding-generator`.
 
 ## Implementation plan
 
@@ -448,11 +450,12 @@ Phases in dependency order; each ends in something demoable. Backlog format
 - [ ] This doc set merged; branch protection + PR conventions agreed
 - [x] Deploy target decided: **Railway** (web+worker+cron); Modal kept as fallback — env matrix written to `.env.example`
 - [ ] `npm run check:env` covers every row in the provisioning table
+- [ ] Convex project created (free plan); `npx convex dev` local deployment boots; `convex/schema.ts` covers the data model below
 - [ ] Seed demo company (Acme Pay content already exists under `content/`)
 
 **Phase 1 — landing, auth, spaces**
 - [ ] Landing page in-app; `/classic` keeps Webflow export
-- [ ] Supabase Auth sign-up/login/Google; `profiles`, `spaces`, `space_members`, RLS
+- [ ] Convex Auth sign-up/login/Google; `profiles`, `spaces`, `space_members` with `requireRole` checks
 - [ ] Create-space flow (name + website) → scan kicked off
 
 **Phase 2 — real scan**
@@ -492,7 +495,7 @@ Phases in dependency order; each ends in something demoable. Backlog format
 | Slack/Jira app review takes days | GitHub + files prove the connector path; other cards show "Coming soon" with real status |
 | Manager uploads huge docs | 5 MB cap, background chunk job, clear progress |
 | LLM extraction produces junk facts | Draft queue + confidence threshold; nothing enters the brain without `approved` (default: auto-approve ≥ 0.9, configurable) |
-| Browser creds connector is risky | P2 only, write-only Vault storage, per-space audit |
+| Browser creds connector is risky | P2 only, write-only `connector_credentials` storage, per-space audit |
 | Crawl blocked by WAF | Cloudflare browser fallback; manual URL/file add never blocked |
 | Railway free-tier limits bite mid-demo | Hobby tier ≈$5/mo after trial credit; `deploy/modal_app.py` fallback stays green |
 | Two agents collide on shared files | BUILD-CONTRACT names the seams; PRs are small and one-concern |

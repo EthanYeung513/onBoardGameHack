@@ -19,7 +19,7 @@ Every env var and provider is wired in four places in the same PR:
 ## Rules
 
 - Secrets never enter the repo, prompts or logs. Customer credentials →
-  Supabase Vault via `auth_ref` (see `add-tool-connector`).
+  `connector_credentials` via `auth_ref` (see `add-tool-connector`).
 - Read env through `src/lib/env.ts` (Zod-validated) — no bare `process.env`
   scattered through the app.
 - If the service needs a runtime (Chromium, long jobs), it runs on the worker

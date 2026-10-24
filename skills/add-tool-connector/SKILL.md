@@ -12,15 +12,16 @@ Status machine: `pending → authing → syncing → ready | error | stale`
 ## Steps
 
 1. Registry entry: `src/lib/connectors/registry.ts` (create if absent) —
-   `{type, name, icon, desc, authKind: 'oauth'|'pat'|'vault'|'none', scopes,
+   `{type, name, icon, desc, authKind: 'oauth'|'pat'|'creds'|'none', scopes,
    itemKinds}`.
 2. Auth path:
    - OAuth: `GET /api/connectors/:type/start` → provider URL;
-     `GET /api/connectors/:type/callback` → store token ref in Supabase Vault
-     (`auth_ref`), never the token itself in tables/logs.
+     `GET /api/connectors/:type/callback` → store token ref in
+     `connector_credentials` (`auth_ref`), never the token itself in
+     tables/logs (that table is write-only — only internal functions read it).
    - PAT/demo: accept a token, verify it with one cheap API call, store in
-     Vault the same way.
-   - Internal web app: credentials → Vault write-only; a browser session fills
+     `connector_credentials` the same way.
+   - Internal web app: credentials → write-only; a browser session fills
      them at runtime (P2, see `skills`-note in PRD F13).
 3. Ingest function `sync(ctx, connector, cursor)` → emits `source_items`
    (`kind`, `external_id` = tool-native id, `url`, `title`, `raw_ref`, `meta`)

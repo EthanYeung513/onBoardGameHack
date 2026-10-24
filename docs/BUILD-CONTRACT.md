@@ -78,7 +78,8 @@ doc_chunks   { source_item_id, idx, text, embedding, tokens }
 
 Kinds: `page | file | doc | message | issue | pr | asset | screenshot`.
 `external_id` is the tool-native id (dedupe + incremental cursor).
-Credentials live in Supabase Vault referenced by `auth_ref`; connector code
+Credentials live in `connector_credentials` referenced by `auth_ref` — a
+write-only table only internal Convex functions touch; connector code
 never logs or returns credential material. Sync runs as `sync_connector`
 pipeline stages, resumable by `cursor`.
 
@@ -142,7 +143,8 @@ sync/re-scan code must honour this cascade instead of inventing another one:
 
 ## API conventions
 
-- Data routes under `/api/…`; member-only routes check `space_members` + RLS.
+- Data routes are Convex functions; member-only ones assert `space_members`
+  via `requireRole` in-function (Convex has no RLS — rules live in code).
 - Errors: `422` validation, `404` missing, `409` version conflict, `401/403`
   auth, `503` provider unconfigured (never fabricated success).
 - Every write emits an `audit_events` row `{actor, kind, payload}`.
