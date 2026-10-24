@@ -199,6 +199,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (change the connection string and reseed)
 - **Revisit?:** yes. Verified against a local Postgres-protocol server (seed, gameplay, grading, keyed reset, pack upload), not yet against a real Supabase project. Check the first deploy end to end
 
+### D-16: `/` is the landing page; the constructor moves to `/try`; the Webflow export stays at `/classic`
+- **Task:** S2 (landing page in-app, PRD F1)
+- **Time:** 2026-10-24T23:55Z
+- **Context:** PRD F1 puts a server-rendered marketing page at `/`, but `/` was the Orthogonal constructor and every page sat behind Supabase (503 with no keys)
+- **Options:** A) landing at `/`, constructor at `/try` / B) landing at `/home`, keep the constructor at `/` / C) serve the static `index.html` at `/`
+- **Chosen:** A. Landing in `src/app/(site)/` (no Webflow JS/GSAP; assets in `public/landing/`), constructor at `/try` linked as "Try the demo scan", original export copied to `public/classic/` (videos over 2 MB dropped) and served at `/classic` by a rewrite. `/`, `/try`, `/classic` and `/landing/` join the proxy's public list, checked before the Supabase-unconfigured 503 so they render with no keys. Sign-in with no `next` now lands on `/try`
+- **Why:** visitors and the CTA (`/login?next=/space/new`) start at `/`; the constructor stays one click away for demos. The constructor's API calls still need a session, so signed-out visitors at `/try` see "Sign in required" on scan rather than a simulated result
+- **Reversibility:** easy (move the page folder back, drop the rewrite)
+- **Revisit?:** yes. Drop `/classic` once F1 ships; revisit the `/try` public entry when Convex Auth replaces Supabase
+
 ## Blockers
 
 None yet.

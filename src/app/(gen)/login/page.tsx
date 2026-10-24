@@ -18,7 +18,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <h2 className="mb-1 text-2xl font-bold">Sign in</h2>
         <p className="g-muted mb-6 text-sm">Access is limited to the team.</p>
         {error && <p className="mb-4 text-sm" style={{ color: "var(--g-danger)" }}>{error}</p>}
-        <LoginForm next={next ?? "/"} />
+        <LoginForm next={next ?? "/try"} />
       </section>
     </main>
   );

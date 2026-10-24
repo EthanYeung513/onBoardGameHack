@@ -30,7 +30,7 @@ stage reads only those keys — no hidden coupling through other tables.
 
 ## Constructor contract (public, unchanged)
 
-The constructor UI at `/` consumes four endpoints with fixed JSON shapes
+The constructor UI at `/try` (moved from `/`, D-16) consumes four endpoints with fixed JSON shapes
 (`src/lib/orthogonal/types.ts`, validated by `schema.ts`). Any real backend
 must return these exact types:
 
