@@ -2,6 +2,51 @@
 
 Run branch: `auto/gymquest-mvp`. Source plan: [PLAN.md](PLAN.md). Progress: [state.json](state.json).
 
+## Morning Summary
+
+**Status:** complete. **16 done, 4 skipped (human), 0 blocked.** Branch `auto/gymquest-mvp`, committed locally, not
+pushed.
+
+- **Done:** T1–T15 and T18. The working app covers: join → walk the office → trainer battles → adaptive Gym Leader
+  → badge; free-text grading with evidence and citations; the review queue (approve/override); the fast path;
+  the eval harness and regression gate; the learning timeline; policy edits marking cards stale; pack upload opening
+  the annex; passport, readiness, doc audit and xAPI export; `demo:reset`; a README.
+- **Skipped (need people):** T16 bulk grading + training (needs the Mubit key/console), T17 held-out labels and
+  corrections (Nicole), T19 Sapling verifier (needs Mubit to confirm hosting), T20 deck/rehearsals/video (Richard),
+  T18.2.1 deploy (hard limit: no deploys).
+- **Verification:** 76 tests (21 files), `tsc`, ESLint (0 warnings) and `next build` all pass. `npm run smoke`
+  drives the **production build** in Edge and passes: join, walk to the Support Gym, battle, see the grade in the
+  review queue, upload the Warehouse Ops pack, annex opens. Screenshots were checked for the world, grade display,
+  review queue, timeline and readiness.
+
+**Commits (oldest first):** `41ccf0d` plans · `ae789f1` T1 · `7431b2f` T2 · `a5aca0a` T3 · `a16d5de` T4 ·
+`543087c` T5 · `753c56a` T6 · `95d02fc` T7 · `9768a6b` test timeout fix · `99e3ba7` T11 · `2ea004e` T8 ·
+`70df555` T9 · `029e2d0` T10 · `7235479` T12 · `dd037c5` T13 · `0980f19` T14 · `d796f0e` T15 · `4d5db05` T18 ·
+`a7b9a82` PGlite hardening · plus this summary.
+
+**Decisions to revisit:** D-2 (human tasks list), D-5 (set `DATABASE_URL` to Neon for deploy), D-7 (set the Mubit
+env vars), D-8 (swap in Tiled + Kenney art), D-9 (confirm task tagging and `MUBIT_MODEL`), D-10 (real held-out
+labels, and never quote numbers from the example set), D-12 (which upload flow to demo), D-14 (stray node processes
+on Windows; delete `.data/pglite-corrupt-*`).
+
+**What's needed to unblock the skipped work:**
+1. **Mubit (T16):** key, base URL, model name, and the answer to "how do corrections become training data?"
+   (PLAN.md §15). Put them in `.env.local`. If there's a feedback endpoint, set `MUBIT_FEEDBACK_URL` and check the
+   payload in `src/services/feedback.ts` (it's a guess). Then, with `npm run dev` stopped:
+   `npm run personas -- --per 5` and `npm run bulk-grade -- --limit 150`.
+2. **Nicole (T17):** 40 labels in `eval/heldout.json` (format in README), then
+   `npm run eval -- --label v0 --record`. Make the 60+ corrections in the review queue.
+3. **Deploy:** Vercel + Neon, with `DATABASE_URL`, the Mubit env vars and `DEMO_RESET_KEY`.
+4. **Sapling (T19):** only if Mubit hosts it.
+
+**Review these first (risky):**
+- **No auth** on `/admin` or the write APIs. `/api/packs` triggers LLM calls and `/api/docs` edits policies. Fine
+  for a private demo URL; don't post the URL publicly.
+- **Offline mode is a stand-in.** The offline grader is a rule-based baseline and the example held-out labels are
+  placeholders I wrote. No number from offline mode belongs on a slide.
+- `persona` is a third Mubit task (synthetic data). Expect it to appear separately in the Mubit console.
+- Next 16 writes `AGENTS.md` on every `next dev`; it's committed so the tree stays clean.
+
 ## Planning decisions
 
 ### D-1: Task split follows the PLAN.md backlog
