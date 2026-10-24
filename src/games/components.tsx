@@ -5,7 +5,7 @@ import type { GameComponent, GameId } from "./core/types";
 // Each game branch fills in its own placeholder line. The blank lines keep the branches mergeable.
 // game:battle import
 
-// game:word-match import
+import { WordMatchGame } from "./word-match/WordMatchGame";
 
 // game:dilemma import
 
@@ -13,7 +13,7 @@ import type { GameComponent, GameId } from "./core/types";
 export const components: Partial<Record<GameId, GameComponent<unknown>>> = {
   // game:battle entry
 
-  // game:word-match entry
+  "word-match": WordMatchGame as GameComponent<unknown>,
 
   // game:dilemma entry
 };

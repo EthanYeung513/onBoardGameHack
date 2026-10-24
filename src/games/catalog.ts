@@ -3,7 +3,7 @@ import type { GameSpecDefinition } from "./core/types";
 // Each game branch fills in its own placeholder line. The blank lines keep the branches mergeable.
 // game:battle import
 
-// game:word-match import
+import { wordMatchGame } from "./word-match/spec";
 
 // game:dilemma import
 
@@ -11,7 +11,7 @@ import type { GameSpecDefinition } from "./core/types";
 export const catalog: GameSpecDefinition<unknown>[] = [
   // game:battle entry
 
-  // game:word-match entry
+  wordMatchGame as GameSpecDefinition<unknown>,
 
   // game:dilemma entry
 ];
