@@ -30,23 +30,40 @@ def tile(col, row):
     return sheet.crop((col * T, row * T, col * T + T, row * T + T))
 
 
-# ---------- tileset: same 8x5 layout / indices as before ----------
-img = Image.new("RGBA", (8 * T, 5 * T), (0, 0, 0, 0))
+town = Image.open(p("Maps", "spring_town..png")).convert("RGBA")
+
+
+def ttile(col, row):
+    return town.crop((col * T, row * T, col * T + T, row * T + T))
+
+
+# ---------- tileset: 8x6 grid; indices 0-15 keep their meaning ----------
+img = Image.new("RGBA", (8 * T, 6 * T), (0, 0, 0, 0))
 layout = {
     0: (0, 12),   # G  flat grass
     1: (2, 13),   # G_TUFT grass detail
     2: (0, 6),    # G_FLO_W flowers
     3: (1, 6),    # G_FLO_Y flowers
-    4: (13, 23),  # DIRT interior
+    4: (2, 9),    # DIRT interior (warm tan, clearing center)
     5: (5, 49),   # WATER interior
     6: (3, 14),   # spare grass
-    8: (22, 38),  # STONE path
     9: (12, 12),  # WOOD plank
     10: (1, 15),  # spare grass
     11: (0, 16),  # DGRASS (darkened below)
 }
 for idx, (c, r) in layout.items():
     img.paste(tile(c, r), ((idx % 8) * T, (idx // 8) * T))
+# real town street tiles from spring_town: cobble interior + grass-fringe edges
+street = {
+    8: ttile(2, 23),   # STONE interior (round cobbles)
+    16: ttile(1, 21),  # stone N-edge (grass on top)
+    17: ttile(1, 24),  # stone S-edge
+    18: ttile(0, 23),  # stone W-edge (grass left)
+    19: ttile(4, 23),  # stone E-edge (grass right)
+    20: ttile(6, 29),  # plaza tile (town square)
+}
+for idx, t in street.items():
+    img.paste(t, ((idx % 8) * T, (idx // 8) * T))
 # tilled soil from hoeDirt (8x4 grid of 16x16)
 hoe = Image.open(p("TerrainFeatures", "hoeDirt..png")).convert("RGBA")
 img.paste(hoe.crop((2 * T, 1 * T, 3 * T, 2 * T)), (7 * T, 0))
@@ -79,12 +96,20 @@ save(crops.crop((10 * T, 4 * T, 11 * T, 6 * T)), "crops.png")
 save(sheet.crop((11 * T, 18 * T, 12 * T, 20 * T)), "sign.png")
 save(sheet.crop((6 * T, 75 * T, 7 * T, 77 * T)), "mailbox.png")
 
-# ---------- buildings ----------
-houses = Image.open(p("Buildings", "houses..png")).convert("RGBA")
-save(houses.crop((0, 0, 136, 144)), "b_townhall.png")
-for src_name, key in [("Barn", "b_barn"), ("Coop", "b_coop"), ("Stable", "b_stable"),
-                      ("Silo", "b_silo"), ("Well", "b_well"), ("Mill", "b_mill")]:
-    save(Image.open(p("Buildings", src_name + "..png")).convert("RGBA"), key + ".png")
+# ---------- buildings: REAL Pelican Town buildings from spring_town ----------
+# (col0,row0)-(col1,row1) in tiles on the town tilesheet
+TOWN_B = {
+    "b_townhall": (25, 0, 31, 8),    # stone manor
+    "b_shop":     (5, 11, 15, 20),   # Pierre's General Store
+    "b_saloon":   (15, 11, 22, 19),  # Stardrop Saloon
+    "b_clinic":   (0, 11, 5, 19),    # Harvey's clinic
+    "b_green":    (5, 20, 10, 27),   # green community building
+    "b_house":    (6, 0, 12, 9),     # blue cottage
+    "b_house2":   (0, 0, 6, 9),      # orange house
+    "b_trailer":  (13, 20, 20, 23),  # Pam's trailer
+}
+for key, (c0, r0, c1, r1) in TOWN_B.items():
+    save(town.crop((c0 * T, r0 * T, c1 * T, r1 * T)), key + ".png")
 
 # ---------- characters: villagers for player + NPCs ----------
 PLAYERS = ["Sam", "Sebastian", "Abigail", "Emily", "Maru", "Alex"]

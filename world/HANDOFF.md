@@ -151,3 +151,18 @@ Content folder as argv[1] and composes `public/assets`).
 - CharSelect loads `assets/p{row}.png`; dialog portraits are 64px cells.
 - `logo.png` kept (already rendered in the real Stardew font). `title_bg.png`
   still AI-generated — swap for a real SDV background later if wanted.
+
+## Session 3b — real town layout + streets (2026-10-24)
+
+Town environment now matches how the actual game builds maps:
+- Streets use the real `spring_town` cobble tileset: plaza square tile at
+  junctions, grass-fringe N/S/E/W edge tiles on street borders (autotile in
+  `tileAt` — picks edge variant by which neighbours aren't path).
+- Dirt connectors/horizontal streets use warm interior dirt tiles from the
+  outdoor clearing blob (`spring_outdoorsTileSheet`).
+- Buildings are real Pelican Town sprites cropped from `spring_town`:
+  town hall = Adventurer's Guild; courses = Pierre's, Saloon, clinic,
+  green building, houses, trailer (`TOWN_B` in build_real_assets.py).
+- Layout stays data-driven: `layout()` derives slots/footprints/doors from
+  COURSES (dashboard `ob_courses` hook unchanged); `SIZE` maps each building
+  key to its real tile footprint.

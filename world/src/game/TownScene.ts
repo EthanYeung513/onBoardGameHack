@@ -11,6 +11,8 @@ const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.
 // tile indices in tileset.png (8 per row)
 const G = 0, G_TUFT = 1, G_FLO_W = 2, G_FLO_Y = 3, DIRT = 4, WATER = 5, TILL = 7;
 const STONE = 8, WOOD = 9, DGRASS = 11;
+// real SDV street tiles: interior + grass-fringe edges + plaza
+const ST_N = 16, ST_S = 17, ST_W = 18, ST_E = 19, PLAZA = 20;
 
 interface BuildingSpec {
   course?: Course;
@@ -59,7 +61,7 @@ export class TownScene extends Phaser.Scene {
     this.load.image('crops', 'assets/crops.png');
     this.load.image('sign', 'assets/sign.png');
     this.load.image('mailbox', 'assets/mailbox.png');
-    ['b_townhall', 'b_barn', 'b_coop', 'b_stable', 'b_silo', 'b_well'].forEach(k =>
+    ['b_townhall', 'b_shop', 'b_saloon', 'b_clinic', 'b_green', 'b_house', 'b_house2', 'b_trailer'].forEach(k =>
       this.load.image(k, `assets/${k}.png`));
     // real Stardew Valley villager sheets (4 cols x N rows of 16x32; rows: down/right/up/left)
     for (let i = 0; i < 6; i++)
@@ -71,13 +73,13 @@ export class TownScene extends Phaser.Scene {
   // ---------- map building ----------
   private layout(): BuildingSpec[] {
     const b: BuildingSpec[] = [];
-    // town hall centered at top (farmhouse sprite 136x144 = 8.5x9 tiles)
-    const th = { key: 'b_townhall', x: MAP_W / 2 - 4, y: 1, w: 8, h: 9, doorX: MAP_W / 2 - 1, doorY: 10, townHall: true };
+    // town hall (Adventurer's Guild) centered at top: 96x128 = 6x8 tiles
+    const th = { key: 'b_townhall', x: MAP_W / 2 - 3, y: 1, w: 6, h: 8, doorX: MAP_W / 2 - 1, doorY: 9, townHall: true };
     b.push(th);
-    // real building sprite sizes in tiles: barn 112x128, coop 96x128,
-    // stable 64x96, silo 48x128, well 48x80
+    // real Pelican Town sprite sizes in tiles (from spring_town tilesheet)
     const SIZE: Record<string, [number, number]> = {
-      b_barn: [7, 8], b_coop: [6, 8], b_stable: [4, 6], b_silo: [3, 8], b_well: [3, 5],
+      b_shop: [10, 9], b_saloon: [7, 8], b_clinic: [5, 8], b_green: [5, 7],
+      b_house: [6, 9], b_house2: [6, 9], b_trailer: [7, 3],
     };
     // course slots: left col x=5, right col x=48, rows y=2,14,26
     const rows = [2, 14, 26];
@@ -112,9 +114,17 @@ export class TownScene extends Phaser.Scene {
   private tileAt(tx: number, ty: number): number {
     if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) return DGRASS;
     if (this.isPath(tx, ty)) {
-      if (ty === 8 || ty === 9) return STONE;
-      if (tx === 29 || tx === 30) return STONE;
-      return DIRT;
+      const paved = (ty === 8 || ty === 9) || tx === 29 || tx === 30;
+      if (!paved) return DIRT;
+      // paved streets/plaza: real SDV cobble autotile — grass-fringe edge tiles
+      // on the side that borders grass, interior cobbles at junctions
+      const n = this.isPath(tx, ty - 1), s = this.isPath(tx, ty + 1);
+      const w = this.isPath(tx - 1, ty), e = this.isPath(tx + 1, ty);
+      if (n && s && e && w) return PLAZA;
+      if (!n) return ST_N;
+      if (!s) return ST_S;
+      if (!e) return ST_E;
+      return ST_W;
     }
     // pond bottom-left
     const dx = tx - 4, dy = ty - 35;

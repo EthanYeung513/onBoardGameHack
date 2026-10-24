@@ -4,7 +4,7 @@
 export interface Course {
   id: string;
   name: string;
-  building: 'b_townhall' | 'b_barn' | 'b_coop' | 'b_stable' | 'b_silo' | 'b_well';
+  building: 'b_townhall' | 'b_shop' | 'b_saloon' | 'b_clinic' | 'b_green' | 'b_house' | 'b_house2' | 'b_trailer';
   completion: number; // 0-100
 }
 
@@ -20,7 +20,7 @@ export const COMPANY = {
   tagline: 'Learn the tribe, not just the tools',
 };
 
-const BUILDING_CYCLE: Course['building'][] = ['b_coop', 'b_barn', 'b_stable', 'b_silo', 'b_well'];
+const BUILDING_CYCLE: Course['building'][] = ['b_shop', 'b_saloon', 'b_clinic', 'b_green', 'b_house', 'b_house2', 'b_trailer'];
 
 function loadCourses(): Course[] {
   // Dashboard integration hook: if the manager dashboard saved a world spec, use it.
@@ -39,11 +39,11 @@ function loadCourses(): Course[] {
     }
   } catch { /* fall through */ }
   return [
-    { id: 'c1', name: 'Company Values & Culture', building: 'b_coop', completion: 80 },
-    { id: 'c2', name: 'Security & Compliance', building: 'b_silo', completion: 45 },
-    { id: 'c3', name: 'Product Deep Dive', building: 'b_stable', completion: 15 },
-    { id: 'c4', name: 'Tools & Workflow', building: 'b_barn', completion: 0 },
-    { id: 'c5', name: 'Your First Week', building: 'b_well', completion: 0 },
+    { id: 'c1', name: 'Company Values & Culture', building: 'b_shop', completion: 80 },
+    { id: 'c2', name: 'Security & Compliance', building: 'b_clinic', completion: 45 },
+    { id: 'c3', name: 'Product Deep Dive', building: 'b_saloon', completion: 15 },
+    { id: 'c4', name: 'Tools & Workflow', building: 'b_green', completion: 0 },
+    { id: 'c5', name: 'Your First Week', building: 'b_house', completion: 0 },
   ];
 }
 
