@@ -1,0 +1,629 @@
+/* Pokémon Gen 4/5 style battle: top screen (field + text box) and a DS-style bottom screen with the moves. */
+
+.console {
+  --hp-green: #48d85a;
+  --hp-yellow: #f8c830;
+  --hp-red: #f05030;
+  --ink: #202028;
+  --box: #f8f8e8;
+  width: 100%;
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 22px;
+  background: linear-gradient(160deg, #3a3f4b, #22252d);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.08);
+  user-select: none;
+}
+
+.screen {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 3px solid #101014;
+  image-rendering: pixelated;
+  font-family: var(--font-pixel-face), monospace;
+  background:
+    radial-gradient(120% 70% at 75% 28%, rgba(255, 255, 255, 0.55), transparent 60%),
+    linear-gradient(180deg, #8fd3f5 0%, #c9ecf7 38%, #e9f7d6 46%, #a8dc7c 47%, #7cc45a 70%, #5fae46 100%);
+}
+
+/* Distant hills and grass stripes. */
+.screen::before {
+  content: "";
+  position: absolute;
+  inset: 34% 0 52% 0;
+  background:
+    radial-gradient(40% 120% at 15% 100%, #6fbf63 60%, transparent 61%),
+    radial-gradient(35% 100% at 55% 100%, #7ccb6b 60%, transparent 61%),
+    radial-gradient(45% 140% at 95% 100%, #64b45a 60%, transparent 61%);
+  opacity: 0.85;
+}
+.screen::after {
+  content: "";
+  position: absolute;
+  inset: 47% 0 0 0;
+  background: repeating-linear-gradient(180deg, transparent 0 14px, rgba(255, 255, 255, 0.07) 14px 18px);
+  pointer-events: none;
+}
+
+.shake {
+  animation: shake 0.45s steps(2, end);
+}
+.bigShake {
+  animation: shake 0.7s steps(2, end);
+}
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-7px, 3px); }
+  30% { transform: translate(6px, -4px); }
+  45% { transform: translate(-5px, -2px); }
+  60% { transform: translate(5px, 4px); }
+  75% { transform: translate(-3px, 2px); }
+}
+
+/* Fighters ---------------------------------------------------------------------------------------- */
+
+.foeSide,
+.playerSide {
+  position: absolute;
+  z-index: 2;
+}
+/* Like the games: foe upper-right clear of both HP boxes; player lower-left, its platform tucked behind the text box. */
+.foeSide {
+  right: 6%;
+  top: 4%;
+  width: 32%;
+}
+.playerSide {
+  left: 6%;
+  bottom: 24%;
+  width: 36%;
+}
+
+.platform {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #8fd06a 0 55%, #6aae4c 70%, #4f8f39 100%);
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.18);
+}
+
+.spriteFrame {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  /* Clips the faint animation at the platform. */
+  overflow: hidden;
+  padding-bottom: 9%;
+}
+.foeSide .spriteFrame {
+  aspect-ratio: 1 / 0.85;
+}
+.playerSide .spriteFrame {
+  aspect-ratio: 1 / 0.8;
+}
+
+.sprite {
+  width: 78%;
+  height: auto;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.18));
+}
+.emoji {
+  font-size: clamp(42px, 9vw, 92px);
+  line-height: 1;
+}
+
+.hidden {
+  visibility: hidden;
+}
+.enterFromLeft {
+  animation: enterFromLeft 0.75s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+.enterFromRight {
+  animation: enterFromRight 0.75s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes enterFromLeft {
+  from { transform: translateX(-160%); }
+  to { transform: translateX(0); }
+}
+@keyframes enterFromRight {
+  from { transform: translateX(160%); }
+  to { transform: translateX(0); }
+}
+
+.idle {
+  animation: idle 2.4s ease-in-out infinite;
+}
+@keyframes idle {
+  50% { transform: translateY(-3%); }
+}
+
+.lungeForward {
+  animation: lungeForward 0.42s ease-in-out;
+}
+@keyframes lungeForward {
+  40% { transform: translate(14%, -10%) scale(1.04); }
+}
+.lungeBack {
+  animation: lungeBack 0.42s ease-in-out;
+}
+@keyframes lungeBack {
+  40% { transform: translate(-14%, 10%) scale(1.04); }
+}
+.whiff {
+  animation: whiff 0.5s ease-in-out;
+}
+@keyframes whiff {
+  30% { transform: translate(10%, -6%); }
+  55% { transform: translate(14%, 4%) rotate(4deg); }
+}
+
+.flicker {
+  animation: flicker 0.7s steps(1, end);
+}
+@keyframes flicker {
+  0%, 20%, 40%, 60%, 80% { opacity: 0; }
+  10%, 30%, 50%, 70%, 90%, 100% { opacity: 1; }
+}
+
+.faint {
+  animation: faint 0.75s ease-in forwards;
+}
+@keyframes faint {
+  to { transform: translateY(110%); opacity: 0.6; }
+}
+
+/* Hit effects ------------------------------------------------------------------------------------- */
+
+.impact {
+  position: absolute;
+  z-index: 5;
+  width: 22%;
+  aspect-ratio: 1;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+.impactFoe {
+  left: 74%;
+  top: 34%;
+}
+.impactPlayer {
+  left: 26%;
+  top: 56%;
+}
+.impact::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff6b0;
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  animation: star 0.45s ease-out forwards;
+  filter: drop-shadow(0 0 6px #ffb000);
+}
+@keyframes star {
+  0% { transform: scale(0.2) rotate(0deg); opacity: 1; }
+  70% { transform: scale(1.25) rotate(25deg); opacity: 1; }
+  100% { transform: scale(1.5) rotate(35deg); opacity: 0; }
+}
+.particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 9%;
+  height: 9%;
+  background: #ffe066;
+  box-shadow: 0 0 4px #ff9d00;
+  animation: particle 0.55s ease-out forwards;
+}
+@keyframes particle {
+  from { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0) scale(1); opacity: 1; }
+  to { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(260%) scale(0.3); opacity: 0; }
+}
+.crit .impact::before {
+  background: #ffffff;
+  filter: drop-shadow(0 0 10px #ff3b3b);
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  animation: flash 0.35s ease-out forwards;
+}
+.flashWhite {
+  background: #fff;
+}
+.flashRed {
+  background: rgba(240, 40, 40, 0.55);
+}
+@keyframes flash {
+  from { opacity: 0.95; }
+  to { opacity: 0; }
+}
+
+/* Battle intro: two white flashes, then black bars close and open. */
+.wipe {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+.wipe::before,
+.wipe::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: #08080c;
+}
+.wipe::before {
+  top: 0;
+  animation: barTop 1.5s ease-in-out forwards;
+}
+.wipe::after {
+  bottom: 0;
+  animation: barBottom 1.5s ease-in-out forwards;
+}
+.wipeFlash {
+  position: absolute;
+  inset: 0;
+  z-index: 21;
+  background: #fff;
+  animation: wipeFlash 0.6s steps(1, end) forwards;
+}
+@keyframes wipeFlash {
+  0%, 50% { opacity: 1; }
+  25%, 75%, 100% { opacity: 0; }
+}
+@keyframes barTop {
+  0%, 40% { transform: translateY(-100%); }
+  62%, 72% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+@keyframes barBottom {
+  0%, 40% { transform: translateY(100%); }
+  62%, 72% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
+.blackout {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  background: #000;
+  animation: blackout 1.4s ease-in forwards;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: clamp(10px, 2.2vw, 16px);
+}
+@keyframes blackout {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* HP boxes ---------------------------------------------------------------------------------------- */
+
+.hpBox {
+  position: absolute;
+  z-index: 6;
+  min-width: 42%;
+  padding: 1.4% 2.6% 1.6% 3%;
+  background: var(--box);
+  border: 3px solid var(--ink);
+  border-radius: 10px 4px 10px 4px;
+  box-shadow: 4px 4px 0 rgba(32, 32, 40, 0.35);
+  color: var(--ink);
+  font-size: clamp(8px, 1.9vw, 15px);
+}
+.foeBox {
+  left: 4%;
+  top: 6%;
+  clip-path: polygon(0 0, 100% 0, 94% 100%, 0 100%);
+  padding-right: 6%;
+}
+.playerBox {
+  right: 3%;
+  bottom: 33%;
+  clip-path: polygon(6% 0, 100% 0, 100% 100%, 0 100%);
+  padding-left: 7%;
+}
+.hpTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+.level {
+  font-size: 0.85em;
+}
+.hpRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5%;
+}
+.hpLabel {
+  padding: 1px 4px;
+  font-size: 0.7em;
+  color: #f8d030;
+  background: #484030;
+  border-radius: 3px;
+}
+.hpTrack {
+  flex: 1;
+  height: 0.62em;
+  padding: 1px;
+  background: #484848;
+  border-radius: 3px;
+}
+.hpFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.9s linear, background-color 0.2s;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+}
+.hpNumbers {
+  margin-top: 3%;
+  text-align: right;
+  font-size: 0.9em;
+}
+.expTrack {
+  margin-top: 3%;
+  height: 0.32em;
+  background: #2c3848;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.expFill {
+  height: 100%;
+  background: #40c8f8;
+  transition: width 1.3s ease-out;
+}
+
+/* Text box ---------------------------------------------------------------------------------------- */
+
+.textbox {
+  position: absolute;
+  z-index: 7;
+  left: 1.5%;
+  right: 1.5%;
+  bottom: 2%;
+  height: 28%;
+  padding: 1.6% 3%;
+  background: linear-gradient(180deg, #fcfcfc, #e8ecf0);
+  border: 4px solid #4870a0;
+  outline: 3px solid #f8f8f8;
+  box-shadow: 0 0 0 6px #283850;
+  border-radius: 10px;
+  color: #383838;
+  font-family: var(--font-game-text), monospace;
+  font-size: clamp(14px, 3.4vw, 27px);
+  line-height: 1.05;
+  overflow: hidden;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 #d0d0c8;
+}
+.arrow {
+  position: absolute;
+  right: 2.5%;
+  bottom: 8%;
+  color: #e83838;
+  font-size: 0.8em;
+  animation: arrow 0.6s ease-in-out infinite alternate;
+}
+@keyframes arrow {
+  to { transform: translateY(4px); }
+}
+
+/* DS bottom screen ------------------------------------------------------------------------------- */
+
+.bottom {
+  position: relative;
+  min-height: 160px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 3px solid #101014;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08) 0 2px, transparent 3px) 0 0 / 22px 22px,
+    linear-gradient(180deg, #2c4060, #1a2438);
+  font-family: var(--font-pixel-face), monospace;
+  color: #fff;
+}
+.moves {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.move {
+  position: relative;
+  min-height: 64px;
+  padding: 10px 12px 22px;
+  border: 3px solid rgba(0, 0, 0, 0.45);
+  border-radius: 14px;
+  color: #fff;
+  text-align: left;
+  font-family: var(--font-game-text), monospace;
+  font-size: clamp(15px, 2.6vw, 22px);
+  line-height: 1.05;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.35), inset 0 -4px 0 rgba(0, 0, 0, 0.25), 0 4px 0 rgba(0, 0, 0, 0.35);
+  transition: transform 0.08s, filter 0.08s;
+  cursor: pointer;
+}
+.move:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+.move:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.25), inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+}
+.move:disabled {
+  cursor: default;
+  filter: grayscale(0.4) brightness(0.8);
+}
+.moveMeta {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-pixel-face), monospace;
+  font-size: 8px;
+  opacity: 0.9;
+}
+.typePill {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+}
+.normal { background: linear-gradient(180deg, #c8c0a0, #9a9070); }
+.fire { background: linear-gradient(180deg, #f89050, #d05020); }
+.water { background: linear-gradient(180deg, #70a8f8, #3868d0); }
+.grass { background: linear-gradient(180deg, #88d860, #48a030); }
+
+.critTimer {
+  height: 6px;
+  margin-bottom: 10px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+.critFill {
+  height: 100%;
+  background: linear-gradient(90deg, #f8e038, #f88038);
+  animation: critDrain linear forwards;
+}
+@keyframes critDrain {
+  from { width: 100%; }
+  to { width: 0; }
+}
+.critHint {
+  margin-bottom: 6px;
+  font-size: 8px;
+  color: #f8e038;
+}
+
+.continue {
+  width: 100%;
+  min-height: 130px;
+  border-radius: 12px;
+  border: 3px dashed rgba(255, 255, 255, 0.25);
+  background: transparent;
+  color: #fff;
+  font-family: var(--font-pixel-face), monospace;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.statusBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-pixel-face), monospace;
+  font-size: 9px;
+  color: #c8d0e0;
+  padding: 0 4px;
+}
+.balls {
+  display: flex;
+  gap: 5px;
+}
+.ball {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #101014;
+  background: linear-gradient(180deg, #f03030 0 45%, #101014 45% 55%, #f8f8f8 55%);
+}
+.ballEmpty {
+  background: #555;
+  opacity: 0.5;
+}
+.iconButton {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Title card ------------------------------------------------------------------------------------- */
+
+.titleCard {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 6%;
+  text-align: center;
+  color: #fff;
+  background:
+    repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.04) 0 18px, transparent 18px 36px),
+    radial-gradient(circle at 50% 40%, #e83838 0 18%, #b01818 40%, #400808 100%);
+}
+.titleCard h2 {
+  font-size: clamp(11px, 2.6vw, 20px);
+  line-height: 1.5;
+  text-shadow: 3px 3px 0 #000;
+}
+.titleCard p {
+  font-family: var(--font-game-text), monospace;
+  font-size: clamp(15px, 2.8vw, 24px);
+  max-width: 34em;
+}
+.startButton {
+  padding: 12px 22px;
+  border-radius: 10px;
+  border: 3px solid #101014;
+  background: #f8d030;
+  color: #101014;
+  font-family: var(--font-pixel-face), monospace;
+  font-size: 12px;
+  box-shadow: 0 4px 0 #101014;
+  cursor: pointer;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% { transform: scale(1.06); }
+}
+
+.resultsButton {
+  display: block;
+  margin: 10px auto 0;
+  padding: 12px 22px;
+  border-radius: 10px;
+  border: 3px solid #101014;
+  background: #f8d030;
+  color: #101014;
+  font-family: var(--font-pixel-face), monospace;
+  font-size: 11px;
+  box-shadow: 0 4px 0 #101014;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shake, .bigShake, .idle, .flicker, .lungeForward, .lungeBack, .whiff, .arrow, .startButton {
+    animation: none !important;
+  }
+}
