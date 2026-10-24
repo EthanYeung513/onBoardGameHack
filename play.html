@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DayOne — Play</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- hire login gate -->
+<div class="game-gate" id="gate">
+  <div class="card">
+    <div class="logo" style="justify-content:center;display:flex;align-items:center;gap:10px;font-size:22px;font-weight:600;margin-bottom:30px">
+      <svg width="26" height="26" viewBox="0 0 26 26"><g><rect x="0" y="0" width="10" height="10" rx="3" fill="#2f6bff"/><circle cx="19" cy="5" r="6" fill="#ff5c39"/><rect x="12" y="12" width="10" height="10" rx="3" fill="#ffb31f"/><circle cx="5" cy="19" r="5" fill="#0e9f6e"/></g></svg>
+      DayOne
+    </div>
+    <h1 id="gate-title">Welcome to<br><span id="gate-company">your company</span></h1>
+    <p class="sub">Log in with your company email to enter your onboarding world.</p>
+    <input id="gate-email" type="email" placeholder="you@company.com">
+    <button class="btn btn-primary btn-block btn-big" onclick="enterWorld()">Enter world →</button>
+    <p style="font-size:12px;color:rgba(255,255,255,.4);margin-top:16px">Your progress feeds the hiring manager's dashboard.</p>
+  </div>
+</div>
+
+<!-- game -->
+<div class="game-wrap" id="game-wrap" style="display:none">
+  <div class="game-top">
+    <b id="world-name">World</b>
+    <span class="hint-keys">WASD / arrows to move · E to talk / enter</span>
+    <div class="coins">🪙 <b id="coin-count">0</b></div>
+    <button class="btn btn-ghost" style="padding:6px 14px" onclick="openShop()">🎁 Shop</button>
+  </div>
+  <div class="game-stage">
+    <canvas id="game" width="960" height="600"></canvas>
+    <div class="dlg" id="dlg">
+      <div class="who" id="dlg-who">NPC</div>
+      <p id="dlg-text"></p>
+      <div class="next">E / click to continue →</div>
+    </div>
+  </div>
+</div>
+
+<!-- minigame modal -->
+<div class="mg" id="mg">
+  <div class="box">
+    <button class="x" onclick="closeGame()">×</button>
+    <div id="mg-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="state.js"></script>
+<script src="game.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const space = params.get('space');
+const st = OB.get();
+const BRAND = st.brand || OB.brandFromWebsite(space || 'acme.com');
+document.getElementById('gate-company').textContent = BRAND.company;
+document.documentElement.style.setProperty('--brand', BRAND.primary);
+document.getElementById('world-name').textContent = BRAND.company + ' World';
+
+let HIRE = null;
+function enterWorld(){
+  const e = document.getElementById('gate-email').value.trim();
+  if(!e || !e.includes('@')){ toast('Enter your company email'); return; }
+  OB.ensureHire(e);
+  HIRE = e.toLowerCase();
+  const h = OB.getHire(HIRE);
+  document.getElementById('gate').style.display='none';
+  document.getElementById('game-wrap').style.display='flex';
+  document.getElementById('coin-count').textContent = h.coins||0;
+  startWorld(h);
+}
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2600); }
+document.getElementById('gate-email').addEventListener('keydown',e=>{ if(e.key==='Enter') enterWorld(); });
+
+/* ---------- shop ---------- */
+function openShop(){
+  const h = OB.getHire(HIRE);
+  openMG('🎁 Rewards shop', 'Spend your coins on real perks.', `
+    <div class="mg-meta"><span>Your balance</span><b>🪙 ${h.coins||0}</b></div>
+    <div class="shop-grid">
+      ${OB.REWARDS.map(r=>`<div class="reward"><span class="e">${r.emoji}</span>
+        <div><b>${r.name}</b><span>${r.cost} coins</span></div>
+        <button class="btn ${(h.coins||0)>=r.cost?'btn-dark':'btn-ghost'}" ${(h.coins||0)>=r.cost?'':'disabled'}
+          onclick="redeem('${r.id}')">Redeem</button></div>`).join('')}
+    </div>`);
+}
+function redeem(id){
+  const r = OB.REWARDS.find(x=>x.id===id);
+  OB.updateHire(HIRE,h=>{ if(h.coins>=r.cost){ h.coins-=r.cost; h.redeemed=h.redeemed||[]; h.redeemed.push(r.name); }});
+  document.getElementById('coin-count').textContent = OB.getHire(HIRE).coins;
+  closeGame();
+  toast(r.emoji+' '+r.name+' — sent to your email (demo)');
+}
+</script>
+</body>
+</html>

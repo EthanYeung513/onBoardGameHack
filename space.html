@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DayOne — Create your Space</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Step 1: welcome / create space -->
+<div class="split" id="step-create">
+  <div class="left">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 26 26"><g><rect x="0" y="0" width="10" height="10" rx="3" fill="#2f6bff"/><circle cx="19" cy="5" r="6" fill="#ff5c39"/><rect x="12" y="12" width="10" height="10" rx="3" fill="#ffb31f"/><circle cx="5" cy="19" r="5" fill="#0e9f6e"/></g></svg>
+      DayOne
+    </div>
+    <div class="blob" style="width:340px;height:340px;background:#ffb31f;top:16%;left:22%;"></div>
+    <div class="blob" style="width:340px;height:160px;background:#ffb31f;bottom:6%;left:22%;"></div>
+  </div>
+  <div class="right">
+    <button class="btn btn-ghost logout" onclick="location.href='index.html'">Logout</button>
+    <div class="card">
+      <h1>Welcome to<br>DayOne</h1>
+      <div class="hintbox">
+        <p>Create your first Space to get started.</p>
+        <button class="btn btn-primary btn-block" onclick="showStep('step-info')">Create a Space</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Step 2: name + website -->
+<div class="split" id="step-info" style="display:none">
+  <div class="left">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 26 26"><g><rect x="0" y="0" width="10" height="10" rx="3" fill="#2f6bff"/><circle cx="19" cy="5" r="6" fill="#ff5c39"/><rect x="12" y="12" width="10" height="10" rx="3" fill="#ffb31f"/><circle cx="5" cy="19" r="5" fill="#0e9f6e"/></g></svg>
+      DayOne
+    </div>
+    <!-- animated geometric backdrop -->
+    <div class="blob" style="width:60%;height:110px;background:#2f6bff;top:12%;left:14%;transform:skewX(-28deg);"></div>
+    <div class="blob" style="width:60%;height:110px;background:#2f6bff;top:38%;left:14%;transform:skewX(-28deg);"></div>
+    <div class="blob" style="width:180px;height:180px;background:#ff5c39;border-radius:50%;top:10%;right:6%;"></div>
+    <div class="blob" style="width:180px;height:180px;background:#ff5c39;border-radius:50%;top:33%;right:6%;"></div>
+    <div class="blob" style="width:180px;height:180px;background:#ff5c39;border-radius:50%;top:56%;right:6%;"></div>
+    <div class="blob" style="width:150px;height:150px;background:#ff5c39;border-radius:50%;bottom:8%;left:8%;"></div>
+  </div>
+  <div class="right">
+    <div class="card">
+      <h1>Create DayOne<br>Space</h1>
+      <div class="field"><label>Your name *</label><input id="mgr-name" placeholder="e.g. Dana Kim"></div>
+      <div class="field"><label>Company website *</label><input id="mgr-site" placeholder="e.g. mubit.ai"></div>
+      <div class="form-err" id="site-err">Please enter your name and a website.</div>
+      <button class="btn btn-primary btn-block btn-big" onclick="startScan()">Scan my company →</button>
+      <p style="font-size:12px;color:var(--muted);margin-top:14px">Our agents will read your public site to learn your brand and seed your company brain.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 3: scanning -->
+<div class="scan" id="step-scan" style="display:none">
+  <div>
+    <div class="tag">◆ DayOne / scanning</div>
+    <div class="domain-chip"><span class="spin"></span><span id="scan-host">your-site.com</span></div>
+    <h1 style="margin-top:20px">Reading your<br>website.</h1>
+    <div class="bar"><i id="scan-bar"></i></div>
+    <ul class="steps" id="scan-steps"></ul>
+  </div>
+  <div class="frame">
+    <div class="dots"><i style="background:#ff5c39"></i><i style="background:#ffb31f"></i><i style="background:#0e9f6e"></i></div>
+    <div class="page" id="scan-page">
+      <div class="skl" style="width:60%"></div>
+      <div class="skl" style="width:90%"></div>
+      <div class="skl" style="width:75%"></div>
+      <div class="skl" style="width:40%;height:80px;border-radius:10px"></div>
+      <div class="skl" style="width:80%"></div>
+      <div class="skl" style="width:55%"></div>
+    </div>
+  </div>
+</div>
+
+<script src="state.js"></script>
+<script>
+const SCAN_STEPS = [
+  'Resolving {host}',
+  'Found {pages} pages via sitemap.xml',
+  'Extracting brand identity (logo, colors, typography)',
+  'Reading public pages — about, careers, blog',
+  'Building company knowledge graph',
+  'Calibrating dashboard to your brand',
+];
+
+function showStep(id){
+  ['step-create','step-info','step-scan'].forEach(s=>document.getElementById(s).style.display='none');
+  document.getElementById(id).style.display = id==='step-scan' ? 'grid' : 'grid';
+}
+
+function startScan(){
+  const name = document.getElementById('mgr-name').value.trim();
+  const site = document.getElementById('mgr-site').value.trim();
+  if(!name || !site){ document.getElementById('site-err').style.display='block'; return; }
+  const brand = OB.brandFromWebsite(site);
+  OB.patch({ manager:{name}, brand, space:{created:Date.now()}, tools:{}, hires:{}, published:false });
+  document.getElementById('scan-host').textContent = brand.host;
+  showStep('step-scan');
+  const ul = document.getElementById('scan-steps');
+  ul.innerHTML='';
+  SCAN_STEPS.forEach(t=>{
+    const li=document.createElement('li');
+    li.innerHTML='<span class="dot"></span>'+t.replace('{host}',brand.host).replace('{pages}',brand.pages);
+    ul.appendChild(li);
+  });
+  const items=[...ul.children]; const bar=document.getElementById('scan-bar');
+  let i=0;
+  function tick(){
+    items.forEach((li,j)=>{ li.className = j<i ? 'done' : (j===i ? 'active' : ''); });
+    bar.style.width = Math.round((i/items.length)*100)+'%';
+    if(i < items.length){
+      // animate the fake page being read
+      const pg=document.getElementById('scan-page');
+      pg.style.opacity = .4 + .6*Math.random();
+      i++; setTimeout(tick, 900 + Math.random()*700);
+    } else {
+      bar.style.width='100%';
+      setTimeout(()=>{ location.href='dashboard.html?brand=1'; }, 900);
+    }
+  }
+  tick();
+}
+</script>
+</body>
+</html>
