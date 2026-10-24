@@ -513,8 +513,6 @@ Decided 2026-10-24:
 4. Embeddings → **Mubit** (`MUBIT_EMBED_MODEL`) primary; Voyage AI standby.
 5. Self-adapting structure → **required** (F34–F36): the brain, courses and
    the game must update automatically as the company's sources change.
-
-Still open:
-
-6. Auto-approve threshold for facts: default 0.9 — accept, or require manual
-   review of everything (slower but fully supervised)?
+6. Fact approval → **auto-approve** (decided 2026-10-24): extracted facts
+   enter the brain at ≥0.9 confidence without review; everything below lands
+   in the draft queue for the manager. Threshold stays configurable per space.
