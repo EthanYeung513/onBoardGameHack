@@ -1,0 +1,91 @@
+Mubit | Go-to-market | Go-to-Market Onboarding Guide v1.8
+
+GO-TO-MARKET
+
+Go-to-Market Onboarding Guide
+
+Who we sell to, how we pitch, what we never promise, and how deals, security reviews and pilots
+work.
+
+Version  Owner                         Effective from      Next review                                             Applies to
+1.8      Head of Sales                 1 Oct 2026          1 Jan 2027
+                                                                                                                   Sales, solutions engineering
+                                                                                                                   and customer success
+
+1. Who we sell to
+
+Teams running agents in production that repeat the same kinds of task: extraction, triage, support replies,
+review and routing.
+
+Qualifying questions
+
+1 Do you have agents in production today, or only prototypes?
+2 Which tasks do your agents run again and again?
+3 How do you know when a task succeeded: tests, application checks, or human review?
+4 What are your security, data residency and compliance requirements?
+A lead without a way to verify outcomes (question 3) is not ready for a pilot. Log it as nurture in the CRM.
+
+2. The pitch in three lines
+
+· Point your model calls at Mubit.
+· It calibrates every call at runtime, then builds and refreshes a dedicated model for each task your agents
+
+    repeat, switching over only when it does better.
+· Your frontier models stay, and you own what is built.
+
+3. Common objections                   We answer
+
+ Customer says                         No. They keep their models, tools and orchestration, and connect through a
+ "Do we have to replace our models or  supported SDK or integration.
+ framework?"
+ "Who owns the models you build?"      The customer owns what is built.
+ "How do we stay in control?"
+                                       Every change is evaluated on their own held-out tasks and reviewed before
+ "Is our data safe?"                   activation, and earlier versions stay available for rollback.
+
+                                       Mubit is SOC 2 compliant and ISO 27001 and ISO 42001 certified. Share the
+                                       Trust Center at trust.mubit.ai.
+
+4. What we never say
+
+Never promise a specific improvement, such as "30% cheaper" or "2x accuracy". Results depend on the workload.
+Offer to measure task success, latency and cost per successful task on the customer's own held-out tasks instead.
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.  Page 1
+Mubit | Go-to-market | Go-to-Market Onboarding Guide v1.8
+
+5. Security questionnaires
+
+· Never fill in a security questionnaire yourself. Post it in #security-questionnaires.
+· Standard turnaround is 5 working days. Tell the customer this up front.
+· Point the customer to the Trust Center first: it answers most questions.
+
+6. Demos
+
+· Use the demo workspace only. Never show another customer's console, traces or name.
+· Never take or share screenshots of a customer's workspace.
+
+7. Pricing and discounts                                   Who approves
+                                                           Account executive
+ Discount                                                  Head of Sales
+ Up to 10%                                                 CEO
+ 10% to 20%
+ Over 20%, or any free extension
+
+8. Pilots
+
+· Pilots last 4 weeks by default.
+· Success criteria, measured on held-out tasks, must be agreed in writing before the pilot starts.
+· A solutions engineer joins every technical evaluation.
+
+9. CRM hygiene
+
+Log every customer call in the CRM within 24 hours, including next steps and the decision-maker.
+
+10. Launch week talking points
+
+Launch week runs 26 to 30 October 2026, with one major feature released each day. Do not share details of
+upcoming features with customers before they are announced.
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.  Page 2
+

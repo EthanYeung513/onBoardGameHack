@@ -1,0 +1,127 @@
+Mubit | Company | Welcome to Mubit: Company and Product Overview v2.0
+
+COMPANY
+
+Welcome to Mubit: Company and Product
+Overview
+
+What we build, how the product works, how the company is organised, and who to ask.
+
+Version       Owner         Effective from                             Next review                                 Applies to
+2.0           People Team   1 Oct 2026                                 1 Apr 2027                                  All new joiners
+
+What Mubit does
+
+Mubit helps teams build reliable agents with a model for every task. Customers point their model calls at
+Mubit. Mubit calibrates every call at runtime, then builds and refreshes a dedicated model for each task their
+agents repeat, switching over only when the new model does better. Customers keep their frontier models,
+and they own what is built.
+
+Our category is agentic runtime calibration: improving how an agent behaves using evidence from its own
+runs.
+
+The product loop
+
+Every part of the product supports one four-step loop. New joiners should be able to explain it in under a
+minute.
+
+Step          What happens                                                          Why it matters
+1. Connect
+2. Capture    The customer adds Mubit to their existing agent workflow,             No rewrite is needed to start.
+              keeping their models, tools and orchestration.
+3. Calibrate
+4. Evaluate   Mubit records the context, decisions and tool calls behind            A successful API response does not
+              each task, and links them to tests, application checks or             prove an answer was correct.
+              human feedback.                                                       Outcomes do.
+
+              Verified experience becomes reusable memory and candidate The next run starts from what
+
+              improvements to prompts, skills and model behaviour.                  worked.
+
+              Candidates are tested on held-out tasks, reviewed, and                Customers stay in control of every
+              activated only if they help. Earlier versions stay available for      change.
+              rollback.
+
+How we measure improvement
+
+We compare a customer's current setup with runtime calibration on held-out tasks, measuring task success,
+repeated errors, latency and cost per successful task. We never promise a fixed improvement: results
+depend on the workload.
+
+Banyan models and latte/bench
+
+· Banyan is our family of specialised models, built on open-source and open-weight foundations and trained
+    through Mubit.
+
+· Banyan Sapling is the first Banyan model. It checks a claim against the policy and evidence provided and
+    returns one of: supported, violation, missing information, or inconsistent context, with calibrated
+    uncertainty.
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.                   Page 1
+Mubit | Company | Welcome to Mubit: Company and Product Overview v2.0
+
+· latte/bench is our benchmark that tests whether a model can learn from feedback across repeated
+    attempts, using simulated latte art.
+
+Security and trust
+
+Customers send us their agent traces, so trust is part of the product. Mubit is SOC 2 compliant, ISO 27001
+certified, ISO 42001 certified, GDPR compliant and HIPAA compliant. Every new joiner completes security
+training in their first 14 days (see the Information Security Policy).
+
+Company facts             Detail
+                          Reliable AI, Inc.
+ Item                     Hoxton Ventures, Heavybit and Techstars, plus angels from Cloudflare, AWS and Mistral
+ Legal entity             26 to 30 October 2026: one major feature released each day
+ Investors                app.mubit.ai
+ Launch week
+ Console
+
+How we are organised
+
+Team                      Owns                                                                                     Slack channel
+Runtime                   Gateway, trace capture, SDKs and framework integrations                                  #team-runtime
+Calibration               Outcome attribution, memory, prompt and skill candidates                                 #team-calibration
+Models                    Banyan models, adapter training (Forge), evaluation service                              #team-models
+Product and Design        Console, docs, developer experience                                                      #team-product
+Go-to-market              Sales, solutions engineering, customer success                                           #team-gtm
+People and Ops            Hiring, onboarding, payroll, office, policies                                            #ask-people
+
+Who to ask
+
+Question about                      Ask                                                Where
+                                                                                       #ask-people
+Leave, payroll, benefits, policies  Alex Moreno, Head of People                        #it-help
+                                                                                       #security (urgent:
+Laptop, accounts, access            IT Helpdesk                                        #security-incidents)
+                                                                                       #eng-help
+Security concern or suspected phishing Sam Okafor, Security Lead
+                                                                                       #team-gtm
+Engineering setup and code review   Your onboarding buddy, then Jordan Lee,
+Customer questions                  Engineering Manager
+
+                                    Your team lead
+
+Our values
+
+· Evidence over opinion. We decide with tests, evals and customer outcomes, not with whoever argues
+    loudest.
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.                     Page 2
+Mubit | Company | Welcome to Mubit: Company and Product Overview v2.0
+
+· Keep the customer in control. Nothing we build activates without review, and everything can be rolled
+    back.
+
+· Own what you ship. If you merged it, you watch it in production.
+
+Rituals           When                                                 Who
+                  Monday 10:00 UK                                      Each team
+ Ritual           Friday 16:00 UK                                      Everyone. New joiners demo something
+ Weekly planning                                                       in week 1.
+ Show-and-tell    First Thursday of the month, 17:00 UK                Everyone
+
+ All-hands
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.  Page 3
+

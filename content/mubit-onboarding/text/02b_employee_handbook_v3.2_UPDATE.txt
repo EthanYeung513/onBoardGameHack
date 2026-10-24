@@ -1,0 +1,107 @@
+Mubit | HR | Employee Handbook v3.2
+
+HR
+
+Employee Handbook
+
+Working hours, leave, pay, expenses, conduct and how to raise a concern. Updated version: see
+the change log.
+
+Version  Owner                       Effective from  Next review                                                   Applies to
+3.2                                                  24 Apr 2027                                                   All employees (UK)
+         Alex Moreno, Head of People 24 Oct 2026
+
+Change log, v3.1 to v3.2 (24 Oct 2026). Section 6: the travel meal limit rises from £50 to £75 per day, and the
+learning budget rises from £1,000 to £1,500 per year. Section 10 is new: using AI tools at work.
+
+1. Working hours and location
+
+· Core hours are 10:00 to 16:00 UK time. Outside core hours, work when suits you and your team.
+· We are hybrid. Tuesday and Thursday are office anchor days at the London office; other days are flexible.
+· You may work from abroad for up to 20 working days per year with written approval from the People team,
+
+    requested at least 2 weeks in advance.
+
+2. Probation
+
+Probation lasts 3 months. Your manager holds review conversations at week 6 and week 12. During
+probation the notice period is 1 week on either side; after probation it is 1 month.
+
+3. Annual leave
+
+· You get 25 days of annual leave per year plus UK bank holidays.
+· The leave year runs from 1 April to 31 March. You may carry over up to 5 unused days, which must be
+
+    used by 30 June.
+· Book leave in PeopleHub at least 2 weeks ahead for anything longer than 3 days. Your manager approves
+
+    it.
+· During launch weeks, leave for the teams involved needs approval from the team lead.
+
+4. Sickness absence
+
+· Tell your manager by 09:30 on the first day, by Slack message or phone, and post in #ooo.
+· You can self-certify for up to 7 calendar days. After 7 days you need a fit note from a doctor.
+· Log every sick day in PeopleHub when you return.
+
+5. Pay and pension
+
+· Salary is paid monthly on the last working day of the month.
+· You are auto-enrolled into the company pension. Mubit contributes 5% of qualifying earnings; the default
+
+    employee contribution is 3%.
+· Payslips are available in PeopleHub.
+
+6. Expenses
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.                      Page 1
+Mubit | HR | Employee Handbook v3.2
+
+Submit expenses in Spendly within 30 days of spending, with an itemised receipt. Your manager approves
+them; any single claim over £500 also needs Finance approval.
+
+Expense                              Limit              Notes
+                                                        Not for days in your usual office
+Meals while travelling on company business £75 per day  Claim within your first 3 months
+                                                        Courses, books, conferences. Agree with your
+Home office set-up                   £400 one-off       manager first.
+                                                        Only after 21:00 or when carrying equipment for
+Learning budget                      £1,500 per year    work
+                                                        Unless it is part of an approved team event
+Taxis                                Actual cost
+
+Alcohol                              Not reimbursed
+
+7. Equipment
+
+You receive a company laptop on day 1. It stays company property and must be returned within 5 working
+days of leaving. Report loss or theft to IT Helpdesk and #security-incidents within 1 hour.
+
+8. Code of conduct
+
+· Treat colleagues, customers and candidates with respect. Harassment, bullying and discrimination are
+    never acceptable.
+
+· Mubit has a duty to take reasonable steps to prevent sexual harassment at work, and every employee is
+    expected to help.
+
+· Raise a concern with your manager, the People team, or anonymously through the Speak Up form. The
+    People team acknowledges every report within 5 working days.
+
+· Nobody will be treated badly for raising a concern in good faith.
+
+9. Leaving Mubit
+
+Give notice in writing to your manager and the People team. Remaining annual leave is paid out or taken
+during notice, agreed with your manager.
+
+10. Using AI tools at work
+
+· Use only the AI tools on the approved list in Notion (Security, then Approved tools).
+· Never paste Restricted data, such as customer traces, prompts or credentials, into any AI tool, approved
+
+    or not.
+· You are responsible for checking AI-generated work before you ship it or send it to a customer.
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.  Page 2
+

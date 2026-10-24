@@ -1,0 +1,108 @@
+Mubit | Engineering | Engineering Onboarding Guide v5.4
+
+ENGINEERING
+
+Engineering Onboarding Guide
+
+Architecture, repositories, local setup, how we ship, on-call and your first-week quests.
+
+Version     Owner                    Effective from      Next review                                               Applies to
+5.4                                  15 Sep 2026         15 Dec 2026                                               Engineers and ML engineers
+            Jordan Lee, Engineering
+            Manager
+
+1. Architecture at a glance
+
+Service     Language                 What it does
+gateway     Rust                     OpenAI-compatible endpoint. Routes customer model calls, applies the active
+                                     model version per task, records traces.
+calibrator  Python                   Attributes outcomes to the experience used, and proposes memory, prompt
+                                     and skill candidates.
+forge       Python                   Trains task-specific adapters on open-weight base models, including Banyan.
+evals       Python                   Runs candidates on held-out tasks, gates activation, and handles rollback.
+console     TypeScript (Next.js)     The customer-facing app at app.mubit.ai.
+infra       Terraform                Cloud infrastructure, networking and secrets wiring.
+
+Traces are stored in Postgres with large payloads in object storage. Customer traces are Restricted data:
+see the Information Security Policy.
+
+2. Local setup
+
+git clone git@github.com:mubit-demo/monorepo.git
+
+cd monorepo
+
+make bootstrap # installs toolchains with mise
+
+make dev        # starts Postgres, Redis and MinIO in Docker
+
+make seed       # loads synthetic fixtures, never customer data
+
+make test       # unit and integration tests
+
+If make bootstrap fails, ask in #eng-help before trying to fix the toolchain yourself.
+
+3. How we ship
+
+Branches and pull requests
+
+· We use trunk-based development with short-lived branches named initials/ticket-slug, for example
+    jl/RUN-412-retry-timeouts.
+
+· Every pull request needs 1 approval. Changes to gateway, authentication or billing need 2.
+· We squash-merge. Keep pull requests under about 400 changed lines where possible.
+
+CI checks (all must pass)
+
+· Lint and type checks.
+· Unit and integration tests.
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.  Page 1
+Mubit | Engineering | Engineering Onboarding Guide v5.4
+
+· Eval smoke test: a fixed 50-task held-out set. A change that drops task success by more than 1 point is
+    blocked.
+
+· Secret scanning with gitleaks, which also runs as a pre-commit hook.
+
+Deploys
+
+· Merging to main deploys automatically to staging.
+· Production releases go out on the release train, Tuesday and Thursday at 14:00 UK time.
+· Hotfixes outside the train need approval from the on-call lead.
+· Launch week freeze, 26 to 30 October 2026: only launch-related changes, approved by the Head of
+
+    Engineering.
+
+4. On-call
+
+You join the on-call rotation after 6 weeks, and shadow one full week first. Pages come through PagerDuty.
+
+Severity   Definition                                                                                              Acknowledge within
+Sev1       Customer-facing outage, or any possible exposure of customer data                                       15 minutes
+Sev2       Degraded service: higher latency or errors for some customers                                           1 hour
+Sev3       Minor issue with a workaround                                                                           Next working day
+
+Sev1 and Sev2 incidents get a blameless postmortem within 5 working days.
+
+5. Secrets
+
+Never put secrets in code, config files or Slack. Use 1Password for personal secrets and the secrets
+manager for services. If a secret leaks, rotate it immediately and report it in #security-incidents.
+
+6. Your first-week quests
+
+Day Quest                                                      Done when
+                                                               IT Helpdesk ticket closed
+1         Laptop, GitHub, Linear, Slack and 1Password set up   make test passes on your machine
+                                                               Merged to main
+2         Run the local stack and the full test suite          You can explain each step of a release
+                                                               Friday 16:00, five minutes
+3         Ship your first pull request (a docs fix or a test)
+
+4         Shadow a release train
+
+5         Demo something at show-and-tell
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.  Page 2
+

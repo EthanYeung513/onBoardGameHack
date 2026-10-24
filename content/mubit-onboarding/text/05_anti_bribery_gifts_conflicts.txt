@@ -1,0 +1,64 @@
+Mubit | Compliance | Anti-Bribery, Gifts and Conflicts of Interest Policy v1.6
+
+COMPLIANCE
+
+Anti-Bribery, Gifts and Conflicts of Interest
+Policy
+
+What you can accept, what you must declare, and what you must never do.
+
+Version  Owner                            Effective from                        Next review                        Applies to
+1.6      Head of Operations               1 Jun 2026                            1 Jun 2027
+                                                                                                                   All employees and
+                                                                                                                   contractors
+
+1. Our rule
+
+We follow the UK Bribery Act 2010. Never offer, give, request or accept anything of value that could
+influence, or look like it influences, a business decision. This applies to customers, suppliers, partners and
+candidates.
+
+2. Accepting gifts and hospitality
+
+Value                                     What you must do
+Up to £50                                 You may accept. No approval needed.
+£50 to £150                               Declare it in the gifts register within 5 working days.
+Over £150                                 Get approval from the Head of Operations before accepting.
+Cash, vouchers or gift cards              Never accept, at any value.
+Anything during an active deal or tender  Decline politely and tell your manager.
+
+The gifts register is in Notion under Operations, then Gifts register.
+
+3. Public officials
+
+Get approval from the Head of Operations before offering or accepting anything to or from a public official, at
+any value.
+
+4. Never allowed
+
+· Facilitation payments: small payments to speed up a routine process, such as a visa or customs
+    clearance.
+
+· Paying a third party to do something we could not do ourselves.
+· Splitting a gift into smaller ones to stay under a threshold.
+
+5. Donations and sponsorships
+
+Charitable donations, event sponsorships and conference payments made on behalf of Mubit need approval
+from the Head of Operations, whatever the amount.
+
+6. Conflicts of interest
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.                     Page 1
+Mubit | Compliance | Anti-Bribery, Gifts and Conflicts of Interest Policy v1.6
+
+ Declare to the People team any side business, paid advisory role, board seat, or investment in a competitor,
+ customer or supplier. Declaring is usually all that is needed; not declaring is a disciplinary matter.
+
+ 7. Speaking up
+
+ If you suspect bribery, report it to the Head of Operations or anonymously through the Speak Up form.
+ Nobody will be treated badly for reporting in good faith.
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.  Page 2
+

@@ -1,0 +1,92 @@
+Mubit | Field knowledge | LLM Infrastructure Primer v1.2
+
+FIELD KNOWLEDGE
+
+LLM Infrastructure Primer
+
+The industry concepts every Mubit engineer, solutions engineer and product person needs, from
+APIs to adapters to MCP.
+
+Version  Owner                                            Effective from  Next review                              Applies to
+1.2      Models Team                                      1 Oct 2026      1 Jan 2027
+                                                                                                                   All technical and
+                                                                                                                   customer-facing roles
+
+1. OpenAI-compatible APIs and base URLs
+
+Most LLM providers accept the same request shape as OpenAI's Chat Completions API. An application can
+switch provider, or route through a gateway such as Mubit, by changing the base URL and API key in its SDK
+client. This is why connecting to Mubit can be a one-line change.
+
+2. Tokens, context windows and cost
+
+· Models read and write text as tokens, roughly three-quarters of an English word each.
+· The context window is the maximum number of tokens in one request, including the prompt and the
+
+    answer.
+· Providers usually charge separately for input and output tokens, with output tokens costing more.
+
+3. Latency
+
+· Time to first token (TTFT) is how long before the first token streams back. It decides how fast a product
+    feels.
+
+· p50 is the median request; p95 is the slowest 5%. Customers notice p95.
+
+4. Fine-tuning and adapters (LoRA)
+
+Low-Rank Adaptation (LoRA) freezes a base model's weights and trains small low-rank matrices added to
+some layers. The result, an adapter, is typically megabytes rather than gigabytes. Many adapters can be
+served on one base model and swapped per request, which is what makes a dedicated model per task
+affordable.
+
+5. Evaluation
+
+· Held-out set: examples kept out of training, used only to measure. Evaluating on training data overstates
+    quality.
+
+· Paired comparison: run the current and candidate versions on the same tasks and compare.
+· Verified outcomes: prefer tests, application checks and human review over a model grading its own
+
+    work.
+· Cost per successful task: total cost divided by tasks that actually succeeded, not by all requests.
+
+6. Structured outputs
+
+Many APIs can constrain a model to return JSON matching a schema. Always validate the result in code, for
+example with Zod or Pydantic, because a valid shape does not mean correct content.
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.                         Page 1
+Mubit | Field knowledge | LLM Infrastructure Primer v1.2
+
+7. Retrieval-augmented generation (RAG)
+
+RAG retrieves relevant chunks from a document store and puts them in the prompt, so the model answers
+from your data and can cite it. Most answer errors in RAG systems come from retrieving the wrong chunks,
+not from the model.
+
+8. Model Context Protocol (MCP)
+
+MCP is an open protocol, introduced by Anthropic in 2024, for connecting AI applications to tools and data in
+a standard way.
+
+Part    What it is                                        Example
+Host    The AI application the user works in              A chat app or an IDE agent
+Client  The connector inside the host, one per server     The host's link to a Jira server
+Server  A program that exposes capabilities to hosts      A Jira or Postgres MCP server
+
+Servers offer three kinds of primitive:
+· Tools: actions the model can call, such as create_ticket.
+· Resources: data the application can read into context, such as a file or a ticket.
+· Prompts: reusable templates the user can invoke.
+Local servers usually talk over stdio; remote servers use HTTP. MCP Apps, an official extension, lets a tool
+return an interactive interface that the host renders in a sandboxed frame.
+
+9. Claim verification
+
+A verification model checks a claim against a policy and the available evidence. A useful verifier says when
+the evidence is insufficient instead of guessing. Banyan Sapling returns supported, violation, missing
+information or inconsistent context.
+
+Synthetic demo document created for the Night Shift hackathon. Not Mubit's actual policy or internal information.  Page 2
+
