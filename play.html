@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Orthogonal — Play</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 
@@ -27,8 +27,8 @@
   <div class="game-top">
     <b id="world-name">World</b>
     <span class="hint-keys">WASD / arrows to move · E to talk / enter</span>
-    <div class="coins">🪙 <b id="coin-count">0</b></div>
-    <button class="btn btn-ghost" style="padding:6px 14px" onclick="openShop()">🎁 Shop</button>
+    <div class="coins"><i class="svgic" data-ic="coin"></i> <b id="coin-count">0</b></div>
+    <button class="btn btn-ghost" style="padding:6px 14px" onclick="openShop()"><i class="svgic" data-ic="gift"></i> Shop</button>
   </div>
   <div class="game-stage">
     <canvas id="game" width="960" height="600"></canvas>
@@ -79,8 +79,8 @@ document.getElementById('gate-email').addEventListener('keydown',e=>{ if(e.key==
 /* ---------- shop ---------- */
 function openShop(){
   const h = OB.getHire(HIRE);
-  openMG('🎁 Rewards shop', 'Spend your coins on real perks.', `
-    <div class="mg-meta"><span>Your balance</span><b>🪙 ${h.coins||0}</b></div>
+  openMG(OB.icon('gift')+' Rewards shop', 'Spend your coins on real perks.', `
+    <div class="mg-meta"><span>Your balance</span><b>${OB.icon('coin',14)} ${h.coins||0}</b></div>
     <div class="shop-grid">
       ${OB.REWARDS.map(r=>`<div class="reward"><span class="e">${r.emoji}</span>
         <div><b>${r.name}</b><span>${r.cost} coins</span></div>
@@ -95,6 +95,7 @@ function redeem(id){
   closeGame();
   toast(r.emoji+' '+r.name+' — sent to your email (demo)');
 }
+document.querySelectorAll('.svgic').forEach(e=>e.outerHTML=OB.icon(e.dataset.ic));
 </script>
 </body>
 </html>

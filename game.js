@@ -228,8 +228,8 @@ function finishCourse(courseId, scorePct, coinsEarned) {
   const h = OB.getHire(HIRE_REF.email);
   document.getElementById('coin-count').textContent = h.coins;
   const done = Object.keys(h.games).length;
-  const bonus = done === OB.COURSES.length ? ' · 🏆 World complete!' : '';
-  return `<div class="mg-result"><div class="big">${scorePct>=80?'🏆':scorePct>=50?'⭐':'📚'}</div>
+  const bonus = done === OB.COURSES.length ? ' · World complete!' : '';
+  return `<div class="mg-result"><div class="big">${scorePct>=80?OB.icon('trophy',44):scorePct>=50?OB.icon('star',44):OB.icon('book',44)}</div>
     <h4>${scorePct}%</h4>
     <p>+${coinsEarned} coins · ${done}/${OB.COURSES.length} buildings done${bonus}</p>
     <button class="btn btn-primary" style="margin-top:18px" onclick="closeGame()">Back to world</button></div>`;
@@ -250,11 +250,11 @@ function gameQuiz(c) {
     if (i >= OB.QUIZ.length) {
       const score = Math.round(right/OB.QUIZ.length*100);
       document.getElementById('mg-body').innerHTML =
-        `<h3>${c.icon} ${c.title} — Quiz sprint</h3>` + finishCourse(c.id, score, right*20);
+        `<h3>${OB.icon(c.icon)} ${c.title} — Quiz sprint</h3>` + finishCourse(c.id, score, right*20);
       return;
     }
     const item = OB.QUIZ[i];
-    openMG(c.icon+' '+c.title+' — Quiz sprint', `Question ${i+1}/${OB.QUIZ.length} · 🏢 ${c.building}`,
+    openMG(c.icon+' '+c.title+' — Quiz sprint', `Question ${i+1}/${OB.QUIZ.length} · ${OB.icon('building',14)} ${c.building}`,
       `<div class="mg-meta"><span>Correct: ${right}</span><span>${i+1}/${OB.QUIZ.length}</span></div>
        <div class="mg-q">${item.q}</div>
        <div class="mg-opts">${item.a.map((a,j)=>`<button class="mg-opt" onclick="quizPick(${j})">${a}</button>`).join('')}</div>`);
@@ -310,7 +310,7 @@ function gameRoad(c) {
     const it = OB.ROAD_QUESTIONS[i];
     openMG(c.icon+' '+c.title+' — Road run', `Pick the right lane before time runs out. ${i+1}/${OB.ROAD_QUESTIONS.length}`,
       `<div class="mg-meta"><span>Correct: ${right}</span><span id="road-t">8s</span></div>
-       <div class="road-q">🚗 ${it.q}</div>
+       <div class="road-q">${it.q}</div>
        <div class="road-lanes">${it.a.map((a,j)=>`<div class="lane" onclick="lane(${j})">Lane ${j+1}: ${a}</div>`).join('')}</div>`);
     let left = 8;
     const tEl = () => document.getElementById('road-t');
@@ -336,7 +336,7 @@ function gameScenario(c) {
     }
     const s = OB.SCENARIO[step];
     openMG(c.icon+' '+c.title+' — Live scenario', `Respond like you'd want a teammate to. ${step+1}/${OB.SCENARIO.length}`,
-      `<div class="scn-from"><div class="fa">😠</div><div><b>${s.from}</b><span>${s.role}</span></div></div>
+      `<div class="scn-from"><div class="fa">${s.from[0]}</div><div><b>${s.from}</b><span>${s.role}</span></div></div>
        <div class="scn-line">“${s.line}”</div>
        <div class="mg-opts">${s.options.map((o,j)=>`<button class="mg-opt" onclick="pickOpt(${j})">${o.text}</button>`).join('')}</div>
        <div id="scn-reply"></div>`);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Orthogonal — Dashboard</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=3">
 <style>
 #ai-fab{position:fixed;right:26px;bottom:26px;width:56px;height:56px;border-radius:50%;background:var(--brand,#2E98FF);color:#fff;font-size:22px;border:0;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:40;transition:transform .15s}
 #ai-fab:hover{transform:scale(1.07)}
@@ -18,15 +18,15 @@
   <aside class="side">
     <div class="logo"><span class="mk" id="logo-mk">D</span><span id="brand-name">Orthogonal</span></div>
     <div class="spacename" id="space-sub">Space · onboarding</div>
-    <a href="#" data-tab="overview" class="on" onclick="tab('overview');return false">▤ <span>Dashboard</span></a>
-    <a href="#" data-tab="courses" onclick="tab('courses');return false">▦ <span>Courses</span></a>
-    <a href="#" data-tab="tools" onclick="tab('tools');return false">⌘ <span>Tools</span></a>
-    <a href="#" data-tab="team" onclick="tab('team');return false">☻ <span>Team</span></a>
-    <a href="#" data-tab="analytics" onclick="tab('analytics');return false">◔ <span>Analytics</span></a>
-    <a href="#" data-tab="rewards" onclick="tab('rewards');return false">🎁 <span>Rewards</span></a>
-    <a href="#" data-tab="settings" onclick="tab('settings');return false">⚙ <span>Settings</span></a>
+    <a href="#" data-tab="overview" class="on" onclick="tab('overview');return false"><i class="svgic" data-ic="grid"></i><span>Dashboard</span></a>
+    <a href="#" data-tab="courses" onclick="tab('courses');return false"><i class="svgic" data-ic="book"></i><span>Courses</span></a>
+    <a href="#" data-tab="tools" onclick="tab('tools');return false"><i class="svgic" data-ic="layers"></i><span>Tools</span></a>
+    <a href="#" data-tab="team" onclick="tab('team');return false"><i class="svgic" data-ic="users"></i><span>Team</span></a>
+    <a href="#" data-tab="analytics" onclick="tab('analytics');return false"><i class="svgic" data-ic="chart"></i><span>Analytics</span></a>
+    <a href="#" data-tab="rewards" onclick="tab('rewards');return false"><i class="svgic" data-ic="gift"></i><span>Rewards</span></a>
+    <a href="#" data-tab="settings" onclick="tab('settings');return false"><i class="svgic" data-ic="sliders"></i><span>Settings</span></a>
     <div class="grow"></div>
-    <a href="index.html">⏻ <span>Sign out</span></a>
+    <a href="index.html"><i class="svgic" data-ic="logout"></i><span>Sign out</span></a>
     <div class="who" id="who">—</div>
   </aside>
 
@@ -47,12 +47,12 @@
     <section id="tab-courses" hidden>
       <div class="top"><div><h1>Courses</h1><p>Curriculum generated from your company brain. Each course becomes a building in the world.</p></div></div>
       <div class="panel" id="publish-panel" hidden>
-        <h3>World published 🌍</h3>
+        <h3>World published <i class="svgic" data-ic="globe"></i></h3>
         <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Share this link with new hires — they'll log in with their company email.</p>
         <div class="linkbox"><span id="play-link"></span><button class="btn btn-dark" onclick="copyLink()">Copy</button><a class="btn btn-primary" id="play-open" target="_blank">Open world →</a></div>
       </div>
       <div class="panel" id="gen-panel">
-        <div class="ptitle"><h3>Curriculum</h3><button class="btn btn-primary" id="pub-btn" onclick="publish()">Publish world 🌍</button></div>
+        <div class="ptitle"><h3>Curriculum</h3><button class="btn btn-primary" id="pub-btn" onclick="publish()">Publish world <i class="svgic" data-ic="globe"></i></button></div>
         <div class="grid2" id="course-cards"></div>
       </div>
     </section>
@@ -105,9 +105,9 @@
   </main>
 </div>
 
-<button id="ai-fab" onclick="toggleAI()" title="AI Assistant">✦</button>
+<button id="ai-fab" onclick="toggleAI()" title="AI Assistant"><i class="svgic" data-ic="sparkle"></i></button>
 <div id="ai-pop" hidden>
-  <div class="ai-tag">✦ AI Assistant — insights</div>
+  <div class="ai-tag"><i class="svgic" data-ic="sparkle"></i> AI Assistant — insights</div>
   <ul id="ai-insights"></ul>
   <div style="margin-top:14px;display:flex;gap:8px">
     <input style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px" placeholder="Ask a question…" onkeydown="if(event.key==='Enter')askAI(this)">
@@ -165,7 +165,7 @@ function renderKPIs(){
     ['On-track rate', (hires.length? Math.round(done/hires.length*100):100)+'%', 'hires completed'],
   ];
   document.getElementById('kpis').innerHTML = data.map(([t,v,s])=>
-    `<div class="kpi"><div class="t">${t}<span>◌</span></div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
+    `<div class="kpi"><div class="t">${t}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join('');
 }
 
 function renderHires(){
@@ -187,7 +187,7 @@ function renderAI(){
   const insights = [
     '3 hires haven\'t entered <b>Hard Conversations</b> — highest-scoring course for retention.',
     'Everyone missed the "secrets in Slack" fact — consider a stronger scenario there.',
-    'Mateo is 79% done but hasn\'t logged in for 3 days — a nudge + a ☕ reward may help.',
+    'Mateo is 79% done but hasn\'t logged in for 3 days — a nudge + a coffee reward may help.',
     'New pattern in Slack: "the Vault" now means 1Password — brain updated automatically.',
   ];
   document.getElementById('ai-insights').innerHTML = insights.map(i=>`<li>${i}</li>`).join('');
@@ -206,8 +206,8 @@ function askAI(inp){
 
 function renderCourses(){
   document.getElementById('course-cards').innerHTML = OB.COURSES.map(c=>
-    `<div class="course-card"><div class="ci">${c.icon}</div>
-     <h4>${c.title}</h4><div class="cb">🏢 ${c.building} · ${c.game} game</div>
+    `<div class="course-card"><div class="ci">${OB.icon(c.icon,30)}</div>
+     <h4>${c.title}</h4><div class="cb">${OB.icon('building',13)} ${c.building} · ${c.game} game</div>
      <p>${c.desc}</p><ul>${c.lessons.map(l=>`<li>${l}</li>`).join('')}</ul>
      <span class="pill live" style="align-self:flex-start">Generated ✓</span></div>`).join('');
   const st = OB.get();
@@ -216,7 +216,7 @@ function renderCourses(){
     const url = location.origin + location.pathname.replace('dashboard.html','') + 'play.html?space=' + encodeURIComponent(B.host);
     document.getElementById('play-link').textContent = url;
     document.getElementById('play-open').href = url;
-    document.getElementById('pub-btn').textContent='Republish ↻';
+    document.getElementById('pub-btn').innerHTML='Republish '+OB.icon('globe',15);
   }
 }
 function publish(){
@@ -231,7 +231,7 @@ function renderTools(){
   const brainFacts = OB.get().brainFacts||[];
   document.getElementById('tool-cards').innerHTML = OB.TOOLS.map(t=>{
     const done = st[t.id];
-    return `<div class="tool-card"><div class="ic">${t.icon}</div>
+    return `<div class="tool-card"><div class="ic">${OB.icon(t.icon,20)}</div>
       <div><b>${t.name}</b><span>${t.desc}</span></div>
       <span class="st">${done? '<span class="pill live">Connected ✓</span>' : `<button class="btn btn-dark" onclick="connectTool('${t.id}')">Connect</button>`}</span></div>`;
   }).join('');
@@ -279,7 +279,7 @@ function renderAnalytics(){
     '<tr><th>Hire</th>'+OB.COURSES.map(c=>`<th>${c.title}</th>`).join('')+'<th>Total</th></tr>' +
     hires.map(h=>'<tr><td><b>'+h.name+'</b></td>'+OB.COURSES.map(c=>{
       const g=(h.games||{})[c.id];
-      return '<td>'+(g? '✅ '+g.score+'%':'—')+'</td>';
+      return '<td>'+(g? OB.icon('check',13)+' '+g.score+'%':'—')+'</td>';
     }).join('')+`<td><b>${hireProgress(h)}%</b></td></tr>`).join('');
   document.getElementById('gaps').innerHTML = [
     '<b>"The Vault"</b> — 2/5 hires answered wrong. Recommend replaying HQ Hall quiz.',
@@ -290,11 +290,11 @@ function renderAnalytics(){
 
 function renderRewards(){
   document.getElementById('reward-list').innerHTML = OB.REWARDS.map(r=>
-    `<div class="reward"><span class="e">${r.emoji}</span><div><b>${r.name}</b><span>${r.cost} coins · via in-game shop</span></div>
+    `<div class="reward"><span class="e">${OB.icon(r.icon,26)}</span><div><b>${r.name}</b><span>${r.cost} coins · via in-game shop</span></div>
     <button class="btn btn-dark" onclick="sendReward('${r.id}')">Send to a hire</button></div>`).join('');
   const reds = [];
   Object.values(OB.get().hires||{}).forEach(h=>(h.redeemed||[]).forEach(r=>reds.push(h.name+' redeemed '+r)));
-  if(reds.length) document.getElementById('redemptions').innerHTML = reds.map(r=>`<div class="fact"><span class="cat">🎁</span><span>${r}</span></div>`).join('');
+  if(reds.length) document.getElementById('redemptions').innerHTML = reds.map(r=>`<div class="fact"><span class="cat">${OB.icon('gift',13)}</span><span>${r}</span></div>`).join('');
 }
 function sendReward(id){
   const r = OB.REWARDS.find(x=>x.id===id);
@@ -319,6 +319,9 @@ function wipe(){ if(confirm('Wipe all demo data and start over?')){ OB.reset(); 
 
 function renderAll(){ renderKPIs(); renderHires(); renderAI(); renderCourses(); renderTools(); renderTeam(); renderRewards(); renderSettings(); }
 renderAll();
+document.querySelectorAll('.svgic').forEach(e=>e.outerHTML=OB.icon(e.dataset.ic));
+document.getElementById('pub-btn').innerHTML = state.published ? 'Republish '+OB.icon('globe',15) : 'Publish world '+OB.icon('globe',15);
+if(state.published) document.getElementById('pub-btn').innerHTML = 'Republish '+OB.icon('globe',15);
 </script>
 </body>
 </html>
