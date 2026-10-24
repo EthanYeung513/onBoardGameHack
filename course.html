@@ -52,12 +52,15 @@ body.ai-open #ai-side{transform:none}
 .msg{max-width:88%;font-size:13px;line-height:1.55;padding:10px 12px;border-radius:10px}
 .msg.agent{background:#f2f3f5;align-self:flex-start;border:1px solid var(--line)}
 .msg.you{background:var(--ink);color:#fff;align-self:flex-end}
-#ai-in{border-top:1px solid var(--line);padding:12px 16px 16px}
-#ai-in .box{border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-#ai-in input{width:100%;border:none;outline:none;font-size:13px;background:none;padding:2px 0 18px;min-height:44px}
-#ai-in .row{display:flex;align-items:center;gap:8px}
-#ai-in .agent-mini{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#fff}
-#ai-in .send{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;background:var(--brand);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#ai-in{border-top:1px solid var(--line);padding:14px 16px 14px}
+#ai-in textarea{width:100%;border:none;outline:none;font-size:13px;background:none;resize:none;min-height:96px;line-height:1.5;font-family:inherit;color:var(--ink)}
+#ai-in .row{display:flex;align-items:center;gap:10px}
+#ai-in .icon-btn{width:30px;height:30px;border:none;background:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;border-radius:8px}
+#ai-in .icon-btn:hover{background:#f0f0f1;color:var(--ink)}
+#ai-in .agent-mini{display:flex;align-items:center;gap:6px;border:none;background:none;padding:4px 6px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+#ai-in .agent-mini:hover{color:var(--brand)}
+#ai-in .send{margin-left:auto;width:34px;height:34px;border-radius:50%;border:none;background:var(--brand);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+#ai-in .send:hover{opacity:.9}
 @media(max-width:900px){body.ai-open{padding-right:var(--aiw)}}
 </style>
 </head>
@@ -91,12 +94,15 @@ body.ai-open #ai-side{transform:none}
   </div>
   <div id="ai-msgs"></div>
   <div id="ai-in">
-    <div class="box">
-      <input id="ai-input" placeholder="Ask to change this course…" onkeydown="if(event.key==='Enter')askAI()">
-      <div class="row">
-        <button class="agent-mini" onclick="toggleAgents()"><i class="svgic" data-ic="sparkle"></i><span id="agent-mini-name">Curriculum Architect</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
-        <button class="send" onclick="askAI()"><i class="svgic" data-ic="up"></i></button>
-      </div>
+    <textarea id="ai-input" placeholder="Ask to change this course…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askAI()}"></textarea>
+    <div class="row">
+      <button class="icon-btn" title="Attach"><i class="svgic" data-ic="plus"></i></button>
+      <button class="icon-btn" title="Tools"><i class="svgic" data-ic="sliders"></i></button>
+      <button class="agent-mini" onclick="toggleAgents()"><span id="agent-mini-name">Curriculum Architect</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <span style="flex:1"></span>
+      <button class="icon-btn" title="Voice"><i class="svgic" data-ic="mic"></i></button>
+      <button class="icon-btn" title="Audio"><i class="svgic" data-ic="wave"></i></button>
+      <button class="send" onclick="askAI()"><i class="svgic" data-ic="up"></i></button>
     </div>
   </div>
 </div>
@@ -211,6 +217,7 @@ function pickAgent(a){
 function askAI(){
   const inp=document.getElementById('ai-input');
   const q=inp.value.trim(); if(!q)return;
+  inp.value='';
   aiMsg(esc(q),'You');
   const rem=/^(remove|delete|drop|take out)\b/i.test(q);
   const ren=/^(rename|retitle|call it)\b/i.test(q);
