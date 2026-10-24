@@ -5,11 +5,22 @@
 <title>Orthogonal — Course</title>
 <link rel="stylesheet" href="styles.css?v=6">
 <style>
+body{padding-right:0;transition:padding-right .2s}
+body.ai-open{padding-right:400px}
 .cw{max-width:760px;margin:0 auto;padding:44px 24px 120px}
 .back{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;margin-bottom:28px}
 .back:hover{color:var(--ink)}
+.title-line{display:flex;align-items:center;gap:14px;margin:6px 0 8px}
+.title-line h1{font-size:34px;margin:0;flex:1;min-width:0}
+.nav-arrows{display:flex;align-items:center;gap:8px}
+.nav-arrows .cnt{font-size:12px;color:var(--muted);min-width:56px;text-align:center;font-variant-numeric:tabular-nums}
+.arrow-btn{width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.arrow-btn:hover{background:#f5f5f5}
+.arrow-btn:disabled{opacity:.35;cursor:default}
+.panel-btn{width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-left:6px}
+.panel-btn:hover{background:#f5f5f5}
+.panel-btn.on{background:var(--ink);color:#fff}
 .cw .kind{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.cw h1{font-size:34px;margin:6px 0 8px}
 .cw .sub{color:var(--muted);font-size:14px;margin-bottom:30px}
 .cw h2{font-size:15px;margin:28px 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px}
 .outcomes li,.plan li{margin-bottom:10px;font-size:14px;line-height:1.5}
@@ -17,22 +28,76 @@
 .plan .n{display:inline-block;min-width:26px;color:var(--muted)}
 .meta-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .meta-row .pill{text-transform:none;letter-spacing:0}
+.lesson-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:34px 36px;margin-top:26px}
+.lesson-card .lno{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.lesson-card h3{font-size:24px;margin:0 0 16px}
+.lesson-card ul{padding-left:18px}
+.lesson-card li{margin-bottom:10px;font-size:14px;line-height:1.6}
+.lesson-card .check{background:#f6f7f8;border-radius:8px;padding:14px 16px;font-size:13px;margin-top:18px}
+.lesson-card .check b{display:block;margin-bottom:4px}
+/* right assistant panel */
+#ai-side{position:fixed;top:0;right:0;width:400px;height:100vh;background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s;z-index:50}
+body.ai-open #ai-side{transform:none}
+#ai-side .hd{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+#ai-side .hd .t{font-weight:700;font-size:14px;flex:1}
+#ai-side .hd button{border:none;background:none;cursor:pointer;color:var(--muted);padding:4px}
+.agent-sel{position:relative}
+.agent-btn{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer;margin:12px 16px 0}
+.agent-btn svg{margin-left:auto}
+.agent-menu{position:absolute;left:16px;right:16px;top:100%;margin-top:6px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.1);overflow:hidden;z-index:5}
+.agent-menu button{display:flex;width:100%;text-align:left;padding:11px 14px;border:none;background:none;cursor:pointer;font-size:13px;align-items:center;gap:10px}
+.agent-menu button:hover{background:#f5f5f5}
+.agent-menu .role{font-size:11px;color:var(--muted);font-weight:400;margin-left:auto}
+#ai-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:88%;font-size:13px;line-height:1.55;padding:10px 12px;border-radius:10px}
+.msg.agent{background:#f2f3f5;align-self:flex-start;border:1px solid var(--line)}
+.msg.you{background:var(--ink);color:#fff;align-self:flex-end}
+#ai-in{border-top:1px solid var(--line);padding:12px 16px 16px}
+#ai-in .box{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+#ai-in input{width:100%;border:none;outline:none;font-size:13px;background:none;padding:2px 0 8px}
+#ai-in .row{display:flex;align-items:center;gap:8px}
+#ai-in .agent-mini{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#fff}
+#ai-in .send{margin-left:auto;width:30px;height:30px;border-radius:8px;border:none;background:var(--brand);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+@media(max-width:900px){body.ai-open{padding-right:0}#ai-side{width:100%;border-left:none}}
 </style>
 </head>
 <body>
 <div class="cw">
   <a class="back" href="dashboard.html?tab=courses"><i class="svgic" data-ic="back"></i> Back to courses</a>
-  <div id="course-view"></div>
+  <div class="kind" id="k-label"></div>
+  <div class="title-line">
+    <h1 id="c-title"></h1>
+    <div class="nav-arrows">
+      <button class="arrow-btn" id="prev" onclick="go(-1)" title="Previous"><i class="svgic" data-ic="left"></i></button>
+      <span class="cnt" id="cnt"></span>
+      <button class="arrow-btn" id="next" onclick="go(1)" title="Next"><i class="svgic" data-ic="right"></i></button>
+      <button class="panel-btn" id="ai-toggle" onclick="toggleAI()" title="AI assistant"><i class="svgic" data-ic="sidepanel"></i></button>
+    </div>
+  </div>
+  <div class="sub" id="c-sub"></div>
+  <div id="slide"></div>
 </div>
 
-<button id="ai-fab" onclick="toggleAI()" title="AI Assistant"><i class="svgic" data-ic="sparkle"></i></button>
-<div id="ai-pop" hidden>
-  <div class="ai-tag"><i class="svgic" data-ic="sparkle"></i> AI Assistant<span id="ai-ctx" style="font-weight:400;color:var(--muted)"></span></div>
-  <ul id="ai-insights"></ul>
-  <div id="ai-actions"></div>
-  <div style="margin-top:14px;display:flex;gap:8px">
-    <input style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px" placeholder="Ask to change this course…" onkeydown="if(event.key==='Enter')askAI(this)">
-    <button class="btn btn-primary" onclick="askAI(this.previousElementSibling)">→</button>
+<div id="ai-side">
+  <div class="hd"><span class="t">Assistant</span>
+    <button onclick="toggleAI()" title="Close"><i class="svgic" data-ic="x"></i></button>
+  </div>
+  <div class="agent-sel">
+    <button class="agent-btn" id="agent-btn" onclick="toggleAgents()">
+      <span id="agent-name">Curriculum Architect</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="agent-menu" id="agent-menu" hidden></div>
+  </div>
+  <div id="ai-msgs"></div>
+  <div id="ai-in">
+    <div class="box">
+      <input id="ai-input" placeholder="Ask to change this course…" onkeydown="if(event.key==='Enter')askAI()">
+      <div class="row">
+        <button class="agent-mini" onclick="toggleAgents()"><i class="svgic" data-ic="sparkle"></i><span id="agent-mini-name">Curriculum Architect</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+        <button class="send" onclick="askAI()"><i class="svgic" data-ic="up"></i></button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -45,69 +110,128 @@ document.documentElement.style.setProperty('--brand',B.primary);
 document.documentElement.style.setProperty('--accent',B.accent||'#2b5cff');
 const id=new URLSearchParams(location.search).get('id');
 const course=OB.COURSES.find(c=>c.id===id)||OB.COURSES[0];
-let aiEdit=course;
 
+const AGENTS=[
+  ['Curriculum Architect','Plans & structure'],
+  ['Content Editor','Wording & detail'],
+  ['Compliance Checker','Policies & accuracy'],
+  ['Engagement Designer','Fun & retention'],
+];
+let agent=AGENTS[0][0];
+let slide=0; // 0 = overview, 1..n = lesson
 const OUTCOMES=[
   'Understand the core concepts covered in this course',
   'Apply what you learn inside the game world',
   'Recall key people, tools and terms on the job',
 ];
-function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);}
 function esc(s){return String(s).replace(/</g,'&lt;');}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);}
 
-function renderCourse(){
-  document.getElementById('course-view').innerHTML=`
-    <div class="kind">Course · ${esc(course.game)} game</div>
-    <h1>${esc(course.title)}</h1>
-    <div class="sub">${esc(course.desc||'')}</div>
-    <div class="meta-row">
-      <span class="pill">${esc(course.building)}</span>
-      <span class="pill">${course.lessons.length} lessons</span>
-      <span class="pill live">Published</span>
-    </div>
-    <h2>Learning outcomes</h2>
-    <ul class="outcomes">${OUTCOMES.map(o=>`<li>${o}</li>`).join('')}</ul>
-    <h2>Course plan</h2>
-    <ul class="plan" style="list-style:none;padding-left:0">${course.lessons.map((l,i)=>`<li><span class="n">${i+1}.</span>${esc(l)}</li>`).join('')}</ul>`;
+function lessonBody(l,i){
+  return `<ul>
+    <li><b>What it is:</b> the essentials of ${esc(l.toLowerCase())}, explained in plain terms.</li>
+    <li><b>Why it matters:</b> where this shows up day-to-day at ${esc(B.company)}.</li>
+    <li><b>Key details:</b> the specifics drawn from the company brain and connected tools.</li>
+    <li><b>Examples:</b> real situations and edge cases pulled from team data.</li>
+  </ul>
+  <div class="check"><b>Check</b>${esc(l)} — short quiz + one scenario in the game world.</div>`;
 }
+function render(){
+  document.getElementById('c-title').textContent=course.title;
+  document.getElementById('k-label').textContent='COURSE · '+course.game.toUpperCase()+' GAME';
+  document.getElementById('c-sub').textContent=course.desc||'';
+  const n=course.lessons.length, el=document.getElementById('slide');
+  if(slide===0){
+    el.innerHTML=`
+      <div class="meta-row">
+        <span class="pill">${esc(course.building)}</span>
+        <span class="pill">${n} lessons</span>
+        <span class="pill live">Published</span>
+      </div>
+      <h2>Learning outcomes</h2>
+      <ul class="outcomes">${OUTCOMES.map(o=>`<li>${o}</li>`).join('')}</ul>
+      <h2>Course plan</h2>
+      <ul class="plan" style="list-style:none;padding-left:0">${course.lessons.map((l,i)=>`<li><span class="n">${i+1}.</span>${esc(l)}</li>`).join('')}</ul>`;
+    document.getElementById('cnt').textContent='Overview';
+  } else {
+    const l=course.lessons[slide-1];
+    el.innerHTML=`<div class="lesson-card"><div class="lno">LESSON ${slide} OF ${n}</div><h3>${esc(l)}</h3>${lessonBody(l,slide)}</div>`;
+    document.getElementById('cnt').textContent=slide+' / '+n;
+  }
+  document.getElementById('prev').disabled=slide===0;
+  document.getElementById('next').disabled=slide===n;
+}
+function go(d){
+  const n=course.lessons.length;
+  slide=Math.min(n,Math.max(0,slide+d));
+  render();
+}
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  if(e.key==='ArrowLeft')go(-1);
+  if(e.key==='ArrowRight')go(1);
+});
+
+/* ---- assistant ---- */
 function saveEdit(){
-  const s=OB.get(); s.courseEdits=s.courseEdits||{};
-  s.courseEdits[course.id]={lessons:course.lessons.slice(),title:course.title};
+  // capture first: OB.get() re-applies stored courseEdits and would wipe the new change
+  const lessons=course.lessons.slice(), title=course.title;
+  const s=OB.get();
+  course.lessons=lessons.slice(); course.title=title;
+  s.courseEdits=s.courseEdits||{};
+  s.courseEdits[course.id]={lessons,title};
   if(String(course.id).startsWith('cx')){
     s.customCourses=(s.customCourses||[]).map(c=>c.id===course.id?course:c);
   }
   OB.save(s);
 }
 function aiMsg(html,who){
-  const li=document.createElement('li');
-  li.innerHTML=(who?'<b>'+who+':</b> ':'')+html;
-  document.getElementById('ai-insights').appendChild(li);
-  li.scrollIntoView({block:'nearest'});
+  const d=document.createElement('div');
+  d.className='msg '+(who==='You'?'you':'agent');
+  d.innerHTML=html;
+  const m=document.getElementById('ai-msgs');
+  m.appendChild(d);m.scrollTop=m.scrollHeight;
 }
-function askAI(inp){
+function toggleAI(){
+  document.body.classList.toggle('ai-open');
+  document.getElementById('ai-toggle').classList.toggle('on',document.body.classList.contains('ai-open'));
+}
+function toggleAgents(){
+  const m=document.getElementById('agent-menu');
+  if(m.hidden){ m.innerHTML=AGENTS.map(a=>`<button onclick="pickAgent('${a[0]}')">${a[0]}<span class="role">${a[1]}</span></button>`).join(''); }
+  m.hidden=!m.hidden;
+}
+function pickAgent(a){
+  agent=a;
+  document.getElementById('agent-name').textContent=a;
+  document.getElementById('agent-mini-name').textContent=a;
+  document.getElementById('agent-menu').hidden=true;
+  aiMsg('Switched to <b>'+esc(a)+'</b>.','Agent');
+}
+function askAI(){
+  const inp=document.getElementById('ai-input');
   const q=inp.value.trim(); if(!q)return;
   aiMsg(esc(q),'You');
-  const add=/^(add|include|cover|put in|insert)\b/i.test(q);
   const rem=/^(remove|delete|drop|take out)\b/i.test(q);
-  if(rem){
+  const ren=/^(rename|retitle|call it)\b/i.test(q);
+  if(ren){
+    const t=q.replace(/^(rename|retitle|call it)\s*(the course|it|this course)?\s*(to|as)?\s*/i,'');
+    if(t){course.title=t;saveEdit();render();aiMsg('Renamed the course to <b>'+esc(t)+'</b>.','Agent');}
+    else aiMsg('What should I rename it to?','Agent');
+  } else if(rem){
     const kw=q.replace(/^(remove|delete|drop|take out)\s*(the\s*)?(lesson\s*)?(on\s*)?/i,'').toLowerCase();
     const idx=course.lessons.findIndex(l=>l.toLowerCase().includes(kw));
-    if(idx>-1){const gone=course.lessons.splice(idx,1)[0];saveEdit();renderCourse();aiMsg('Removed "'+esc(gone)+'".','Agent');}
+    if(idx>-1){const gone=course.lessons.splice(idx,1)[0];if(slide>course.lessons.length)slide=course.lessons.length;saveEdit();render();aiMsg('Removed "'+esc(gone)+'".','Agent');}
     else aiMsg('I could not find a lesson matching that — try quoting its name.','Agent');
   } else {
     const lesson=q.replace(/^(add|add a|add an|include|cover|put in|insert|a lesson on|lesson on|teach)\s*/i,'').replace(/^on\s+/i,'');
     course.lessons.push(lesson.charAt(0).toUpperCase()+lesson.slice(1));
-    saveEdit();renderCourse();
-    aiMsg('Added "'+esc(lesson)+'" to the course plan — the list above is updated.','Agent');
+    saveEdit();render();
+    aiMsg('Added "'+esc(lesson)+'" to the course plan — it\'s lesson '+course.lessons.length+' now.','Agent');
   }
   inp.value='';
 }
-function toggleAI(){const p=document.getElementById('ai-pop');p.hidden=!p.hidden;}
-
-renderCourse();
-document.getElementById('ai-ctx').textContent=' · '+course.title;
-aiMsg('This is the current plan for <b>'+esc(course.title)+'</b>. Ask me to add, remove or rename lessons and I\'ll update it.','Agent');
-document.getElementById('ai-pop').hidden=false;
+render();
 document.querySelectorAll('.svgic').forEach(e=>e.outerHTML=OB.icon(e.dataset.ic));
 </script>
 </body>
