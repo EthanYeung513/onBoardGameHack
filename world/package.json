@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "assets": "python3 tools/gen_assets.py"
+    "assets": "python3 tools/build_real_assets.py"
   },
   "dependencies": {
     "phaser": "^3.87.0",

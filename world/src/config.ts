@@ -15,8 +15,16 @@ export interface Npc {
   facts: string[];
 }
 
+// Company name: dev ?company= > dashboard-saved ob_company > placeholder.
+function loadCompanyName(): string {
+  const q = import.meta.env.DEV ? new URLSearchParams(location.search).get('company') : null;
+  if (q?.trim()) return q.trim();
+  try { const s = localStorage.getItem('ob_company'); if (s?.trim()) return s.trim(); } catch { /* ignore */ }
+  return 'Orthogonal';
+}
+
 export const COMPANY = {
-  name: 'Orthogonal',
+  name: loadCompanyName(),
   tagline: 'Learn the tribe, not just the tools',
 };
 

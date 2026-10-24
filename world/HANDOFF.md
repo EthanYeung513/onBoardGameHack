@@ -17,8 +17,9 @@ Stardew-style course start menu when entering a building.
 
 ## Status: what works now
 
-- **Title screen** — generated pixel-art mountain/star backdrop + wooden-style
-  company-name logo (PIL-rendered with the Stardew font) + Play button.
+- **Title screen** — real-sprite SDV title backdrop + the company name spelled
+  in the Stardew logo's wooden plank letters (rendered at runtime, see
+  Session 5) + Play button.
 - **Login** — mockup-style card (name + work email, Continue with Google /
   Apple SSO buttons — mock auth, any valid input proceeds).
 - **Character select** — arrow-cycled character previews (6 variants) from the
@@ -71,8 +72,9 @@ bugs found:
   else falls back to 5 mock courses. Wire the manager dashboard's
   "Publish world" to write that key and link here.
 - **Real auth / SSO** — login is a mock gate.
-- **Dynamic logo** — `public/assets/logo.png` is baked for "Orthogonal";
-  regenerate for other company names via `npm run assets -- "Company Name"`.
+- **Company name from the dashboard** — the logo already renders any name at
+  runtime from `COMPANY.name`; config reads `ob_company` from localStorage
+  (dev: `?company=`). The dashboard only has to write that key.
 - Character *customization* (hair/clothes pickers) — currently variant cycling.
 
 ## How to run
@@ -83,8 +85,8 @@ npm install
 npm run dev        # vite on http://localhost:5173
 ```
 
-Build: `npm run build` (tsc + vite). Assets regenerate:
-`python3 tools/gen_assets.py "<Company Name>"` (needs Pillow).
+Build: `npm run build` (tsc + vite). Assets regenerate from the SDV content
+dump: `npm run assets [-- /path/to/Content]` (needs Pillow; see Session 5).
 
 ## Resources used
 
@@ -125,8 +127,6 @@ Build: `npm run build` (tsc + vite). Assets regenerate:
 
 ## Known rough edges
 
-- Logo is baked per-company via the gen script; regenerate or swap to a
-  runtime canvas render if company names vary per deploy.
 - NPC sprites only face down (single-frame); fine for wander, could add rows.
 - Town hall door does nothing (it's not a course building) — could become
   a progress/overview screen later.
@@ -254,6 +254,84 @@ title/login/char select; `?courses=N` fakes N courses; `?seed=N`; `?at=tx,ty`
 teleports the player; `?zoom=Z`; `?debug=1` shows blocked tiles in red and doors
 in blue.
 
-**Caveat:** `npm run assets` (`gen_assets.py`) still writes old placeholder
-`tileset.png`/`fence.png`/`crops.png`/`b_*.png`, which breaks the world. After
-it, run `python3 tools/build_real_assets.py` (or only regenerate the logo).
+(The old `gen_assets.py` placeholder caveat is resolved in Session 5.)
+
+## Session 5: framing fix, real asset pipeline, wide maps, real title screen (2026-10-24)
+
+**1. Dead space / bars (Nicole's screenshot).** Reproduced: the camera used a
+fixed zoom of 2.4, so on any viewport wider than 64 tiles x 16 x 2.4 = 2458px
+(big monitors, or browser zoom-out) the map ended before the screen did, and
+the camera bounds pinned it to the top-left with a green void beside it. With
+`?zoom=0.4` you get exactly her screenshot. Fixes (`TownScene.fitCamera`):
+- zoom = max(cover, clamp(shortSide / (16*18), 2, 3)). You see ~18 tiles on
+  the short axis at about 2-3x, and never less than the zoom where the map
+  covers the viewport. Recomputed on every `scale` resize.
+- Camera bounds are padded to at least the view size, so a map smaller than
+  the view (only possible with the dev `?zoom=` override) is centred.
+- The Phaser host div is now `position:absolute; inset:0`, so RESIZE always
+  measures the full window instead of the canvas's own size.
+- Verified headless at 1024x600, 1440x900, 800x1200, 2560x1440 and 3840x1200.
+  No bars or voids in any of them.
+
+**Weather (found while testing):** `raindrop.png` was a fully transparent
+crop, so rain never showed. `TileSheets/rain` frames are 64x64; the build now
+crops the streak properly. Weather also moved to its own unzoomed overlay
+camera (otherwise the camera zoom scales screen-space drops/tint). Because of
+that, hover/tap now read world coords via `cameras.main.getWorldPoint`
+(`pointer.worldX` can come from the top camera).
+
+**2. `npm run assets`** now runs `tools/build_real_assets.py` (+
+`tools/title_assets.py`). The dump path is argv[1], else `$SDV_CONTENT`, else
+the old /tmp default. It checks the dump has the required files *before*
+doing anything and prints a clear error if not. Everything is built in a temp
+staging dir and only copied into `public/assets` + `src/tiles.gen.ts` when the
+whole build succeeded, so a missing or partial dump can't clobber anything.
+`gen_assets.py` (the placeholder generator) and its unused leftovers
+(`b_mill.png`, `rock.png`, `logo.png`) are deleted. The pipeline reproduces
+every committed asset byte-for-byte.
+
+**3. Scaling with course count.** Lots no longer only stack downward (14
+courses used to be a 64x180 strip). `streetCount(n)` adds a parallel street
+band per 6 courses (max 4): 1-6 courses = 1 street (unchanged layouts),
+7-12 = 2, 13-18 = 3, 19+ = 4. Each band is 58 tiles (street + a lot on each
+side); the map widens to `2*fd + S*58`. Lots fill row-major, starting with the
+streets nearest the town hall. Every street gets cliff stairs and a dirt trail
+across the plateau to the plaza; at the bottom the streets' dirt clearings are
+joined by a trail to the fields (field width capped). Sizes: 2 -> 64x66,
+7 -> 122x85, 10 -> 122x104, 14 -> 180x104, 20 -> 238x104. Checked 1-20
+courses x 5 seeds: no building overlaps or out-of-bounds, every door free and
+BFS-reachable from spawn, generation <= 20ms, deterministic per seed.
+
+**4. Title screen.**
+- **Logo** (`src/logo.ts` + `public/assets/logo_kit.{png,json}`). The
+  company name is drawn at runtime with a full A-Z plank alphabet built by
+  `tools/title_assets.py` from the real `LooseSprites/logo.png`:
+  - S T A R D E W V L Y are the real letters, cut out of the sign by palette.
+  - The other 16 letters are assembled from real plank pieces of those letters:
+    - stems from T/E/D/L, arms from E;
+    - O = mirrored D bowl + D bowl, C/G from that bowl plus E arms;
+    - U/J use the D bowl rotated into a cup;
+    - P/B from R, K from the R leg (flipped for the top half);
+    - N/M/X/Z from the V strokes.
+  - Each piece is re-lit with the logo's lighting (dark outline, top/right
+    inner highlight, left shade) and recoloured to the golden key-art
+    palette sampled from her screenshot.
+  - Runtime adds the down-left translucent drop shadow and the real green
+    leaves. The leaves are anchored where they sit on the real logo, then
+    nudged until they overlap a letter.
+  - Names longer than 10 characters with spaces split evenly onto two lines.
+    Characters with no plank glyph (digits, &) fall back to the Stardew font
+    in the same colours.
+  - Shown at an integer scale when it's >= 2x, otherwise at the exact fit.
+- **Backdrop** (`title_bg.png`, 640x360 = 1/3 of 1080p). The layers follow
+  `TitleMenu.draw()`: Cursors sky gradient (703,1912), Clouds big + small
+  clouds, both Cursors mountain ranges (0,886) and (0,737), and the Clouds
+  corner bushes. In front, a farm row built from real sprites:
+  - Fence1 fence, oak + pine trees, bushes;
+  - the Coop, white/brown chickens and chicks;
+  - sunflowers from crops.png;
+  - a grass band and dirt path from the tileset, and Haley on the path.
+  - CSS anchors it `center bottom` so the farm stays visible in portrait.
+- Login / char select reuse the backdrop. Play button and tagline scale with
+  the viewport.
+- `COMPANY.name`: dev `?company=` > localStorage `ob_company` > "Orthogonal".

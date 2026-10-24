@@ -141,7 +141,7 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
 
   return (
     <div className="game-stage">
-      <div ref={host} />
+      <div ref={host} className="game-host" />
       <div className="sd-panel hud-name">{hire.name} · {COMPANY.name}</div>
       {hover && !anyUi && (
         <div className="tooltip" style={{ left: hover.x, top: hover.y }}>

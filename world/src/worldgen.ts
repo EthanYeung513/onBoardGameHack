@@ -521,18 +521,31 @@ export const LOT_THEMES: Record<string, (b: Builder, r: LotRect, clutter: number
 // ======================================================================
 const PLATEAU = 20;          // rows above the cliff lip
 const LOT_H = 19;
-const W = 64;
+const BAND = 58;             // one street + a lot on each side
+const LOTS_PER_STREET = 6;   // more courses than this -> another street band
+
+/** Street bands for a course count: the map widens (more parallel streets)
+ *  rather than only growing taller, so walks stay short at any size. */
+export function streetCount(n: number) {
+  return Math.min(4, Math.max(1, Math.ceil(n / LOTS_PER_STREET)));
+}
 
 export function generateWorld(courses: Course[], seed = 20261024, opts: WorldOptions = {}): WorldSpec {
   const rnd = mulberry32(seed);
   const clutter = opts.clutter ?? 1;
   const fd = opts.forestDepth ?? 3;
-  const nRows = Math.max(1, Math.ceil(courses.length / 2));
+  const S = streetCount(courses.length);
+  const nRows = Math.max(1, Math.ceil(courses.length / (2 * S)));
   const lotsTop = PLATEAU + 4;
   const bottomTop = lotsTop + nRows * LOT_H;
   const H = bottomTop + 23;
+  const W = 2 * fd + S * BAND;
   const b = new Builder(W, H, rnd);
-  const CX = W >> 1;                   // street centre column (3 wide: CX-1..CX+1)
+  const CX = W >> 1;                   // town hall / plaza centre column
+  // street centre columns (each street is 3 wide: sx-1..sx+1)
+  const streets = Array.from({ length: S }, (_, k) => fd + k * BAND + (BAND >> 1));
+  // lots fill the streets nearest the town hall first
+  const streetOrder = streets.map((_, k) => k).sort((a, c) => Math.abs(streets[a] - CX) - Math.abs(streets[c] - CX) || a - c);
 
   // ---- town hall plateau ----
   const hall = b.building('b_townhall', CX - 6, 2, undefined, true);
@@ -545,6 +558,13 @@ export function generateWorld(courses: Course[], seed = 20261024, opts: WorldOpt
   b.place('bench', CX - 7, hall.doorY + 4, { force: true });
   b.place('bench', CX + 6, hall.doorY + 4, { force: true });
   for (const x of [CX - 8, CX + 8]) b.place('flowerpot', x, hall.y + 9, { force: true });
+  // side streets: a trail across the plateau from their stairs to the plaza
+  for (const sx of streets) {
+    if (Math.abs(sx - CX) <= 10) continue;
+    const toX = sx < CX ? CX - 11 : CX + 11;
+    b.trailV(sx, PLATEAU - 4, PLATEAU - 1);
+    b.trail(sx, PLATEAU - 4, toX, PLATEAU - 6, PLATEAU - 3);
+  }
   // a pond on one (seeded) side of the plateau — before scenery so nothing lands in it
   {
     const left = rnd() < 0.5;
@@ -564,26 +584,31 @@ export function generateWorld(courses: Course[], seed = 20261024, opts: WorldOpt
     b.scatter(GRASS_BITS, x0, 3, x1, PLATEAU - 1, 0.02, [Ter.Grass]);
   }
   // cliff wall with stairs down to the main street
-  b.cliff(fd, W - 1 - fd, PLATEAU, [CX - 1, CX, CX + 1]);
+  b.cliff(fd, W - 1 - fd, PLATEAU, streets.flatMap(sx => [sx - 1, sx, sx + 1]));
   // cliff foot clutter: boulders/bushes hug the wall like the reference farm
   for (let x = fd; x < W - fd; x++) {
     const y = PLATEAU + 4;
-    if (Math.abs(x - CX) < 4) continue;
+    if (streets.some(sx => Math.abs(x - sx) < 4)) continue;
     if (b.chance(0.12)) b.place(b.pick(['bush_m', 'bush_s', 'boulder', 'bush_m', 'bush_berry']), x, y + (b.chance(0.5) ? 1 : 0), { on: [Ter.Grass] });
   }
 
-  // ---- main street ----
-  b.fill(CX - 1, lotsTop, CX + 1, bottomTop + 4, Ter.Paved);
-  b.reserveRect(CX - 2, lotsTop, CX + 2, bottomTop + 4);
+  // ---- streets ----
+  for (const sx of streets) {
+    b.fill(sx - 1, lotsTop, sx + 1, bottomTop + 4, Ter.Paved);
+    b.reserveRect(sx - 2, lotsTop, sx + 2, bottomTop + 4);
+  }
 
   // ---- course lots ----
   const themeNames = opts.themes ?? shuffle(Object.keys(LOT_THEMES), rnd);
   const lots: Lot[] = [];
   courses.forEach((c, i) => {
+    // row-major over the streets so every band grows evenly
     const side: 'L' | 'R' = i % 2 === 0 ? 'L' : 'R';
-    const row = Math.floor(i / 2);
+    const row = Math.floor(i / (2 * S));
+    const k = streetOrder[Math.floor(i / 2) % S], SX = streets[k];
     const y0 = lotsTop + row * LOT_H, y1 = y0 + LOT_H - 1;
-    const x0 = side === 'L' ? fd : CX + 3, x1 = side === 'L' ? CX - 3 : W - 1 - fd;
+    const bx0 = fd + k * BAND, bx1 = bx0 + BAND - 1;
+    const x0 = side === 'L' ? bx0 : SX + 3, x1 = side === 'L' ? SX - 3 : bx1;
     const key = c.building && BUILDINGS[c.building] ? c.building : BUILDING_CYCLE[i % BUILDING_CYCLE.length];
     const d = BUILDINGS[key];
     const bx = side === 'L' ? x0 + 1 + b.rint(0, 2) : x1 - d.w - b.rint(0, 2);
@@ -592,7 +617,7 @@ export function generateWorld(courses: Course[], seed = 20261024, opts: WorldOpt
     // dirt yard in front of the door
     b.blob(bd.doorX + 0.5, bd.doorY + 2.5, Math.max(5, d.w / 2 + 3), 3.4, Ter.Dirt, 0.3, [x0, bd.doorY, x1, y1 - 3]);
     // winding trail from the door to the street
-    const streetEdge = side === 'L' ? CX - 2 : CX + 2;
+    const streetEdge = side === 'L' ? SX - 2 : SX + 2;
     b.trailV(bd.doorX, bd.doorY, bd.doorY + 1);
     const lo = bd.doorY + 1, hi = Math.min(y1 - 3, bd.doorY + 4);
     b.trail(bd.doorX, bd.doorY + 1, streetEdge, lo, hi);
@@ -624,11 +649,13 @@ export function generateWorld(courses: Course[], seed = 20261024, opts: WorldOpt
     b.place('log', fd + 3, by0 + 2, { on: [Ter.Grass, Ter.Dirt] });
     b.grove(fd + 2, by0 + 13, 3);
   }
-  // street ends in a dirt clearing that leads to the fields
-  b.blob(CX + 0.5, bottomTop + 6, 4, 2.6, Ter.Dirt, 0.25);
-  b.trail(CX + 2, bottomTop + 6, CX + 8, bottomTop + 5, bottomTop + 7);
+  // streets end in dirt clearings joined by a trail that leads to the fields
+  for (const sx of streets) b.blob(sx + 0.5, bottomTop + 6, 4, 2.6, Ter.Dirt, 0.25);
+  const lastSX = streets[S - 1];
+  for (let k = 0; k < S - 1; k++) b.trail(streets[k] + 2, bottomTop + 6, streets[k + 1] - 2, bottomTop + 5, bottomTop + 7);
+  b.trail(lastSX + 2, bottomTop + 6, lastSX + 8, bottomTop + 5, bottomTop + 7);
   {
-    const fx0 = CX + 9, fx1 = W - 1 - fd - 2, fy0 = by0 + 3, fy1 = by0 + 13;
+    const fx0 = lastSX + 9, fx1 = Math.min(W - 1 - fd - 2, fx0 + 40), fy0 = by0 + 3, fy1 = by0 + 13;
     b.building('b_barn', fx1 - 6, fy0 - 3);
     b.building('b_silo', fx1 - 10, fy0 - 4);
     b.fill(fx0, fy0 + 5, fx1, fy1 + 1, Ter.Dirt);

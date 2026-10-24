@@ -35,7 +35,28 @@ export class TownScene extends Phaser.Scene {
   };
   private onUiClose = () => { if (this.sys.isActive()) this.uiActive = false; };
 
+  private zoomOverride = 0;
+
   constructor() { super('town'); }
+
+  // Zoom scales with the viewport so you always see a chunk of the world around
+  // the player (~2-3x), and never drops below the zoom at which the map covers
+  // the whole viewport (no void beside the map on big/wide screens).
+  // ?zoom=Z (dev) wins outright; if the map is then smaller than the view,
+  // the camera bounds centre it.
+  private fitCamera() {
+    const cam = this.cameras.main;
+    const { width, height } = this.scale;
+    cam.setSize(width, height);
+    const W = this.world.w * T, H = this.world.h * T;
+    const cover = Math.max(width / W, height / H);
+    const pref = Phaser.Math.Clamp(Math.min(width, height) / (T * 18), 2, 3);
+    const z = this.zoomOverride || Math.max(cover, pref);
+    cam.setZoom(z);
+    // pad the bounds to at least the view size so a too-small map is centred
+    const bw = Math.max(W, width / z), bh = Math.max(H, height / z);
+    cam.setBounds((W - bw) / 2, (H - bh) / 2, bw, bh);
+  }
 
   init(data: { charRow?: number; weather?: WeatherMode }) {
     this.charRow = data.charRow ?? 0;
@@ -112,6 +133,7 @@ export class TownScene extends Phaser.Scene {
     const pkey = `p${this.charRow}`;
     const ROWS = { down: 0, right: 4, up: 8, left: 12 } as const;
     (Object.keys(ROWS) as (keyof typeof ROWS)[]).forEach(dir => {
+      if (this.anims.exists(`walk-${dir}`)) this.anims.remove(`walk-${dir}`); // scene restart: rebind to this char
       this.anims.create({
         key: `walk-${dir}`,
         frames: this.anims.generateFrameNumbers(pkey, { start: ROWS[dir], end: ROWS[dir] + 3 }),
@@ -133,9 +155,11 @@ export class TownScene extends Phaser.Scene {
     });
 
     // camera
-    this.cameras.main.setBounds(0, 0, this.world.w * T, this.world.h * T);
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
-    this.cameras.main.setZoom(Number(q.get('zoom')) || 2.4);
+    this.zoomOverride = Number(q.get('zoom')) || 0;
+    this.fitCamera();
+    this.scale.on('resize', this.fitCamera, this);
+    this.events.once('shutdown', () => this.scale.off('resize', this.fitCamera, this));
 
     // input
     this.cursors = this.input.keyboard!.createCursorKeys();
@@ -146,7 +170,7 @@ export class TownScene extends Phaser.Scene {
     // hover / tap interact
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => this.onHover(p));
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
-      const wx = p.worldX, wy = p.worldY;
+      const { x: wx, y: wy } = this.cameras.main.getWorldPoint(p.x, p.y);
       // tap a door → enter if close
       for (const dz of this.doorZones) {
         const dx = dz.x * T + T / 2, dy = dz.y * T + T / 2;
@@ -179,22 +203,37 @@ export class TownScene extends Phaser.Scene {
       snow: [0xaabbdd, 0.18],
     };
     const [col, a] = tints[this.weather];
-    if (a > 0) this.add.rectangle(0, 0, width * 2, height * 2, col, a)
-      .setOrigin(0).setScrollFactor(0).setDepth(1e6);
+    const fx: Phaser.GameObjects.GameObject[] = [];
+    // oversized so it still covers the view after a resize
+    if (a > 0) fx.push(this.add.rectangle(0, 0, 8192, 8192, col, a)
+      .setOrigin(0).setScrollFactor(0).setDepth(1e6));
     if (this.weather === 'rain' || this.weather === 'storm' || this.weather === 'snow') {
       const n = this.weather === 'storm' ? 90 : 50;
       for (let i = 0; i < n; i++) {
         const d = this.add.image(Math.random() * width, Math.random() * height, 'raindrop')
-          .setScrollFactor(0).setDepth(1e6 + 1).setAlpha(0.8);
-        if (this.weather === 'snow') d.setTint(0xffffff).setAlpha(0.9);
+          .setScrollFactor(0).setDepth(1e6 + 1).setAlpha(0.8).setScale(1.5);
+        if (this.weather === 'snow') d.setTint(0xffffff).setAlpha(0.9).setScale(0.6);
         this.drops.push(d);
+        fx.push(d);
       }
+    }
+    // weather lives in screen space: draw it with an unzoomed overlay camera
+    if (fx.length) {
+      const fxSet = new Set(fx);
+      const ui = this.cameras.add(0, 0, width, height);
+      ui.ignore(this.children.list.filter(o => !fxSet.has(o)));
+      this.cameras.main.ignore(fx);
+      const fit = (sz: Phaser.Structs.Size) => ui.setSize(sz.width, sz.height);
+      this.scale.on('resize', fit);
+      this.events.once('shutdown', () => this.scale.off('resize', fit));
     }
   }
 
   private onHover(p: Phaser.Input.Pointer) {
     if (this.uiActive) return;
-    const tx = Math.floor(p.worldX / T), ty = Math.floor(p.worldY / T);
+    // main camera explicitly: the weather overlay camera sits on top
+    const wp = this.cameras.main.getWorldPoint(p.x, p.y);
+    const tx = Math.floor(wp.x / T), ty = Math.floor(wp.y / T);
     let found: Course | null = null;
     for (const bd of this.buildings) {
       if (bd.course && tx >= bd.x - 1 && tx < bd.x + bd.w + 1 && ty >= bd.y - 1 && ty < bd.y + bd.h + 1) {
