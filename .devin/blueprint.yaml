@@ -1,0 +1,25 @@
+# https://docs.devin.ai/onboard-devin/environment-yaml
+initialize: |
+  echo "PATH=$HOME/.nvm/versions/node/v24.19.0/bin:$PATH" >> $ENVRC
+maintenance: |
+  npm install
+knowledge:
+  - name: lint
+    contents: |
+      # npm run lint
+  - name: test
+    contents: |
+      # npm run test   (vitest)
+  - name: typecheck
+    contents: |
+      # npm run typecheck   (tsc --noEmit)
+  - name: dev
+    contents: |
+      # npm run dev   (Next.js on :3000; mockup on main is static: python3 -m http.server 8787)
+  - name: seed
+    contents: |
+      # npm run db:seed   (local PGlite in .data/ — stop `npm run dev` first)
+  - name: notes
+    contents: |
+      # Use `npm install`, not `npm ci` — the committed lockfile trips npm ci on npm 10.
+      # Commit as FHL-08 via `original_git` + GIT_AUTHOR_*/GIT_COMMITTER_* env vars; push with the FHL08_GITHUB_PAT secret.
