@@ -115,8 +115,9 @@
 
 <button id="ai-fab" onclick="toggleAI()" title="AI Assistant"><i class="svgic" data-ic="sparkle"></i></button>
 <div id="ai-pop" hidden>
-  <div class="ai-tag"><i class="svgic" data-ic="sparkle"></i> AI Assistant — insights</div>
+  <div class="ai-tag"><i class="svgic" data-ic="sparkle"></i> AI Assistant<span id="ai-ctx" style="font-weight:400;color:var(--muted)"></span></div>
   <ul id="ai-insights"></ul>
+  <div id="ai-actions"></div>
   <div style="margin-top:14px;display:flex;gap:8px">
     <input style="flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px" placeholder="Ask a question…" onkeydown="if(event.key==='Enter')askAI(this)">
     <button class="btn btn-primary" onclick="askAI(this.previousElementSibling)">→</button>
@@ -201,20 +202,28 @@ function renderAI(){
   document.getElementById('ai-insights').innerHTML = insights.map(i=>`<li>${i}</li>`).join('');
 }
 function askAI(inp){
-  if(!inp.value) return;
-  const ul=document.getElementById('ai-insights');
-  const li=document.createElement('li');
-  li.innerHTML = '<b>You:</b> '+inp.value;
-  ul.prepend(li);
-  const li2=document.createElement('li');
-  li2.innerHTML = '<b>Agent:</b> (demo) Based on the company brain — check Analytics → Knowledge gaps for the live answer.';
-  ul.insertBefore(li2, ul.children[1]);
+  const q=inp.value.trim();
+  if(!q) return;
+  aiMsg(q.replace(/</g,'&lt;'),'You');
+  const target=aiDraft||aiEdit;
+  if(target){
+    const lesson=q.replace(/^(add|add a|add an|include|cover|lesson on|a lesson on)\s*/i,'').replace(/^on\s+/i,'');
+    target.lessons.push(lesson.charAt(0).toUpperCase()+lesson.slice(1));
+    const pl=document.getElementById('ai-plan'); if(pl)pl.innerHTML=aiPlanHTML(target);
+    if(aiEdit && String(aiEdit.id).startsWith('cx')){
+      const s=OB.get();s.customCourses=(s.customCourses||[]).map(c=>c.id===aiEdit.id?aiEdit:c);OB.patch({customCourses:s.customCourses});
+    }
+    renderCourses();
+    aiMsg('Updated the plan — added "'+lesson+'". Anything else?','Agent');
+  } else {
+    aiMsg('(demo) Based on the company brain — check Analytics → Knowledge gaps for the live answer.','Agent');
+  }
   inp.value='';
 }
 
 function renderCourses(){
   document.getElementById('course-cards').innerHTML = OB.COURSES.map(c=>
-    `<div class="course-card"><div class="ci">${OB.icon(c.icon,30)}</div>
+    `<div class="course-card" style="cursor:pointer" onclick="viewCourse('${c.id}')"><div class="ci">${OB.icon(c.icon,30)}</div>
      <h4>${c.title}</h4><div class="cb">${OB.icon('building',13)} ${c.building} · ${c.game} game</div>
      <p>${c.desc}</p><ul>${c.lessons.map(l=>`<li>${l}</li>`).join('')}</ul>
      <span class="pill live" style="align-self:flex-start">Generated ✓</span></div>`).join('');
@@ -235,35 +244,57 @@ function publish(){
 
 const GEN_BUILDINGS=['Hall','Library','Arcade','Conservatory','Foundry','Gallery'];
 const GEN_GAMES=['quiz','inbox','road','scenario'];
+let aiDraft=null, aiEdit=null;
+function aiOpen(ctx){
+  document.getElementById('ai-pop').hidden=false;
+  document.getElementById('ai-ctx').textContent = ctx ? ' · '+ctx : '';
+}
+function aiMsg(html, who){
+  const li=document.createElement('li');
+  li.innerHTML=(who?'<b>'+who+':</b> ':'')+html;
+  document.getElementById('ai-insights').appendChild(li);
+  li.scrollIntoView({block:'nearest'});
+}
+function aiPlanHTML(c){
+  return '<b>'+c.title+'</b><br><span style="color:var(--muted);font-size:12px">'+c.building+' · '+c.game+' game</span>'
+    +'<ul style="margin:8px 0 0 16px">'+c.lessons.map(l=>'<li>'+l+'</li>').join('')+'</ul>';
+}
+function aiPlanLi(c){
+  const li=document.createElement('li');li.id='ai-plan';li.innerHTML=aiPlanHTML(c);
+  document.getElementById('ai-insights').appendChild(li);
+}
 function genCourse(){
   const inp=document.getElementById('ai-course');
   const name=inp.value.trim();
   if(!name){toast('Type a course name first');return;}
-  const btn=document.getElementById('gen-btn'), st=document.getElementById('gen-status');
-  btn.disabled=true;
-  const steps=[
-    'Agent reading company brain & connected tools…',
-    'Drafting lessons for "'+name+'"…',
-    'Placing a building in the world…',
-  ];
-  let i=0;
-  st.textContent=steps[0];
-  const tick=setInterval(()=>{ i++; if(i<steps.length) st.textContent=steps[i]; },800);
-  setTimeout(()=>{
-    clearInterval(tick);
-    const facts=OB.BRAIN_FACTS.slice(0,3).map(f=>f.cat+': '+f.text.slice(0,42)+'…');
-    const c={
-      id:'cx'+Date.now(), title:name,
-      building:GEN_BUILDINGS[Object.keys(state.hires||{}).length + (OB.get().customCourses||[]).length % GEN_BUILDINGS.length],
-      icon:'book', game:GEN_GAMES[(OB.get().customCourses||[]).length % GEN_GAMES.length],
-      desc:'Agent-generated from the company brain.',
-      lessons:facts.length?facts:['Introduction','Key concepts','Wrap-up quiz'],
-    };
-    const s=OB.get();s.customCourses=s.customCourses||[];s.customCourses.push(c);OB.patch({customCourses:s.customCourses});
-    st.textContent='';btn.disabled=false;inp.value='';
-    renderCourses();
-    toast('Course "'+name+'" generated and added to the curriculum');
-  },2400);
+  const n=(OB.get().customCourses||[]).length;
+  aiDraft={id:'cx'+Date.now(),title:name,
+    building:GEN_BUILDINGS[n%GEN_BUILDINGS.length],icon:'book',
+    game:GEN_GAMES[n%GEN_GAMES.length],desc:'Agent-generated from the company brain.',
+    lessons:[name+' fundamentals','Key terms & people','Wrap-up quiz']};
+  aiEdit=null; inp.value='';
+  document.getElementById('ai-insights').innerHTML='';
+  aiOpen('New course: '+name);
+  aiMsg('Proposed plan:','Agent');
+  aiPlanLi(aiDraft);
+  aiMsg('Tell me what to change — e.g. "add a lesson on X" — or add it to the curriculum.','Agent');
+  document.getElementById('ai-actions').innerHTML='<button class="btn btn-primary" style="height:40px;margin-top:10px" onclick="acceptDraft()">Add to curriculum</button>';
+}
+function acceptDraft(){
+  if(!aiDraft)return;
+  const s=OB.get();s.customCourses=s.customCourses||[];s.customCourses.push(aiDraft);OB.patch({customCourses:s.customCourses});
+  document.getElementById('ai-actions').innerHTML='';
+  aiMsg('"'+aiDraft.title+'" added to the curriculum.','Agent');
+  aiDraft=null;renderCourses();
+}
+function viewCourse(id){
+  const c=OB.COURSES.find(x=>x.id===id); if(!c)return;
+  aiDraft=null; aiEdit=c;
+  document.getElementById('ai-insights').innerHTML='';
+  document.getElementById('ai-actions').innerHTML='';
+  aiOpen('Course: '+c.title);
+  aiPlanLi(c);
+  aiMsg('Type to adjust this plan — e.g. "add a lesson on X".','Agent');
 }
 function copyLink(){ navigator.clipboard?.writeText(document.getElementById('play-link').textContent); toast('Link copied'); }
 
@@ -354,7 +385,15 @@ function renderSettings(){
       <span class="swatch"><i style="background:${B.bg}"></i>${B.bg}</span>
       <span>Style: ${B.style}</span><span>Pages read: ${B.pages}</span></div>`;
 }
-function toggleAI(){ const p=document.getElementById('ai-pop'); p.hidden=!p.hidden; }
+function toggleAI(){
+  const p=document.getElementById('ai-pop');
+  p.hidden=!p.hidden;
+  if(!p.hidden && !aiDraft && !aiEdit){
+    document.getElementById('ai-ctx').textContent=' — insights';
+    document.getElementById('ai-actions').innerHTML='';
+    renderAI();
+  }
+}
 function rescan(){ location.href='space.html?rescan=1'; }
 function wipe(){ if(confirm('Wipe all demo data and start over?')){ OB.reset(); location.href='index.html'; } }
 
