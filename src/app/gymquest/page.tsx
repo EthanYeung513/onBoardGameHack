@@ -1,6 +1,8 @@
 import Link from "next/link";
 
-export default function Home() {
+export const metadata = { title: "GymQuest" };
+
+export default function GymQuestHome() {
   return (
     <main className="mx-auto flex max-w-2xl flex-col gap-8 px-4 py-16">
       <h1 className="font-pixel text-2xl leading-relaxed">GymQuest</h1>

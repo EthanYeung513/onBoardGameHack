@@ -129,7 +129,7 @@ export function PlayApp() {
     <main className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <Link href="/" className="font-pixel text-xs">
+          <Link href="/gymquest" className="font-pixel text-xs">
             GymQuest
           </Link>
           <p className="font-semibold">
