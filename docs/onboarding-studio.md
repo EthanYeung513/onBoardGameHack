@@ -1,5 +1,9 @@
 # Onboarding Studio
 
+> Note: this doc describes the scaffold *as it exists today*. The PRD
+> ([../PRD.md](../PRD.md)) replaces the Supabase layer with Convex — treat
+> Supabase references below as "the layer being migrated".
+
 ## Overview
 
 Onboarding Studio takes a company website and produces three gamified onboarding flows that match the site's brand. It crawls the site, extracts design tokens, builds a structured model of the product, and shows the findings for review before anything is generated. After a few clarifying questions it designs a quest path, a checklist with streaks and a quiz-led tour. Each flow can be previewed, inspected as code, exported as a standalone React component and changed through chat.
