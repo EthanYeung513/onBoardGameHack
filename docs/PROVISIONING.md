@@ -39,16 +39,21 @@ auth, 6 dev seats — evidence: convex.dev/pricing).
 2. These are used inside Convex actions → set them in the **Convex dashboard
    env**, plus `.env.local` for local scripts.
 
-## 3. Railway — hosting: web + worker + cron (~free for the demo)
+## 3. Vercel + Modal — hosting (FREE tiers cover the demo)
 
-1. [railway.com](https://railway.com) → **Login with GitHub**.
-2. **New Project → Deploy from GitHub repo** → pick `onBoardGameHack`.
-3. Token for CI/agents: avatar → **Account Settings → Tokens → New Token** →
-   `RAILWAY_TOKEN` → give to Devin via secrets.
-4. Later: the repo deploys on push; add a second service for the pipeline
-   worker + a cron for F34 re-syncs.
-- Cost honesty: one-time trial credit, then Hobby ≈ $5/mo. Modal fallback
-  (`deploy/modal_app.py`) stays green.
+Split: **Vercel** serves the Next.js web app; **Modal** runs the pipeline
+worker (dembrandt needs real Chromium — serverless can't) + scheduled
+re-sync jobs (F34). Chosen over Railway — it was down at setup time, and the
+scaffold already deploys to Modal (`deploy/modal_app.py`).
+
+1. [vercel.com](https://vercel.com) → **Continue with GitHub** →
+   **Import Project** `onBoardGameHack` (root = repo root, framework
+   auto-detected Next.js). Token: avatar → **Account Settings → Tokens →
+   Create Token** → `VERCEL_TOKEN` → secrets.
+2. [modal.com](https://modal.com) → sign up → **Settings → API Tokens →
+   Create Token** → `MODAL_TOKEN_ID` + `MODAL_TOKEN_SECRET` → secrets.
+   `deploy/modal_app.py` reads them; first deploy creates the
+   `onboarding-studio` secret in the Modal dashboard with the app's env vars.
 
 ## 4. Resend — invite + magic-link emails (FREE 3,000/mo, 100/day)
 

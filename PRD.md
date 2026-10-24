@@ -165,7 +165,7 @@ the full journey instead of the demo.
 | Layer | Choice | Status | Notes |
 | --- | --- | --- | --- |
 | App | Next.js (App Router) + TypeScript + Tailwind | Decided | Existing branch. UI components stay client-only where they already are |
-| Hosting | Railway (web service + worker + cron) | Decided | Nicole 2026-10-24. Single pane: Next.js service, pipeline worker, scheduled re-sync (F34), and Chromium-capable for dembrandt. `deploy/modal_app.py` stays as fallback. Note: Railway has a one-time trial credit, then Hobby ≈$5/mo — "free" for the demo window, not forever |
+| Hosting | Vercel (Next.js web) + Modal (pipeline worker + scheduled re-syncs) | Decided | Nicole 2026-10-24 — Railway was down at setup time, and `deploy/modal_app.py` already works; Modal runs dembrandt's Chromium + F34 scheduled jobs, Vercel serves the app |
 | DB | Convex (document DB + TS functions) | Decided | Nicole 2026-10-24 — replaces the scaffold's Supabase/Postgres/Drizzle layer. Live queries give F7's streamed scan UX for free; built-in vector search covers F17; crons cover F34. No RLS — access rules are enforced inside functions. Local dev via `npx convex dev` (local deployment, no cloud needed) |
 | Auth | Convex Auth (`@convex-dev/auth`): email+password, magic link via Resend, Google OAuth | Decided | Replaces wired Supabase Auth (`(gen)/login`, `auth/callback`); company-email domain match for hires P1 |
 | Storage | Convex file storage | Decided | Pages/screenshots/assets |
@@ -191,7 +191,7 @@ Actionable checklist — each row becomes an env-var group and a `check:env` ent
 
 | Tool | For | Needed at | Setup |
 | --- | --- | --- | --- |
-| Railway | Web + worker + cron hosting | Phase 0 — Decided | Project, `RAILWAY_TOKEN`, link repo. Trial credit first; `deploy/modal_app.py` stays as fallback |
+| Vercel + Modal | Web hosting + pipeline worker/cron | Phase 0 — Decided | `VERCEL_TOKEN`; `MODAL_TOKEN_ID`/`MODAL_TOKEN_SECRET` (Railway dropped — service was down; revisit later if wanted) |
 | Convex | DB, auth, storage, vector+text search, crons | Phase 0 — Decided | convex.dev → New project (free plan); `npx convex dev` writes `CONVEX_DEPLOYMENT`/`NEXT_PUBLIC_CONVEX_URL`; local deployment for offline |
 | Google Cloud / OAuth | Google sign-in, Drive connector | Phase 0 / P1 | OAuth client; Convex Auth provider envs (`AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`) in the Convex dashboard |
 | GitHub OAuth app | GitHub connector | Phase 3 | Or accept fine-grained PATs for demos |
@@ -420,7 +420,7 @@ onBoardGameHack/
 │   ├── lib/{crawl,pipeline,design,flow,memory,brain,connectors}
 │   └── services/orthogonal/   # constructor backend (demo + live)
 ├── world/                     # game world (other stream)
-├── deploy/modal_app.py        # fallback deploy path (Railway is primary)
+├── deploy/modal_app.py        # primary deploy path (web on Vercel, worker here)
 └── convex/                    # schema.ts + queries/mutations/actions/crons
 ```
 
@@ -448,7 +448,7 @@ Phases in dependency order; each ends in something demoable. Backlog format
 
 **Phase 0 — foundations**
 - [ ] This doc set merged; branch protection + PR conventions agreed
-- [x] Deploy target decided: **Railway** (web+worker+cron); Modal kept as fallback — env matrix written to `.env.example`
+- [x] Deploy target decided: **Vercel + Modal** (web + worker/cron) — env matrix written to `.env.example`
 - [ ] `npm run check:env` covers every row in the provisioning table
 - [ ] Convex project created (free plan); `npx convex dev` local deployment boots; `convex/schema.ts` covers the data model below
 - [ ] Seed demo company (Acme Pay content already exists under `content/`)
@@ -497,15 +497,16 @@ Phases in dependency order; each ends in something demoable. Backlog format
 | LLM extraction produces junk facts | Draft queue + confidence threshold; nothing enters the brain without `approved` (default: auto-approve ≥ 0.9, configurable) |
 | Browser creds connector is risky | P2 only, write-only `connector_credentials` storage, per-space audit |
 | Crawl blocked by WAF | Cloudflare browser fallback; manual URL/file add never blocked |
-| Railway free-tier limits bite mid-demo | Hobby tier ≈$5/mo after trial credit; `deploy/modal_app.py` fallback stays green |
+| Modal free credits burn during heavy demos | Keep the scan's page/time caps; Vercel free tier covers the web tier |
 | Two agents collide on shared files | BUILD-CONTRACT names the seams; PRs are small and one-concern |
 
 ## Open questions for Nicole
 
 Decided 2026-10-24:
 
-1. Deploy target → **Railway** (web+worker+cron). Modal stays fallback.
-   Caveat: trial credit, then ≈$5/mo Hobby — free for the demo window only.
+1. Deploy target → **Vercel + Modal** (revised 2026-10-24: Railway was down
+   during provisioning; `deploy/modal_app.py` already works). Railway stays a
+   possible revisit for the all-in-one later.
 2. Tool OAuth → **Nango** (free cloud tier / self-host) for Slack/Notion/Jira/
    Drive; GitHub keeps a direct OAuth/PAT path.
 3. Brain viz → **cosmos.gl**. sigma.js + Graphology remains the fallback.
