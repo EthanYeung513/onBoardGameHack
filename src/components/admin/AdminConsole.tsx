@@ -16,7 +16,7 @@ export function AdminConsole() {
     <main className="mx-auto max-w-5xl px-4 py-6">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <Link href="/" className="font-pixel text-sm">
+          <Link href="/gymquest" className="font-pixel text-sm">
             GymQuest
           </Link>
           <h1 className="text-2xl font-bold">Manager console · Acme Pay</h1>

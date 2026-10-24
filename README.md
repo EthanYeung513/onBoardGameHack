@@ -15,12 +15,49 @@ npm run db:seed      # local Postgres (PGlite) in .data/, seeded with Acme Pay
 npm run dev          # http://localhost:3000
 ```
 
+- **Orthogonal constructor:** <http://localhost:3000/>. Paste a site URL to scan it, answer two questions, and the
+  onboarding is built in the workbench (see [Orthogonal frontend](#orthogonal-frontend)). The GymQuest landing page
+  moved to <http://localhost:3000/gymquest>.
 - **Play:** <http://localhost:3000/play>. Company code `ACME`. Walk with the arrow keys/WASD (a d-pad appears on
   phones). Walk into a door to battle; the long grass has wild phishing emails; Your Desk opens the skills passport.
 - **Manager console:** <http://localhost:3000/admin>. Review queue, learning timeline, readiness, content.
 
 With no `MUBIT_API_KEY` everything runs **offline**: a rule-based baseline grader, template card writer and hashed
 embeddings. The UI says so wherever it matters.
+
+## Orthogonal frontend
+
+The home page is Orthogonal, a constructor that reads a website and builds a gamified, multi-step onboarding for it:
+hero → scan → GitHub → describe → findings → build → editor (steps, live preview, assets/design/publish inspector).
+It's ported from the Claude Design export with Next.js and Tailwind; colours and fonts are tokens in
+`src/app/globals.css` (`carbon`, `azure`, `coral`, `marigold`, `font-grotesk`, …).
+
+Today every scan answers with the **Lumen demo**, served by mock endpoints. The UI only knows the JSON contract, so
+wiring in a real backend changes no components:
+
+| Endpoint | Body | Returns |
+|---|---|---|
+| `POST /api/orthogonal/scans` | `{ url }` | `ScanResult`: log lines, wireframe, palette, type, features, ideas, structure |
+| `POST /api/orthogonal/projects` | `{ scanId, siteUrl, repo, description }` | `Project`: build log, steps, levels, assets, connectors |
+| `POST /api/orthogonal/projects/:id/push` | `{ siteUrl, repo, steps, connectors }` | `PushResult`: repo, branch, PR URL |
+| `POST /api/orthogonal/projects/:id/publish` | same as push | `PublishResult`: host, `vercel` or `orthogonal`, storage |
+
+Types are in `src/lib/orthogonal/types.ts` and request validation (zod) in `src/lib/orthogonal/schema.ts`. Either:
+
+- **Implement it here:** replace the bodies in `src/services/orthogonal/index.ts` (crawler, agent, GitHub, deploy).
+  The route handlers already validate input and map errors like the rest of the API.
+- **Or point at another service:** set `NEXT_PUBLIC_ORTHOGONAL_API_URL` to its base URL; it must serve the same paths.
+
+All editing happens client-side and is sent whole with push/publish. Scan and build progress is played back from the
+returned `log` arrays; the `pace` prop on `<Constructor>` (`fast` / `realistic` / `cinematic`) sets the speed.
+
+| Path | What |
+|---|---|
+| `src/app/(orthogonal)/` | Home page and its layout (fonts, dark canvas) |
+| `src/components/orthogonal/` | `Constructor` (flow state + API calls) and one component per stage |
+| `src/components/orthogonal/workbench/` | Editor: `Workbench`, `StepPreview`, `Inspector`, step kinds |
+| `src/lib/orthogonal/` | API contract, client, URL and theme helpers (shared by UI and server) |
+| `src/services/orthogonal/` | Mock backend; `demo.ts` holds the Lumen content |
 
 ## Connecting Mubit
 
