@@ -172,8 +172,8 @@ the full journey instead of the demo.
 | Crawl | In-repo crawler: robots, sitemap, llms.txt, URL rank, HTTP fetch, cheerio → markdown (turndown) | Decided | `src/lib/crawl`; add firecrawl.dev as optional provider if a site defeats it |
 | Browser rendering | Cloudflare Browser Rendering for thin/JS pages | Decided | Already integrated; free plan ≈ 10 min/day, cached crawl reuses for 24 h |
 | Brand extraction | dembrandt (local Chromium) + LLM normalization into tokens | Decided | Exists; needs a Chromium-capable host — Railway/Modal, not Vercel functions |
-| LLM | Anthropic via Mubit gateway (`MUBIT_*` envs) | Decided | Fixed system prompts in `src/lib/prompts.ts`; everything variable in the user message |
-| Embeddings | `MUBIT_EMBED_MODEL` (hackathon sponsor) primary; Voyage AI (`VOYAGE_API_KEY`) as standby if Mubit can't serve embeddings; offline hashed fallback | Decided | Nicole 2026-10-24. Dimension recorded on the space so the provider can swap |
+| LLM | OpenAI models via Mubit gateway (`MUBIT_*` envs) | Decided | Verified 2026-10-24 against the live gateway: 35 `gpt-*` models (`gpt-5.6-luna`, `gpt-5.5`, `gpt-5.4-mini`, `gpt-4o-mini`, …), **no Claude** — Anthropic becomes an optional paid fallback, not the default. Fixed system prompts in `src/lib/prompts.ts`; everything variable in the user message |
+| Embeddings | `MUBIT_EMBED_MODEL=text-embedding-3-large` via the Mubit gateway; Voyage AI not needed (verified served); offline hashed fallback | Decided | Verified 2026-10-24: gateway serves `text-embedding-3-large/-3-small`/`ada-002`. Dimension recorded on the space |
 | Tool OAuth | Nango (open-source OAuth/token broker) for Slack/Notion/Jira/Drive; direct OAuth app or fine-grained PAT for GitHub | Decided | Nicole 2026-10-24. Self-hostable, free cloud tier for the demo |
 | Internal-web-app browsing | Browserbase + Stagehand | Proposed | P2; credentials write-only in `connector_credentials` (a table only internal functions touch — never returned by queries), filled at runtime, never shown back |
 | Knowledge graph store | Convex tables (`entities`, `edges`, `facts`, `mentions`) | Decided | A graph DB (SurrealDB/Neo4j) is overkill at this volume; documents keep a migration path |
@@ -197,9 +197,9 @@ Actionable checklist — each row becomes an env-var group and a `check:env` ent
 | GitHub OAuth app | GitHub connector | Phase 3 | Or accept fine-grained PATs for demos |
 | Nango | Slack/Notion/Jira/Drive OAuth | Phase 3 (P1) — Decided | `nango.dev` free cloud tier or self-host; `NANGO_SECRET_KEY` |
 | Cloudflare Browser Rendering | JS-heavy site crawl + screenshots | Phase 1 | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (already in env spec) |
-| Mubit gateway | All LLM calls | Phase 1 | `MUBIT_API_KEY`, `MUBIT_ENDPOINT`, gateway flag |
-| Anthropic | Direct LLM fallback | Phase 1 | `ANTHROPIC_API_KEY`, model + effort envs |
-| Voyage AI | Embeddings standby | Phase 4 | `VOYAGE_API_KEY` — only provisioned if `MUBIT_EMBED_MODEL` can't serve embeddings |
+| Mubit gateway | All LLM calls + embeddings | Phase 0 — Done | `MUBIT_API_KEY` verified live (35 gpt-* models + embeddings) |
+| Anthropic | Direct LLM fallback (optional, paid) | Skip unless needed | `ANTHROPIC_API_KEY` — Mubit covers all models; only if we want Claude specifically |
+| Voyage AI | Embeddings standby | Skip | Not needed — Mubit serves `text-embedding-3-large` |
 | Browserbase | Internal web app connector | P2 | `BROWSERBASE_API_KEY`, `BROWSERBASE_PROJECT_ID` |
 | cosmos.gl | Brain page | Phase 4 — Decided | npm only — `@cosmos.gl/graph`; `sigma` + `graphology` fallback noted in skill |
 | Gephi | Offline brain analysis/demos | Optional | Desktop app; export `graph.gexf` from the brain API for offline review |
