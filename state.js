@@ -10,6 +10,12 @@
     catch (e) { s = {}; }
     // merge agent-generated courses into the shared curriculum list
     (s.customCourses || []).forEach(c => { if (!COURSES.find(x => x.id === c.id)) COURSES.push(c); });
+    // apply assistant edits to course lessons
+    Object.entries(s.courseEdits || {}).forEach(([id, e]) => {
+      const c = COURSES.find(x => x.id === id);
+      if (c && e.lessons) c.lessons = e.lessons;
+      if (c && e.title) c.title = e.title;
+    });
     return s;
   }
   function save(s) { localStorage.setItem(KEY, JSON.stringify(s)); }
@@ -233,6 +239,7 @@
     coin: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5"/>',
     sparkle: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
     check: '<polyline points="20 6 9 17 4 12"/>',
+    back: '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
     bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>',
   };
 

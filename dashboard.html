@@ -287,15 +287,7 @@ function acceptDraft(){
   aiMsg('"'+aiDraft.title+'" added to the curriculum.','Agent');
   aiDraft=null;renderCourses();
 }
-function viewCourse(id){
-  const c=OB.COURSES.find(x=>x.id===id); if(!c)return;
-  aiDraft=null; aiEdit=c;
-  document.getElementById('ai-insights').innerHTML='';
-  document.getElementById('ai-actions').innerHTML='';
-  aiOpen('Course: '+c.title);
-  aiPlanLi(c);
-  aiMsg('Type to adjust this plan — e.g. "add a lesson on X".','Agent');
-}
+function viewCourse(id){ location.href='course.html?id='+encodeURIComponent(id); }
 function copyLink(){ navigator.clipboard?.writeText(document.getElementById('play-link').textContent); toast('Link copied'); }
 
 function renderTools(){
@@ -399,6 +391,7 @@ function wipe(){ if(confirm('Wipe all demo data and start over?')){ OB.reset(); 
 
 function renderAll(){ renderKPIs(); renderHires(); renderAI(); renderCourses(); renderTools(); renderTeam(); renderRewards(); renderSettings(); }
 renderAll();
+{ const t=new URLSearchParams(location.search).get('tab'); if(t&&document.getElementById('tab-'+t)) tab(t); }
 document.querySelectorAll('.svgic').forEach(e=>e.outerHTML=OB.icon(e.dataset.ic));
 document.getElementById('pub-btn').innerHTML = state.published ? 'Republish '+OB.icon('globe',15) : 'Publish world '+OB.icon('globe',15);
 if(state.published) document.getElementById('pub-btn').innerHTML = 'Republish '+OB.icon('globe',15);
