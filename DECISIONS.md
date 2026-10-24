@@ -189,6 +189,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy
 - **Revisit?:** yes. `.data/pglite-corrupt-*` folders can be deleted. On Windows, check Task Manager for stray `node` processes if a port is busy
 
+### D-15: Hosted database is Supabase (team preference), deployed on Vercel
+- **Task:** post-run (deploy prep)
+- **Time:** 2026-10-24T10:45Z
+- **Context:** Vercel can't run PGlite. The plan said Neon; the team prefers Supabase
+- **Options:** Neon / Supabase (both plain Postgres to this app)
+- **Chosen:** Supabase via its transaction pooler. The client reads `DATABASE_URL`, falls back to `POSTGRES_URL` (what Vercel's Supabase integration sets), strips provider-only URL params that postgres.js would forward to the server, adds `sslmode=require` for Supabase hosts, and disables prepared statements for the pooler. `drizzle/` and `content/` are added to the serverless file traces
+- **Why:** team preference; no code depends on the provider
+- **Reversibility:** easy (change the connection string and reseed)
+- **Revisit?:** yes. Verified against a local Postgres-protocol server (seed, gameplay, grading, keyed reset, pack upload), not yet against a real Supabase project. Check the first deploy end to end
+
 ## Blockers
 
 None yet.

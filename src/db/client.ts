@@ -16,21 +16,41 @@ const localDataDir = path.join(process.cwd(), ".data", "pglite");
 
 /**
  * localhost:5432 is the SSH tunnel to the work databases, so it is never a valid GymQuest database.
- * Use Neon (or any remote Postgres) via DATABASE_URL, or leave it unset for local PGlite.
+ * Use Supabase (or any hosted Postgres) via DATABASE_URL, or leave it unset for local PGlite.
  */
 export function assertSafeDatabaseUrl(url: string): void {
   const { hostname, port } = new URL(url);
   const local = ["localhost", "127.0.0.1", "::1", "[::1]"].includes(hostname);
   if (local && (port === "" || port === "5432")) {
-    throw new Error("DATABASE_URL points at localhost:5432 (the work DB tunnel). Use Neon or unset it for PGlite.");
+    throw new Error("DATABASE_URL points at localhost:5432 (the work DB tunnel). Use a hosted Postgres or unset it for PGlite.");
   }
 }
 
 const globalForDb = globalThis as unknown as { gymquestDb?: Promise<DB>; gymquestClose?: () => Promise<void> };
 
-async function connectPostgres(url: string): Promise<DB> {
-  assertSafeDatabaseUrl(url);
-  const client = postgres(url, { max: 5 });
+/**
+ * Makes a hosted connection string safe for postgres.js. It forwards unknown query parameters to the server as
+ * startup settings, which Postgres rejects, so provider extras (Supabase's `supa=…`, `pgbouncer=true`) are dropped.
+ * Supabase connections get `sslmode=require` if the string doesn't say.
+ */
+export function normaliseDatabaseUrl(raw: string): string {
+  const url = new URL(raw);
+  const sslmode = url.searchParams.get("sslmode") ?? (/\.supabase\.(com|co)$/.test(url.hostname) ? "require" : null);
+  url.search = sslmode ? `?sslmode=${sslmode}` : "";
+  return url.toString();
+}
+
+/** DATABASE_URL, or POSTGRES_URL as set by Vercel's Supabase integration. */
+export function databaseUrlFromEnv(env: Record<string, string | undefined> = process.env): string | undefined {
+  return env.DATABASE_URL || env.POSTGRES_URL || undefined;
+}
+
+async function connectPostgres(raw: string): Promise<DB> {
+  assertSafeDatabaseUrl(raw);
+  const url = normaliseDatabaseUrl(raw);
+  // prepare: false because pooled connection strings (Supabase's transaction pooler on 6543, Neon's pooler) run PgBouncer in
+  // transaction mode, which can't keep prepared statements. A small pool suits serverless functions.
+  const client = postgres(url, { max: 3, prepare: false });
   const db = drizzlePostgres({ client, schema });
   await migratePostgres(db, { migrationsFolder });
   globalForDb.gymquestClose = () => client.end();
@@ -101,7 +121,7 @@ export async function closeDb(): Promise<void> {
 /** The app's shared database connection, created once per process. */
 export function getDb(): Promise<DB> {
   if (!globalForDb.gymquestDb) {
-    const url = process.env.DATABASE_URL;
+    const url = databaseUrlFromEnv();
     globalForDb.gymquestDb = url ? connectPostgres(url) : connectPglite();
   }
   return globalForDb.gymquestDb;

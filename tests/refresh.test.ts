@@ -17,6 +17,8 @@ const HERO = "A merchant emails from their registered address";
 
 const WAREHOUSE = `# Warehouse handbook
 
+An intro paragraph that is not a rule and should not become a card.
+
 ## Cold chain
 - Chilled stock stays between 0 and 5°C.
 - Quarantine anything that arrives above 8°C.

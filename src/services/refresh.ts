@@ -139,13 +139,15 @@ export async function uploadPack(db: DB, llm: LlmClient, input: UploadPackInput)
     .where(and(eq(t.packs.companyId, company.id), eq(t.gyms.building, ANNEX)));
   if (occupied.length) throw new BadRequestError("The annex already has a gym. Reset the demo to upload another pack.");
 
-  const sections = chunkMarkdown(input.markdown);
+  // The text before the first ## heading introduces the doc; it isn't a rule to test, so it gets no card.
+  const isRule = (c: { heading: string }) => c.heading !== "Introduction";
+  const sections = chunkMarkdown(input.markdown).filter(isRule);
   if (sections.length < 2) throw new BadRequestError("The document needs at least two sections (## headings) to make a gym.");
 
   const slug = input.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "pack";
   const [pack] = await db.insert(t.packs).values({ companyId: company.id, slug, type: "role", role: input.role, title: input.title }).returning();
   const [doc] = await db.insert(t.docs).values({ packId: pack.id, slug, title: markdownTitle(input.markdown, input.title), body: input.markdown }).returning();
-  const chunks = (await insertChunks(db, doc.id, doc.version, input.markdown)).slice(0, PACK_CARD_TYPES.length);
+  const chunks = (await insertChunks(db, doc.id, doc.version, input.markdown)).filter(isRule).slice(0, PACK_CARD_TYPES.length);
   const [gym] = await db
     .insert(t.gyms)
     .values({ packId: pack.id, name: input.gymName ?? `${input.title} Gym`, leaderName: input.leaderName ?? "Leader Nova", building: ANNEX, order: 99, locked: !input.publish })

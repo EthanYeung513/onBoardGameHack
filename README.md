@@ -35,11 +35,30 @@ Copy `.env.example` to `.env.local` and set at least:
 | `MUBIT_FEEDBACK_URL` | Optional correction endpoint; unset = fast path + distillation fallback |
 | `MUBIT_TASK_HEADER` | Header that tags each call with its task (default `X-Mubit-Task`) |
 | `MUBIT_PRICE_INPUT_PER_M`, `MUBIT_PRICE_OUTPUT_PER_M` | USD per million tokens, for the cost column |
-| `DATABASE_URL` | Neon connection string for deploys. Unset = PGlite. `localhost:5432` is refused on purpose |
+| `DATABASE_URL` | Hosted Postgres for deploys (see below; `POSTGRES_URL` also works). Unset = PGlite. `localhost:5432` is refused on purpose |
 
 Three Mubit tasks, each with a fixed, snapshot-tested system prompt in [src/tasks/registry.ts](src/tasks/registry.ts):
 `grade` (the one we train), `generate` (cards from docs) and `persona` (synthetic answers, data only). Everything
 that varies goes in the user message, so Mubit keeps each task's examples together.
+
+## Deploying (Vercel + Supabase)
+
+The local PGlite database can't run on Vercel (read-only, per-request filesystem), so a deploy needs a hosted
+Postgres. We use Supabase; any Postgres works, since the app only needs a connection string.
+
+1. **Create the database.** Add Supabase from the Vercel Marketplace (Project → Storage), or create a project at
+   supabase.com. The Vercel integration sets `POSTGRES_URL` (the transaction pooler, port 6543), which the app reads
+   when `DATABASE_URL` isn't set. If you set it by hand, use Supabase's **transaction pooler** string. The direct
+   `db.<ref>.supabase.co` host is IPv6-only on the free plan, which Vercel functions can't reach.
+2. **Seed it once from your machine:** `DATABASE_URL="<supabase connection string>" npm run db:seed`. This runs
+   the migrations and loads Acme Pay. Provider extras in the string (`supa=…`, `pgbouncer=true`) are stripped
+   automatically, and `sslmode=require` is added for Supabase hosts.
+3. **Set env vars in Vercel:** `DEMO_RESET_KEY` (so `npm run demo:reset -- --url https://<app> --key <key>` works
+   and strangers can't wipe the demo), plus the Mubit variables when you have them.
+4. **Deploy:** import the GitHub repo at vercel.com/new (Next.js is detected), or run `npx vercel`.
+
+There's no login: anyone with the URL can use `/admin`, edit policies and upload packs (which make LLM calls once
+Mubit is on). Share the link only with the team and the judges.
 
 ## How a correction becomes a model update
 
@@ -67,7 +86,7 @@ that varies goes in the user message, so Mubit keeps each task's examples togeth
 | `npm run smoke -- --url http://localhost:3000` | Drive the real app in Edge: join, walk, battle, review queue, pack upload |
 
 PGlite is single-process: run `db:seed`, `bulk-grade` and `eval --record` with the dev server stopped, or point
-`DATABASE_URL` at Neon.
+`DATABASE_URL` at Supabase.
 
 ## Held-out labels
 

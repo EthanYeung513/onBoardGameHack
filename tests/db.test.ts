@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { acquireLock, assertSafeDatabaseUrl, connectPglite } from "@/db/client";
+import { acquireLock, assertSafeDatabaseUrl, connectPglite, databaseUrlFromEnv, normaliseDatabaseUrl } from "@/db/client";
 import { companies } from "@/db/schema";
 
 describe("db client", () => {
@@ -10,6 +10,18 @@ describe("db client", () => {
     expect(() => assertSafeDatabaseUrl("postgres://u:p@localhost:5432/apricot_dev_db")).toThrow(/work DB tunnel/);
     expect(() => assertSafeDatabaseUrl("postgres://u:p@127.0.0.1/x")).toThrow();
     expect(() => assertSafeDatabaseUrl("postgres://u:p@ep-cool.eu-west-2.aws.neon.tech/neondb")).not.toThrow();
+  });
+
+  it("cleans hosted connection strings for postgres.js", () => {
+    // Shape of POSTGRES_URL from Vercel's Supabase integration (transaction pooler).
+    expect(normaliseDatabaseUrl("postgres://postgres.abc:pw@aws-0-eu-west-2.pooler.supabase.com:6543/postgres?sslmode=require&supa=base-pooler.x")).toBe(
+      "postgres://postgres.abc:pw@aws-0-eu-west-2.pooler.supabase.com:6543/postgres?sslmode=require",
+    );
+    expect(normaliseDatabaseUrl("postgres://u:pw@db.abc.supabase.co:5432/postgres?pgbouncer=true")).toBe("postgres://u:pw@db.abc.supabase.co:5432/postgres?sslmode=require");
+    expect(normaliseDatabaseUrl("postgres://u:pw@127.0.0.1:5544/postgres")).toBe("postgres://u:pw@127.0.0.1:5544/postgres");
+    expect(databaseUrlFromEnv({ POSTGRES_URL: "postgres://x" })).toBe("postgres://x");
+    expect(databaseUrlFromEnv({ DATABASE_URL: "postgres://a", POSTGRES_URL: "postgres://b" })).toBe("postgres://a");
+    expect(databaseUrlFromEnv({})).toBeUndefined();
   });
 
   it("migrates an in-memory PGlite database", async () => {
