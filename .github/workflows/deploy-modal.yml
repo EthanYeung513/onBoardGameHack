@@ -3,7 +3,7 @@ name: Deploy to Modal
 on:
   workflow_dispatch:
   push:
-    branches: [feature/onboarding-generator]
+    branches: [main, feature/onboarding-generator]
 
 concurrency:
   group: deploy-modal
