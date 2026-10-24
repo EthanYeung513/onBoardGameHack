@@ -22,6 +22,8 @@ The app is a Next.js 16 App Router project. The generator lives beside the exist
 | `src/components/gen/` | Studio interface and the flow renderer |
 | `supabase/migrations/` | Schema, row level security, storage buckets and Realtime publication |
 
+There are two interfaces over the same pipeline. The constructor at `/` (`src/components/orthogonal/`) is the guided flow for a new site: scan, an optional repository, a short description, the findings, then a workbench to edit and publish one onboarding. Its backend is `src/services/orthogonal/live.ts`, which starts pipeline work and answers the constructor's polling, and `src/lib/orthogonal/mapping.ts`, which translates findings, tokens and FlowSpecs into the constructor's types and applies its edits back onto the FlowSpec. The describe step stands in for the clarifying questions, so the constructor skips that gate. Entering no address shows the built-in lumen.energy demo. The studio at `/studio` shows everything for a project: the live timeline, editable findings, questions, all three variants, files, chat and memory. Each constructor screen links to its project in the studio.
+
 The model never writes UI. It returns a FlowSpec in JSON, which is validated with Zod and a set of cross-field rules, and a renderer owned by the app turns it into the experience. Step types, transitions and gamification mechanics come from fixed sets. Points, streaks and badges are computed by deterministic rules in `src/lib/flow/scoring.ts`.
 
 System prompts in `src/lib/prompts.ts` are identical for every project, and all project content goes in the user message. This keeps prompts cacheable and lets Mubit group each kind of call into one task. Every call sends `metadata.user_id` as `project:<id>`, so a project's calls form one session in Mubit.
@@ -106,6 +108,8 @@ dembrandt drives a local Chromium, which Vercel functions do not have. On Vercel
 The Cloudflare free plan allows about ten minutes of browser time a day and few requests per minute. The crawler uses the browser only for thin pages and caps screenshots at five per project, and the cached crawl lets a site be reused for 24 hours without browser time. The current Cloudflare token expires on 31 October 2026, after which browser fallbacks and screenshots fail until it is replaced.
 
 The full FlowSpec is too large for constrained decoding, and the model does not accept a forced tool choice. Flow generation therefore offers a single `submit_result` tool whose input schema is the FlowSpec and asks the model to call it. The API returns the tool input as parsed JSON, and Zod validation with feedback retries catches anything else.
+
+The constructor's Push to GitHub button returns an error for live projects, because opening pull requests on a customer's repository is outside this MVP. Its per-step colours are not carried into the published FlowSpec, which keeps one theme for the whole flow, so a published page uses the site's tokens rather than the colours chosen in the workbench.
 
 The live preview uses Sandpack, which loads its bundler from CodeSandbox's servers, so the Files tab preview needs internet access in the browser.
 

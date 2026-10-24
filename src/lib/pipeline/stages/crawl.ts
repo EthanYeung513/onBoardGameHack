@@ -7,6 +7,8 @@ import type { StageContext, StageDefinition, SliceResult } from "../types";
 // Every write is an upsert keyed by (project, url), so a resumed slice repeats work safely.
 
 const PAGE_BATCH = 6;
+/** Browser fallbacks allowed per crawl; the free Cloudflare plan has about ten browser minutes a day. */
+export const MAX_BROWSER_FETCHES = 4;
 const MAX_SCREENSHOTS = 5;
 const SCREENSHOT_TYPES = ["home", "product", "features", "pricing", "docs", "about"];
 
@@ -57,10 +59,13 @@ async function fetchPhase(ctx: StageContext, cursor: Cursor): Promise<SliceResul
   const { db, project } = ctx;
   const pending = await db.from("crawl_pages").select("id, url").eq("project_id", project.id).eq("status", "pending").order("rank_score", { ascending: false }).limit(PAGE_BATCH);
   if (pending.error) throw new Error(pending.error.message);
+  const { count: browserUsed } = await db.from("crawl_pages").select("id", { count: "exact", head: true }).eq("project_id", project.id).eq("fetch_method", "browser");
+  let browserLeft = MAX_BROWSER_FETCHES - (browserUsed ?? 0);
   for (const row of pending.data ?? []) {
     if (ctx.remainingMs() < 12_000) break;
     try {
-      const p = await fetchPage(row.url);
+      const p = await fetchPage(row.url, { allowBrowser: browserLeft > 0 });
+      if (p.fetchMethod === "browser") browserLeft--;
       await db.from("crawl_pages").update({ title: p.title, markdown: p.markdown, word_count: p.words, content_hash: p.contentHash, fetch_method: p.fetchMethod, status: "fetched", fetched_at: new Date().toISOString(), error: null }).eq("id", row.id);
       await ctx.event(p.fetchMethod === "browser" ? "warn" : "info", `Fetched ${row.url} via ${p.fetchMethod} (${p.words} words)`, { method: p.fetchMethod });
     } catch (err) {

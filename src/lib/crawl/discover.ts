@@ -59,5 +59,5 @@ export async function discover(inputUrl: string, homepageLinks: string[] = []): 
   sources.links = homepageLinks.length;
   found.push(...homepageLinks);
 
-  return { root, sources, candidates: new Set(found).size, ranked: rankUrls(found, root) };
+  return { root, sources, candidates: new Set(found).size, ranked: rankUrls(found, root, undefined, homepageLinks) };
 }

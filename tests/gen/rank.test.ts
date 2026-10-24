@@ -40,3 +40,14 @@ describe("URL ranking", () => {
     expect(normaliseUrl("javascript:void(0)")).toBeNull();
   });
 });
+
+describe("ranking for sites with large sitemaps", () => {
+  it("drops per-user pages", () => {
+    for (const path of ["/user/abc", "/users/42", "/profile/jo", "/members/x", "/@someone"]) expect(classify(`${root}${path}`), path).toBeNull();
+  });
+
+  it("prefers pages the homepage links to", () => {
+    const ranked = rankUrls(["/sponsors", "/trends", "/help"], root, 30, ["/help"]);
+    expect(ranked[1].url).toBe("https://www.acme.test/help");
+  });
+});

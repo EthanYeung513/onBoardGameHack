@@ -1,6 +1,9 @@
 // Path based ranking for crawl candidates. Pure and deterministic so it can be unit tested.
 
 export const MAX_PAGES = 30;
+/** Pages scoring below LOW_SCORE are kept only while the crawl has fewer than MIN_PAGES. */
+export const MIN_PAGES = 10;
+export const LOW_SCORE = 5;
 
 const HIGH: Array<[RegExp, number, string]> = [
   [/^\/?$/, 100, "home"],
@@ -19,7 +22,9 @@ const HIGH: Array<[RegExp, number, string]> = [
 const DROP = [
   /\/(legal|privacy|terms|cookies?|gdpr|dpa|security-policy|imprint|impressum|tos)(\/|$|-)/,
   /\/(tags?|categor(y|ies)|authors?|page\/\d+)(\/|$)/,
-  /\/(login|signin|sign-in|signup|sign-up|register|logout|cart|checkout|account)(\/|$)/,
+  /\/(login|signin|sign-in|signup|sign-up|register|logout|cart|checkout|account|search)(\/|$)/,
+  // Per-user and per-member pages: large in number, thin in product content.
+  /\/(users?|profiles?|members?|people|u|@[^/]+)(\/|$)/,
   /\.(pdf|zip|png|jpe?g|gif|svg|webp|mp4|xml|json|txt|md|css|js|ico)$/i,
   /^\/\.well-known\//,
 ];
@@ -67,7 +72,15 @@ export function classify(url: string): { score: number; pageType: string } | nul
   return { score: best.score - Math.max(0, depth - 1) * 4, pageType: best.pageType };
 }
 
-export function rankUrls(urls: string[], root: string, cap = MAX_PAGES): RankedUrl[] {
+/** Pages linked from the homepage get this bonus over pages known only from a sitemap. */
+export const HOMEPAGE_LINK_BONUS = 8;
+
+export function rankUrls(urls: string[], root: string, cap = MAX_PAGES, linked: Iterable<string> = []): RankedUrl[] {
+  const boosted = new Set<string>();
+  for (const l of linked) {
+    const n = normaliseUrl(l, root);
+    if (n) boosted.add(new URL(n).pathname);
+  }
   const seen = new Set<string>();
   const out: RankedUrl[] = [];
   for (const raw of [root, ...urls]) {
@@ -81,8 +94,9 @@ export function rankUrls(urls: string[], root: string, cap = MAX_PAGES): RankedU
     seen.add(url);
     const c = classify(url);
     if (!c) continue;
-    out.push({ url, ...c });
+    out.push({ url, pageType: c.pageType, score: c.score + (c.pageType !== "home" && boosted.has(new URL(url).pathname) ? HOMEPAGE_LINK_BONUS : 0) });
   }
   out.sort((a, b) => b.score - a.score || a.url.length - b.url.length || a.url.localeCompare(b.url));
-  return out.slice(0, cap);
+  // Deep pages known only from a sitemap rarely say much about the product; they only fill small crawls.
+  return out.filter((r, i) => r.score >= LOW_SCORE || i < MIN_PAGES).slice(0, cap);
 }
