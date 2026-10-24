@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { signIn, watchErrors } from "./helpers";
 
-// The constructor at "/" driven against the live backend: scan, skip GitHub, describe, review the
+// The constructor at "/try" driven against the live backend: scan, skip GitHub, describe, review the
 // findings, build, and publish. Set E2E_CONSTRUCTOR_SITE to change the site.
 const SITE = process.env.E2E_CONSTRUCTOR_SITE ?? "pypi.org";
 
 test("constructor builds and publishes a live onboarding", async ({ page }) => {
   test.setTimeout(12 * 60_000);
   const errors = watchErrors(page);
-  await signIn(page, "/");
+  await signIn(page, "/try");
   await page.getByLabel("Start with your website").fill(SITE);
   await page.getByRole("button", { name: /Scan my site/ }).click();
 

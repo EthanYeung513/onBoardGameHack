@@ -19,7 +19,9 @@ npm run db:seed      # local Postgres (PGlite) in .data/, seeded with Acme Pay
 npm run dev          # http://localhost:3000
 ```
 
-- **Orthogonal constructor:** <http://localhost:3000/>. Paste a site URL to scan it, answer two questions, and the
+- **Landing page:** <http://localhost:3000/>. Public, no keys needed. The original Webflow export is kept at
+  <http://localhost:3000/classic>.
+- **Orthogonal constructor:** <http://localhost:3000/try>. Paste a site URL to scan it, answer two questions, and the
   onboarding is built in the workbench (see [Orthogonal frontend](#orthogonal-frontend)). The GymQuest landing page
   moved to <http://localhost:3000/gymquest>.
 - **Play:** <http://localhost:3000/play>. Company code `ACME`. Walk with the arrow keys/WASD (a d-pad appears on
@@ -57,7 +59,8 @@ returned `log` arrays; the `pace` prop on `<Constructor>` (`fast` / `realistic` 
 
 | Path | What |
 |---|---|
-| `src/app/(orthogonal)/` | Home page and its layout (fonts, dark canvas) |
+| `src/app/(site)/` + `src/components/site/` | Landing page at `/` (server-rendered; original Webflow export at `/classic` from `public/classic/`) |
+| `src/app/(orthogonal)/` | Constructor page at `/try` and its layout (fonts, dark canvas) |
 | `src/components/orthogonal/` | `Constructor` (flow state + API calls) and one component per stage |
 | `src/components/orthogonal/workbench/` | Editor: `Workbench`, `StepPreview`, `Inspector`, step kinds |
 | `src/lib/orthogonal/` | API contract, client, URL and theme helpers (shared by UI and server) |

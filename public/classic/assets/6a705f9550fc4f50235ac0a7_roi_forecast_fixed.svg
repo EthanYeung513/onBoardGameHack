@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1026 1280" width="1026" height="1280" role="img" aria-label="ROI Forecast, target 84 percent">
+  <rect x="0" y="0" width="1026" height="1280" rx="28" fill="#F6F6F6"/>
+
+  <path d="M -20 592 C 180 588 300 470 500 424 C 700 378 880 432 1046 502"
+        fill="none" stroke="#8E8E8E" stroke-width="21" stroke-linecap="round"/>
+
+  <g>
+    <rect x="218" y="212" width="200" height="200" rx="26" fill="#FFC700"/>
+    <circle cx="318" cy="292" r="33" fill="none" stroke="#000" stroke-width="9"/>
+    <path d="M 272 372 C 272 328 364 328 364 372" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round"/>
+  </g>
+
+  <g>
+    <rect x="622" y="170" width="206" height="206" rx="26" fill="#FFD84D"/>
+    <circle cx="725" cy="252" r="33" fill="none" stroke="#000" stroke-width="9"/>
+    <path d="M 679 332 C 679 288 771 288 771 332" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round"/>
+  </g>
+
+  <g>
+    <rect x="285" y="548" width="204" height="204" rx="26" fill="#FFE999"/>
+    <circle cx="387" cy="629" r="33" fill="none" stroke="#000" stroke-width="9"/>
+    <path d="M 341 709 C 341 665 433 665 433 709" fill="none" stroke="#000" stroke-width="9" stroke-linecap="round"/>
+  </g>
+
+  <g>
+    <circle cx="420" cy="414" r="33" fill="#000"/>
+    <rect x="405" y="410" width="30" height="9" rx="4.5" fill="#fff"/>
+    <rect x="415.5" y="399.5" width="9" height="30" rx="4.5" fill="#fff"/>
+  </g>
+  <g>
+    <circle cx="627" cy="374" r="33" fill="#000"/>
+    <rect x="612" y="370" width="30" height="9" rx="4.5" fill="#fff"/>
+    <rect x="622.5" y="359.5" width="9" height="30" rx="4.5" fill="#fff"/>
+  </g>
+  <g>
+    <circle cx="287" cy="545" r="33" fill="#000"/>
+    <rect x="272" y="541" width="30" height="9" rx="4.5" fill="#fff"/>
+    <rect x="282.5" y="530.5" width="9" height="30" rx="4.5" fill="#fff"/>
+  </g>
+
+  <rect x="178" y="838" width="672" height="272" rx="18" fill="#FFFFFF" stroke="#E3E3E3" stroke-width="2"/>
+  <text x="238" y="952" font-family="Helvetica, Arial, sans-serif" font-size="42" fill="#4A4A4A">ROI Forecast</text>
+  <text x="238" y="1042" font-family="Helvetica, Arial, sans-serif" font-size="68" fill="#111111">Target 84%</text>
+</svg>
