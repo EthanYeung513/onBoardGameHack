@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { acquireLock, assertSafeDatabaseUrl, connectPglite, databaseUrlFromEnv, normaliseDatabaseUrl } from "@/db/client";
+import { acquireLock, assertSafeDatabaseUrl, connectPglite, databaseKind, databaseUrlFromEnv, normaliseDatabaseUrl } from "@/db/client";
 import { companies } from "@/db/schema";
 
 describe("db client", () => {
@@ -44,5 +44,13 @@ describe("PGlite lockfile", () => {
     expect(existsSync(`${dir}.lock`)).toBe(true);
     release();
     expect(existsSync(`${dir}.lock`)).toBe(false);
+  });
+});
+
+describe("databaseKind", () => {
+  it("uses Postgres when a URL is set, PGlite locally, and refuses PGlite on Vercel", () => {
+    expect(databaseKind({ POSTGRES_URL: "postgres://x" })).toBe("postgres");
+    expect(databaseKind({})).toBe("pglite");
+    expect(databaseKind({ VERCEL: "1" })).toBe("unconfigured");
   });
 });

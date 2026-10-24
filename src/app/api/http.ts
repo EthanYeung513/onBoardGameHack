@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { DatabaseNotConfiguredError } from "@/db/client";
 import { BadRequestError, NotFoundError } from "@/services/errors";
 
 /** Runs a route handler body and maps known errors to HTTP status codes. */
@@ -10,6 +11,7 @@ export async function handle<T>(fn: () => Promise<T>): Promise<NextResponse> {
     if (err instanceof z.ZodError) return NextResponse.json({ error: err.issues[0]?.message ?? "Invalid request" }, { status: 400 });
     if (err instanceof BadRequestError) return NextResponse.json({ error: err.message }, { status: 400 });
     if (err instanceof NotFoundError) return NextResponse.json({ error: err.message }, { status: 404 });
+    if (err instanceof DatabaseNotConfiguredError) return NextResponse.json({ error: err.message }, { status: 503 });
     console.error(err);
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }

@@ -118,11 +118,29 @@ export async function closeDb(): Promise<void> {
   globalForDb.gymquestClose = undefined;
 }
 
-/** The app's shared database connection, created once per process. */
+export class DatabaseNotConfiguredError extends Error {}
+
+/** Which database getDb() will use, for diagnostics. */
+export function databaseKind(env: Record<string, string | undefined> = process.env): "postgres" | "pglite" | "unconfigured" {
+  if (databaseUrlFromEnv(env)) return "postgres";
+  // Serverless filesystems are read-only and per-request, so PGlite can't work there.
+  return env.VERCEL ? "unconfigured" : "pglite";
+}
+
+/** The app's shared database connection, created once per process. A failed connect is retried next call. */
 export function getDb(): Promise<DB> {
   if (!globalForDb.gymquestDb) {
-    const url = databaseUrlFromEnv();
-    globalForDb.gymquestDb = url ? connectPostgres(url) : connectPglite();
+    const kind = databaseKind();
+    const connecting =
+      kind === "postgres"
+        ? connectPostgres(databaseUrlFromEnv()!)
+        : kind === "pglite"
+          ? connectPglite()
+          : Promise.reject(new DatabaseNotConfiguredError("No database configured: set DATABASE_URL or POSTGRES_URL in the Vercel project, then redeploy."));
+    globalForDb.gymquestDb = connecting.catch((err) => {
+      globalForDb.gymquestDb = undefined;
+      throw err;
+    });
   }
   return globalForDb.gymquestDb;
 }
