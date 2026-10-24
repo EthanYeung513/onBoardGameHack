@@ -1,6 +1,8 @@
 # GymQuest
 
 > This branch also contains Onboarding Studio, which turns a company website into branded, gamified onboarding flows. See [docs/onboarding-studio.md](docs/onboarding-studio.md).
+>
+> **The real Orthogonal site** (landing, manager login, scan, tool connections, company brain, courses, editor, dashboard) is specified in [PRD.md](PRD.md). Agent rules: [AGENTS.md](AGENTS.md) · shared contracts: [docs/BUILD-CONTRACT.md](docs/BUILD-CONTRACT.md) · multi-agent process: [docs/AGENT-BUILD.md](docs/AGENT-BUILD.md).
 
 Onboarding for any role, played as a Pokémon-style game. New hires walk the office, battle trainers and dodge phishing
 in the long grass, answering real work situations in their own words. An AI grader scores each answer against company
