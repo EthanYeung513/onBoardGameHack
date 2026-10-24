@@ -67,7 +67,7 @@ Same shape as PLAN.md §11 (which this supersedes for the site work):
 | S7 | GitHub connector | S6 | OAuth/PAT connect → repos/docs/members ingested | — | auto |
 | S8 | Brain schema + extraction + resolution | S6 | `entities`/`facts`/`edges` with citations; dedupe logged | — | auto |
 | S9 | Brain review UI | S8 | Approve/edit/reject facts; manual add | — | auto |
-| S10 | Brain page (sigma.js) | S8 | Graph renders clusters; click → provenance panel; GEXF export | — | auto |
+| S10 | Brain page (cosmos.gl) | S8 | Graph renders clusters; click → provenance panel; GEXF export | — | auto |
 | S11 | CourseSpec + generate_courses | S8 | Valid specs citing approved facts | — | auto |
 | S12 | Editor on real data | S11 | Steps/preview/assets/design; patches validate | — | auto |
 | S13 | Dashboard real data | S3, S11 | All tabs read aggregate endpoints; zero fabricated data | — | auto |

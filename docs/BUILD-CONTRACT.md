@@ -103,7 +103,7 @@ Rules: a fact without a citation is rejected at validation. Resolution order:
 hard keys → embedding top-k → LLM adjudication (decision logged to
 `audit_events`). Writes require the current `version` (409 on stale).
 
-Read side: `GET /api/brain/graph` returns `{nodes,edges}` shaped for sigma.js
+Read side: `GET /api/brain/graph` returns `{nodes,edges}` shaped for cosmos.gl
 (`{id,label,x,y,size,color,cluster}`); `GET /api/brain/graph.gexf` exports for
 Gephi; `GET /api/brain/search` returns results with citations.
 
@@ -121,6 +121,24 @@ Step = { kind: 'welcome'|'fields'|'lesson'|'quiz'|'scenario'|'checklist'|'done',
 Validation: Zod + cross-field rules; every `lesson|quiz|scenario` step must
 cite ≥1 `approved` fact. Assistant edits are validated patches
 (`{op:'set'|'add'|'remove', path, value}`) — same rules as generation.
+
+## Drift and self-adaptation contract (F34–F36)
+
+The space must update itself as the company changes — agents implementing
+sync/re-scan code must honour this cascade instead of inventing another one:
+
+- Every connector tick and site re-scan compares new `source_items` against
+  the stored version and appends `diff_events {space_id, kind:
+  'added'|'changed'|'removed', source_item_id, summary}`.
+- `changed`/`removed` marks every `facts` row citing that item's chunks
+  `stale` and queues re-extraction; `added` queues extraction directly.
+  Re-extraction re-runs resolution; outcomes land in `audit_events`.
+- A fact going `stale` flags every `CourseSpec` step listing it in
+  `teaches_fact_ids` → course row gets `needs_refresh=true`. Courses
+  regenerate only on manager confirm; published `/s/:slug` content rebuilds
+  from the new spec after regeneration.
+- The cascade is per-space and resumable like any other job — a crashed
+  mid-cascade run resumes from the last `diff_events` row processed.
 
 ## API conventions
 

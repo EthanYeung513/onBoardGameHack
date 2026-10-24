@@ -138,6 +138,9 @@ the full journey instead of the demo.
 | F31 | Publish: space gets a public play URL; hires land on branded login → (handoff to game world) | P0 |
 | F32 | Audit log: every agent action, extraction decision, connector sync and manager override is an `audit_events` row | P0 |
 | F33 | Offline contract: with no provider keys, crawl/facts/generation use labelled offline stand-ins (existing rule); UI badges say so | P0 |
+| F34 | Continuous sync: scheduled re-sync of every connector (cursor-based) and a periodic site re-scan; new/changed/removed source items emit `diff_events` per space | P1 |
+| F35 | Self-adapting brain: a changed source doc marks dependent facts `stale`, re-extracts from the new chunks, and re-runs resolution — the knowledge graph updates itself as the company changes; every cascade step is an `audit_events` row | P1 |
+| F36 | Downstream propagation: brain changes flow downstream — courses whose `fact_ids` went stale are flagged `needs_refresh` and regenerate on manager confirm; published game content rebuilds from updated `CourseSpec`s (handoff to world stream) | P1 |
 
 ## Success metrics
 
@@ -161,7 +164,7 @@ the full journey instead of the demo.
 | Layer | Choice | Status | Notes |
 | --- | --- | --- | --- |
 | App | Next.js (App Router) + TypeScript + Tailwind | Decided | Existing branch. UI components stay client-only where they already are |
-| Hosting | Railway (web service + worker + cron) | Proposed | Single pane: Next.js service, pipeline worker, scheduled re-sync. Modal deploy already works (`deploy/modal_app.py`); Vercel works for the web tier but can't run dembrandt's Chromium — pick Railway **or** keep Modal+Supabase before Phase 1 lands |
+| Hosting | Railway (web service + worker + cron) | Decided | Nicole 2026-10-24. Single pane: Next.js service, pipeline worker, scheduled re-sync (F34), and Chromium-capable for dembrandt. `deploy/modal_app.py` stays as fallback. Note: Railway has a one-time trial credit, then Hobby ≈$5/mo — "free" for the demo window, not forever |
 | DB | Supabase Postgres + Drizzle + RLS | Decided | Existing schema; pgvector available on Supabase when embedding volume justifies it (D-6: JS cosine is fine below ~10k rows) |
 | Auth | Supabase Auth: email+password, magic link, Google OAuth | Decided | Wired already (`(gen)/login`, `auth/callback`); company-email domain match for hires P1 |
 | Storage | Supabase Storage | Decided | Buckets exist for pages/screenshots/assets |
@@ -169,11 +172,11 @@ the full journey instead of the demo.
 | Browser rendering | Cloudflare Browser Rendering for thin/JS pages | Decided | Already integrated; free plan ≈ 10 min/day, cached crawl reuses for 24 h |
 | Brand extraction | dembrandt (local Chromium) + LLM normalization into tokens | Decided | Exists; needs a Chromium-capable host — Railway/Modal, not Vercel functions |
 | LLM | Anthropic via Mubit gateway (`MUBIT_*` envs) | Decided | Fixed system prompts in `src/lib/prompts.ts`; everything variable in the user message |
-| Embeddings | Voyage AI (Anthropic-aligned) or `MUBIT_EMBED_MODEL`; offline hashed fallback | Proposed | Pick one before F15 lands; dimension recorded on the space |
-| Tool OAuth | Nango (open-source OAuth/token broker) or direct per-provider apps | Proposed | Direct apps for GitHub first (fine-grained PAT also accepted for demos); Nango when Slack+Notion+Jira land together |
+| Embeddings | `MUBIT_EMBED_MODEL` (hackathon sponsor) primary; Voyage AI (`VOYAGE_API_KEY`) as standby if Mubit can't serve embeddings; offline hashed fallback | Decided | Nicole 2026-10-24. Dimension recorded on the space so the provider can swap |
+| Tool OAuth | Nango (open-source OAuth/token broker) for Slack/Notion/Jira/Drive; direct OAuth app or fine-grained PAT for GitHub | Decided | Nicole 2026-10-24. Self-hostable, free cloud tier for the demo |
 | Internal-web-app browsing | Browserbase + Stagehand | Proposed | P2; credentials write-only in Supabase Vault, filled at runtime, never shown back |
 | Knowledge graph store | Postgres tables (`entities`, `edges`, `facts`, `mentions`) | Decided | A graph DB (SurrealDB/Neo4j) is overkill at this volume; schema keeps a migration path |
-| Brain graph viz | sigma.js + Graphology | Proposed | The Gephi ecosystem's own web renderer (same OuestWare lineage) — closest "Gephi in the browser". Gephi desktop stays an offline analysis/export tool, never a runtime dep. Alternative: cosmos.gl (propadm.in's pick) if node counts grow past ~10k |
+| Brain graph viz | cosmos.gl | Decided | Nicole 2026-10-24 — GPU-canvas force graph, propadm.in's pick. sigma.js + Graphology stays the documented fallback if cosmos.gl disappoints. Gephi desktop stays an offline analysis/export tool, never a runtime dep |
 | Pipeline/jobs | Existing sliced pipeline (`jobs`, `job_events`, stage registry, heartbeat watchdog) | Decided | Reuse for connector syncs and course generation; Inngest/Trigger.dev only if we outgrow it |
 | Email | Resend (invites, notifications) | Proposed | Any transactional sender works; only invites v1 |
 | Analytics | PostHog | Proposed | propadm.in used it; product + agent-tracing events |
@@ -187,17 +190,17 @@ Actionable checklist — each row becomes an env-var group and a `check:env` ent
 
 | Tool | For | Needed at | Setup |
 | --- | --- | --- | --- |
-| Railway | Web + worker + cron hosting | Phase 0 | Project, `RAILWAY_TOKEN`, link repo; or keep `deploy/modal_app.py` |
+| Railway | Web + worker + cron hosting | Phase 0 — Decided | Project, `RAILWAY_TOKEN`, link repo. Trial credit first; `deploy/modal_app.py` stays as fallback |
 | Supabase | DB, auth, storage, Vault | Phase 0 | Already bootstrapped (`supabase:bootstrap`); add `pgvector` extension, storage bucket `crawl-artifacts` |
 | Google Cloud / OAuth | Google sign-in, Drive connector | Phase 0 / P1 | OAuth client; `SUPABASE_AUTH_GOOGLE_*` |
 | GitHub OAuth app | GitHub connector | Phase 3 | Or accept fine-grained PATs for demos |
-| Nango | Slack/Notion/Jira/Drive OAuth | Phase 3 (P1) | `nango.dev` account or self-host; `NANGO_SECRET_KEY` |
+| Nango | Slack/Notion/Jira/Drive OAuth | Phase 3 (P1) — Decided | `nango.dev` free cloud tier or self-host; `NANGO_SECRET_KEY` |
 | Cloudflare Browser Rendering | JS-heavy site crawl + screenshots | Phase 1 | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` (already in env spec) |
 | Mubit gateway | All LLM calls | Phase 1 | `MUBIT_API_KEY`, `MUBIT_ENDPOINT`, gateway flag |
 | Anthropic | Direct LLM fallback | Phase 1 | `ANTHROPIC_API_KEY`, model + effort envs |
-| Voyage AI | Embeddings | Phase 4 | `VOYAGE_API_KEY` (or confirm `MUBIT_EMBED_MODEL`) |
+| Voyage AI | Embeddings standby | Phase 4 | `VOYAGE_API_KEY` — only provisioned if `MUBIT_EMBED_MODEL` can't serve embeddings |
 | Browserbase | Internal web app connector | P2 | `BROWSERBASE_API_KEY`, `BROWSERBASE_PROJECT_ID` |
-| sigma.js + Graphology | Brain page | Phase 4 | npm only — `sigma`, `graphology`, `graphology-layout-forceatlas2` |
+| cosmos.gl | Brain page | Phase 4 — Decided | npm only — `@cosmos.gl/graph`; `sigma` + `graphology` fallback noted in skill |
 | Gephi | Offline brain analysis/demos | Optional | Desktop app; export `graph.gexf` from the brain API for offline review |
 | Resend | Invite emails | Phase 6 | `RESEND_API_KEY`, `FROM_EMAIL` |
 | PostHog | Product analytics | Phase 6 | `NEXT_PUBLIC_POSTHOG_KEY`, `POSTHOG_HOST` |
@@ -215,7 +218,7 @@ Actionable checklist — each row becomes an env-var group and a `check:env` ent
 | `editor.html` | Hard-coded `STEPS`, static assets list, color inputs | CourseSpec from brain; Assets tab lists real scraped assets with source URLs; Design tab edits `brand_profiles` tokens |
 | `dashboard.html` Overview | `seedDemoHires()` | `dashboard` aggregate endpoints over `hires`, `facts`, `courses` |
 | Tools tab | Flag-flip `connectTool()` | Connector rows with real OAuth/sync; brain bar = `facts` count |
-| `brain.html` | Seeded-random canvas clusters | sigma.js over `entities`/`edges` API; provenance side panel |
+| `brain.html` | Seeded-random canvas clusters | cosmos.gl over `entities`/`edges` API; provenance side panel |
 | `course.html` | `OB.COURSES` constant | `courses` table; lessons from `CourseSpec` |
 | Assistant FAB | Canned insights list | Answers from brain query + attempt aggregates |
 | `play.html` link | `?space=` param | Published space slug → branded hire login → game world handoff |
@@ -296,12 +299,18 @@ Tables: `entities`, `edges`, `facts`, `entity_mentions`, `doc_chunks`,
 - Review UI (Brain → Review): list of `draft` facts, approve/edit/reject; edit
   rewrites `text` and keeps provenance; reject sets `status=rejected` and the
   extractor is told not to re-propose it (negative examples in the prompt).
-- Brain API: `GET /api/brain/graph?space=` → nodes+edges for sigma.js;
+- Brain API: `GET /api/brain/graph?space=` → nodes+edges for cosmos.gl;
   `GET /api/brain/search?q=` → hybrid results with citations;
   `GET /api/brain/facts?status=`; mutations under `/api/brain/facts/:id`.
-- Brain page (sigma.js): force layout over partitions, node size = mention
+- Brain page (cosmos.gl): GPU force layout over partitions, node size = mention
   count, click → side panel with fact text + cited source links. Manager can
   export `graph.gexf` for offline Gephi inspection.
+- Self-adaptation (F34/F35): every connector cursor tick and re-scan emits
+  `diff_events`; a doc version change marks dependent facts `stale`, queues
+  re-extraction on the new chunks, and re-runs resolution — so the brain page
+  drifts as the company drifts. F36 then flags affected courses
+  `needs_refresh` and rebuilds published game content from the updated
+  `CourseSpec`s.
 
 ## Subsystem: courses and editor
 
@@ -409,7 +418,7 @@ onBoardGameHack/
 │   ├── lib/{crawl,pipeline,design,flow,memory,brain,connectors}
 │   └── services/orthogonal/   # constructor backend (demo + live)
 ├── world/                     # game world (other stream)
-├── deploy/modal_app.py        # keep until Railway decision lands
+├── deploy/modal_app.py        # fallback deploy path (Railway is primary)
 └── supabase/migrations/       # schema + RLS + storage
 ```
 
@@ -437,7 +446,7 @@ Phases in dependency order; each ends in something demoable. Backlog format
 
 **Phase 0 — foundations**
 - [ ] This doc set merged; branch protection + PR conventions agreed
-- [ ] Deploy target decided: Railway (web+worker) vs current Modal — env matrix written to `.env.example`
+- [x] Deploy target decided: **Railway** (web+worker+cron); Modal kept as fallback — env matrix written to `.env.example`
 - [ ] `npm run check:env` covers every row in the provisioning table
 - [ ] Seed demo company (Acme Pay content already exists under `content/`)
 
@@ -461,8 +470,8 @@ Phases in dependency order; each ends in something demoable. Backlog format
 **Phase 4 — brain**
 - [ ] `entities`, `edges`, `facts`, `entity_mentions` schema
 - [ ] Extraction prompt + validation; resolution (keys → embedding → LLM)
-- [ ] Review UI; brain search API; sigma.js brain page; GEXF export
-- [ ] Stale-fact marking on source changes
+- [ ] Review UI; brain search API; cosmos.gl brain page; GEXF export
+- [ ] Stale-fact marking on source changes; `diff_events` cascade (F34/F35)
 
 **Phase 5 — courses + editor**
 - [ ] `CourseSpec` schema + validation; `generate_courses` stage
@@ -471,6 +480,7 @@ Phases in dependency order; each ends in something demoable. Backlog format
 
 **Phase 6 — dashboard + polish**
 - [ ] All tabs on aggregate endpoints; invites; analytics; rewards
+- [ ] `needs_refresh` cascade into courses + published world rebuild (F36)
 - [ ] FAB assistant on brain search; PostHog + Sentry; e2e suite green
 - [ ] `cases/` corpus + eval runner producing `ANSWERS/<site>/RESULT.md`
 
@@ -484,14 +494,23 @@ Phases in dependency order; each ends in something demoable. Backlog format
 | LLM extraction produces junk facts | Draft queue + confidence threshold; nothing enters the brain without `approved` (default: auto-approve ≥ 0.9, configurable) |
 | Browser creds connector is risky | P2 only, write-only Vault storage, per-space audit |
 | Crawl blocked by WAF | Cloudflare browser fallback; manual URL/file add never blocked |
-| Railway vs Modal decision drags | Modal deploy already works — build against env vars, decide late |
+| Railway free-tier limits bite mid-demo | Hobby tier ≈$5/mo after trial credit; `deploy/modal_app.py` fallback stays green |
 | Two agents collide on shared files | BUILD-CONTRACT names the seams; PRs are small and one-concern |
 
 ## Open questions for Nicole
 
-1. Deploy target: Railway all-in-one vs keep Vercel+Modal+Supabase?
-2. Tool OAuth: Nango now, or direct OAuth apps (GitHub first) and Nango later?
-3. Brain viz: sigma.js (Gephi-lineage, recommended) vs cosmos.gl?
-4. Embeddings: Voyage AI vs Mubit-hosted model?
-5. Auto-approve threshold for facts: default 0.9 — accept, or require manual
+Decided 2026-10-24:
+
+1. Deploy target → **Railway** (web+worker+cron). Modal stays fallback.
+   Caveat: trial credit, then ≈$5/mo Hobby — free for the demo window only.
+2. Tool OAuth → **Nango** (free cloud tier / self-host) for Slack/Notion/Jira/
+   Drive; GitHub keeps a direct OAuth/PAT path.
+3. Brain viz → **cosmos.gl**. sigma.js + Graphology remains the fallback.
+4. Embeddings → **Mubit** (`MUBIT_EMBED_MODEL`) primary; Voyage AI standby.
+5. Self-adapting structure → **required** (F34–F36): the brain, courses and
+   the game must update automatically as the company's sources change.
+
+Still open:
+
+6. Auto-approve threshold for facts: default 0.9 — accept, or require manual
    review of everything (slower but fully supervised)?
