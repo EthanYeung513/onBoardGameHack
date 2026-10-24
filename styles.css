@@ -303,6 +303,9 @@ footer .flinks { display: flex; gap: 34px; opacity: .85; }
 .scn-line { background: #f4f4f6; border-radius: 12px 12px 12px 3px; padding: 16px 18px; font-size: 15px; line-height: 1.55; margin-bottom: 18px; }
 .scn-reply { background: #e6f4ff; border-radius: 12px 12px 3px 12px; padding: 14px 16px; font-size: 14px; line-height: 1.5; margin: 12px 0 0; font-style: italic; }
 .shop-grid { display: grid; gap: 10px; }
+.panel { overflow-x: auto; }
+.table { white-space: nowrap; }
+.table td, .table th { white-space: nowrap; }
 .icn { vertical-align: -2px; }
 .side a .icn { margin-right: 8px; }
 
