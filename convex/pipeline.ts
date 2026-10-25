@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
+import { stripEmDash } from "../src/lib/emdash";
 import { audit, MANAGERS, requireRole } from "./lib/access";
 import { fail } from "./lib/errors";
 import { backoffMs, DEFAULT_MAX_ATTEMPTS, nextInEnrich, nextInScan, SCAN_CHAIN, STAGE_LABELS, STALL_MS, type StageName } from "./lib/stages";
@@ -42,7 +43,8 @@ export async function enqueue(ctx: MutationCtx, target: JobTarget, stage: StageN
 }
 
 async function logEvent(ctx: MutationCtx, job: Doc<"jobs">, lvl: Doc<"job_events">["level"], message: string, data?: unknown) {
-  await ctx.db.insert("job_events", { jobId: job._id, spaceId: job.spaceId, scanId: job.scanId, stage: job.stage, level: lvl, message, data });
+  // Shown in the scan screen and Activity: the em-dash rule applies (src/lib/emdash.ts).
+  await ctx.db.insert("job_events", { jobId: job._id, spaceId: job.spaceId, scanId: job.scanId, stage: job.stage, level: lvl, message: stripEmDash(message), data });
 }
 
 async function setScanOutcome(ctx: MutationCtx, job: Doc<"jobs">, outcome: "succeeded" | "failed", error?: string) {
@@ -114,9 +116,10 @@ export const finish = workerMutation({
       v.object({ kind: v.literal("error"), message: v.string(), maxAttempts: v.optional(v.number()) }),
     ),
   },
-  handler: async (ctx, { jobId, workerId, outcome }) => {
+  handler: async (ctx, { jobId, workerId, outcome: raw }) => {
     const job = await ctx.db.get(jobId);
     if (!job || job.workerId !== workerId || job.status !== "running") return { lost: true };
+    const outcome = raw.kind === "error" ? { ...raw, message: stripEmDash(raw.message) } : raw;
     const now = Date.now();
     const label = STAGE_LABELS[job.stage];
 

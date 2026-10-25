@@ -351,7 +351,7 @@ export const settleDiff = workerMutation({
             spaceId: ev.spaceId,
             actor: "system:cascade",
             kind: "fact.still_stale",
-            payload: { factId, text: fact.text, source, reason: ev.kind === "removed" ? "source removed" : "not found in the new version — needs review" },
+            payload: { factId, text: fact.text, source, reason: ev.kind === "removed" ? "source removed" : "not found in the new version, needs review" },
           });
           stillStale++;
         }

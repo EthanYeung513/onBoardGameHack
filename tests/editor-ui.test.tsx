@@ -112,7 +112,7 @@ describe("Editor", () => {
     const recs = within(screen.getByTestId("recs-primary")).getAllByRole("button");
     expect(recs.map((b) => b.getAttribute("aria-label"))).toEqual(["#0a2540 (recommended)", "#111111"]);
     expect(recs[0]).toHaveTextContent(/Recommended.*via Mubit/);
-    expect(recs[0]).toHaveAttribute("title", "Recommended by Mubit — Used on every primary button");
+    expect(recs[0]).toHaveAttribute("title", "Recommended by Mubit");
 
     await userEvent.click(recs[1]);
     expect(mut("brand:decide")).toHaveBeenCalledWith({ spaceId, field: "primary", chosen: "#111111", recommended: "#0a2540" });

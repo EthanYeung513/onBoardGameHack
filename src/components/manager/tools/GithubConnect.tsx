@@ -28,7 +28,7 @@ export function GithubConnect({ spaceId }: { spaceId: Id<"spaces"> }) {
       await connect({ spaceId, token, repos: repos.split(/[\s,]+/).filter(Boolean) });
       setOpen(false);
       setToken("");
-      toast("Agent is reading GitHub — brain updated");
+      toast("Agent is reading GitHub");
     } catch (err) {
       setError(errorText(err));
     } finally {
@@ -59,7 +59,7 @@ export function GithubConnect({ spaceId }: { spaceId: Id<"spaces"> }) {
           </div>
           <div className="field">
             <label htmlFor="gh-repos">Repositories (optional)</label>
-            <input id="gh-repos" value={repos} onChange={(e) => setRepos(e.target.value)} placeholder="acme/handbook, acme/api — blank = all the token can read" />
+            <input id="gh-repos" value={repos} onChange={(e) => setRepos(e.target.value)} placeholder="acme/handbook, acme/apill the token can read" />
           </div>
           {error && <p style={{ color: "#e11d48", fontSize: 13, marginBottom: 12 }}>{error}</p>}
           <button className="btn btn-dark btn-block" disabled={busy || !token.trim()}>

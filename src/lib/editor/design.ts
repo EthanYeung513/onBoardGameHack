@@ -78,10 +78,10 @@ export function decisionValue(field: BrandField, d: DesignValues): string {
 /** Toast copy for a failed write: 409/422 in the product's voice, never a raw error. */
 export function errorMessage(err: unknown, action: string): string {
   const data = err instanceof ConvexError ? (err.data as { code?: number; message?: string }) : null;
-  if (data?.code === 409) return "Someone else changed this course — showing the latest version.";
+  if (data?.code === 409) return "Someone else changed this course. Showing the latest version.";
   if (data?.code === 422) return `That edit doesn't fit the course rules${data.message ? `: ${data.message}` : "."}`;
   if (data?.code === 403 || data?.code === 401) return "You don't have permission to edit this space.";
   if (data?.code === 503) return `${action} needs a provider that isn't configured yet.`;
   if (data?.message) return data.message;
-  return `Couldn't ${action.toLowerCase()} — it isn't available yet. Try again later.`;
+  return `Couldn't ${action.toLowerCase()}. It isn't available yet, try again later.`;
 }

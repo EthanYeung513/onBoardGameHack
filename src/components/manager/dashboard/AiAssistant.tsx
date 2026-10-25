@@ -9,7 +9,7 @@ import { Icon } from "@/components/manager/icons";
 // The mockup's #ai-fab + #ai-pop (F30). Insights come from `dashboard.insights` — fixed rules over
 // the space's real aggregates. Free-form questions have no backend yet, so the reply says so.
 
-const NO_QA = "I can't answer free-form questions yet — the insights above are computed from your space's live data.";
+const NO_QA = "I can't answer free-form questions yet.";
 
 export function AiAssistant({ spaceId }: { spaceId: Id<"spaces"> }) {
   const [open, setOpen] = useState(false);
@@ -31,10 +31,10 @@ export function AiAssistant({ spaceId }: { spaceId: Id<"spaces"> }) {
       </button>
       <div id="ai-pop" hidden={!open}>
         <div className="ai-tag">
-          <Icon name="sparkle" /> AI Assistant<span id="ai-ctx" style={{ fontWeight: 400, color: "var(--muted)" }}> — insights</span>
+          <Icon name="sparkle" /> AI Assistant<span id="ai-ctx" style={{ fontWeight: 400, color: "var(--muted)" }}> · insights</span>
         </div>
         <ul id="ai-insights">
-          {insights?.length === 0 && <li>No insights yet — they appear once hires play and the company brain grows.</li>}
+          {insights?.length === 0 && <li>No insights yet.</li>}
           {insights?.map((parts, i) => (
             <li key={i}>{parts.map((s, j) => (s.bold ? <b key={j}>{s.text}</b> : <span key={j}>{s.text}</span>))}</li>
           ))}

@@ -55,7 +55,7 @@ export default async function JoinPage({ params }: Params) {
         Your courses
       </h2>
       {data.courses.length === 0 ? (
-        <p style={{ color: "var(--muted)" }}>No courses yet — your manager is still building them.</p>
+        <p style={{ color: "var(--muted)" }}>No courses yet.</p>
       ) : (
         <div className="grid2">
           {data.courses.map((c) => (

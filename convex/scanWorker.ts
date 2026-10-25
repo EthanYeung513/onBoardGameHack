@@ -1,3 +1,4 @@
+import { stripEmDash } from "../src/lib/emdash";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
@@ -131,7 +132,7 @@ export const saveBrandProfile = workerMutation({
       brandProfileId,
       mode: profile.quality === "offline" ? "offline" : "live",
     };
-    const name = companyName?.trim();
+    const name = companyName ? stripEmDash(companyName).trim() : undefined;
     if (name && name.length <= 80 && name !== space.name && space.name === hostDefaultName(space.host)) patch.name = name;
     await ctx.db.patch(profile.spaceId, patch);
 

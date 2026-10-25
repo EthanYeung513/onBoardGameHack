@@ -137,7 +137,7 @@ describe("connectors (S6/S7/S15)", () => {
     expect(await runWorker(t)).toBe("done");
     const day = new Date(Number(ts(30).split(".")[0]) * 1000).toISOString().slice(0, 10);
     const item = await t.run((ctx) => ctx.db.query("source_items").withIndex("by_space_external", (q) => q.eq("spaceId", spaceId).eq("externalId", `slack:C1:${day}`)).first());
-    expect(item).toMatchObject({ kind: "message", title: `#eng — ${day}`, connectorId });
+    expect(item).toMatchObject({ kind: "message", title: `#eng · ${day}`, connectorId });
     const conn = await t.run((ctx) => ctx.db.get(connectorId));
     expect(conn).toMatchObject({ status: "ready", lastSyncedAt: expect.any(Number) });
     const chained = await t.run((ctx) => ctx.db.query("jobs").collect());
@@ -171,9 +171,9 @@ describe("connectors (S6/S7/S15)", () => {
     expect(fact?.status).toBe("stale");
     expect(course).toMatchObject({ needsRefresh: true, staleStepIds: ["s2"] });
     const byKind = Object.fromEntries(audits.map((a) => [a.kind, a.payload as Record<string, unknown>]));
-    expect(byKind["fact.stale"]).toMatchObject({ source: { connectorType: "slack", title: `#eng — ${day}` }, factText: "Deploys happen on Tuesdays" });
+    expect(byKind["fact.stale"]).toMatchObject({ source: { connectorType: "slack", title: `#eng · ${day}` }, factText: "Deploys happen on Tuesdays" });
     expect(byKind["course.step_stale"]).toMatchObject({ courseTitle: "Tools & Stack", stepId: "s2", source: { connectorType: "slack" } });
-    expect(byKind["course.step_stale"].chain).toBe(`slack “#eng — ${day}” → fact “Deploys happen on Tuesdays” → course “Tools & Stack” → step s2`);
+    expect(byKind["course.step_stale"].chain).toBe(`slack “#eng · ${day}” → fact “Deploys happen on Tuesdays” → course “Tools & Stack” → step s2`);
   });
 
   it("a revoked credential fails the sync once and leaves a readable error on the card", async () => {

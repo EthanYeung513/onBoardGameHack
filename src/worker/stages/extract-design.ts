@@ -25,7 +25,7 @@ export const BrandLabels = z.object({
 });
 export type BrandLabels = z.infer<typeof BrandLabels>;
 
-export const OFFLINE_VOICE = "Offline stand-in: tone of voice was not analysed (no LLM configured — set MUBIT_API_KEY and re-scan).";
+export const OFFLINE_VOICE = "Offline stand-in: tone of voice was not analysed (no LLM configured; set MUBIT_API_KEY and re-scan).";
 
 export interface DesignDeps {
   dembrandtAvailable: () => boolean;
@@ -107,8 +107,8 @@ export function createExtractDesignStage(deps: DesignDeps): StageDefinition {
       // Cheap re-scan: the homepage (where the brand evidence lives) is unchanged and the space
       // already has a brand → keep it (and the manager's Design-tab choices) without re-extracting.
       if (scan.changes?.home === "unchanged" && ctx.space.brandProfileId) {
-        await ctx.event("info", "Homepage unchanged since the last scan — kept your current brand (no re-extraction)", { step: "brand", reused: true });
-        return { done: true, summary: "brand unchanged — kept current tokens" };
+        await ctx.event("info", "Homepage unchanged since the last scan, so your current brand was kept (no re-extraction)", { step: "brand", reused: true });
+        return { done: true, summary: "brand unchanged, kept current tokens" };
       }
 
       await ctx.event("info", "Extracting brand identity (logo, colors, typography)", { step: "brand" });
@@ -118,7 +118,7 @@ export function createExtractDesignStage(deps: DesignDeps): StageDefinition {
             await ctx.event("warn", `Rendered-page extraction failed, using the HTML and CSS only: ${(err as Error).message.slice(0, 200)}`);
             return null;
           })
-        : ctx.event("info", "No local browser for rendered-page extraction — reading brand tokens from the HTML and CSS").then(() => null);
+        : ctx.event("info", "No local browser for rendered-page extraction, so brand tokens come from the HTML and CSS").then(() => null);
       const [dembrandt, html] = await Promise.all([rendered, deps.htmlCssEvidence(scan.url) as Promise<HtmlEvidence>]);
       await ctx.progress(0.4);
       const candidates = buildCandidates(html, dembrandt);

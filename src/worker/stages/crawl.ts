@@ -99,7 +99,7 @@ async function discoverPhase(ctx: StageContext, deps: CrawlDeps): Promise<SliceR
   c.done.push(root);
 
   const types = [...new Set(c.urls.map((u) => u.pageType).filter((t) => t !== "home" && t !== "other"))].slice(0, 4);
-  await ctx.event("info", `Reading public pages — ${types.length ? types.join(", ") : "homepage"}`, { step: "read", kept: c.urls.length, types });
+  await ctx.event("info", `Reading public pages: ${types.length ? types.join(", ") : "homepage"}`, { step: "read", kept: c.urls.length, types });
   return { done: false, cursor: { ...c }, progress: 0.1 };
 }
 
@@ -127,7 +127,7 @@ async function fetchPhase(ctx: StageContext, deps: CrawlDeps, c: CrawlCursor): P
         const change = await savePage(ctx, deps, c, url, page, pageType);
         c.done.push(url);
         if (change !== "empty") c.changes![change]++;
-        const note = change === "unchanged" ? ", unchanged — skipped re-learning" : change === "changed" ? ", changed — re-learning" : "";
+        const note = change === "unchanged" ? ", unchanged, skipped re-learning" : change === "changed" ? ", changed, re-learning" : "";
         await ctx.event("info", `Read ${pathOf(url)} (${page.words} words${page.fetchMethod === "browser" ? ", rendered in a browser" : ""}${note})`, { url, method: page.fetchMethod, pageType, change });
       } catch (err) {
         if (allowBrowser) c.browserUsed--;
@@ -142,14 +142,14 @@ async function fetchPhase(ctx: StageContext, deps: CrawlDeps, c: CrawlCursor): P
   if (next < todo.length || c.done.length + c.failed.length < c.urls.length) return { done: false, cursor: { ...c }, progress: progress() };
   const { added, changed, unchanged } = c.changes;
   if (changed || unchanged) {
-    await ctx.event("info", `Since the last scan: ${added} new, ${changed} changed, ${unchanged} unchanged — only new and changed pages go back through the brain`, { step: "diff", ...c.changes });
+    await ctx.event("info", `Since the last scan: ${added} new, ${changed} changed, ${unchanged} unchanged`, { step: "diff", ...c.changes });
   }
   return { done: false, cursor: { ...c, phase: "screens" }, progress: 0.8 };
 }
 
 async function screensPhase(ctx: StageContext, deps: CrawlDeps, c: CrawlCursor): Promise<SliceResult> {
   if (!deps.browserKeyed()) {
-    await ctx.event("info", "Page screenshots skipped — Cloudflare Browser Rendering is not configured", { step: "screens", standIn: true });
+    await ctx.event("info", "Page screenshots skipped (Cloudflare Browser Rendering is not configured)", { step: "screens", standIn: true });
     return { done: false, cursor: { ...c, phase: "finish" }, progress: 0.9 };
   }
   const read = c.urls.filter((u) => c.done.includes(u.url));

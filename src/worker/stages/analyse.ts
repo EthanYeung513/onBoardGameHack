@@ -12,7 +12,7 @@ import type { StageDefinition } from "../types";
 const PAGE_CHARS = 7000;
 const TOTAL_CHARS = 70_000;
 
-export const OFFLINE_FINDINGS_LABEL = "Offline stand-in: the site was not analysed (no LLM configured — set MUBIT_API_KEY and re-scan).";
+export const OFFLINE_FINDINGS_LABEL = "Offline stand-in: the site was not analysed (no LLM configured; set MUBIT_API_KEY and re-scan).";
 
 type Page = { url: string; title: string; text: string };
 
@@ -61,8 +61,8 @@ export const analyseStage: StageDefinition = {
       const prev = await ctx.convex.query(api.scanWorker.previousScan, { spaceId: ctx.space._id, scanId: scan._id });
       if (prev) {
         await ctx.convex.mutation(api.scanWorker.saveFindings, { scanId: scan._id, findings: { ...(prev.findings as object), reusedFrom: prev.scanId } });
-        await ctx.event("info", `No page changed since the last scan — reused its company analysis (no model call)`, { step: "analyse", reused: true });
-        return { done: true, summary: "unchanged since last scan — analysis reused" };
+        await ctx.event("info", `No page changed since the last scan, so its company analysis was reused (no model call)`, { step: "analyse", reused: true });
+        return { done: true, summary: "unchanged since last scan, analysis reused" };
       }
     }
     const all = await ctx.convex.query(api.scanWorker.listCrawlPages, { scanId: scan._id, maxChars: PAGE_CHARS });

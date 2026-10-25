@@ -34,7 +34,7 @@ function Recs({ field, opts, current, onPick }: { field: BrandField; opts: Brand
   const same = (c: Choice) =>
     field === "radius" ? parseFloat(c.value) === parseFloat(current) : c.value.trim().toLowerCase() === current.trim().toLowerCase();
   const title = (c: Choice) =>
-    c.recommended ? `Recommended by ${SOURCE_LABEL[opts.source]} — ${opts.reason}` : c.evidence ? `Found: ${c.evidence}` : c.value;
+    c.recommended ? `Recommended by ${SOURCE_LABEL[opts.source]}` : c.evidence ? `Found: ${c.evidence}` : c.value;
   return (
     <div className="recs" data-testid={`recs-${field}`}>
       {choices.map((c) => (
@@ -92,7 +92,7 @@ export function DesignPanel({ options, design, onPreview, onPick, logo }: Props)
             <span className="val">{logo.label} · found on your site</span>
           </div>
         ) : (
-          <span className="val">No logo found on your site yet — re-scan or check Assets.</span>
+          <span className="val">No logo found on your site yet.</span>
         )}
       </div>
       {colorCtl("primary", "Primary color")}

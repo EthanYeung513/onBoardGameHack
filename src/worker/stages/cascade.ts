@@ -58,6 +58,6 @@ export const cascadeStage: StageDefinition = {
         }
       }
     }
-    return { done: true, summary: `${c.processed} changes applied — ${c.refreshed + c.restored} facts refreshed, ${c.stillStale} still stale for review` };
+    return { done: true, summary: `${c.processed} changes applied: ${c.refreshed + c.restored} facts refreshed, ${c.stillStale} still stale for review` };
   },
 };

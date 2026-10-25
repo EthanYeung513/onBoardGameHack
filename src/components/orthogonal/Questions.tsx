@@ -75,7 +75,7 @@ export function DescribeStage({ siteName, category, confidence, pageCount, onNex
       width={600}
       step="Step 3 of 4"
       title={`We think ${siteName} is ${category}.`}
-      lead={`Confidence is ${confidence} from ${pageCount} pages. Add anything we couldn't see — who signs up, what they need first — or just go ahead.`}
+      lead={`Confidence is ${confidence} from ${pageCount} pages. Add anything we couldn't see.`}
     >
       <textarea
         value={description}

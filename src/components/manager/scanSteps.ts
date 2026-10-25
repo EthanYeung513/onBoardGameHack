@@ -106,7 +106,7 @@ export function scanView(input: ScanInput, host: string, now: number): ScanView 
         note = { kind: "warn", text: warn?.message ?? `${label} failed, retrying: ${job.error ?? "unknown error"}` };
       } else if (job.status === "queued" && job.startedAt === null && now - job.queuedAt > WAITING_MS) {
         phase = "waiting";
-        note = { kind: "waiting", text: `Waiting for the “${label}” step — no worker has picked it up yet.` };
+        note = { kind: "waiting", text: `Waiting for the “${label}” step. No worker has picked it up yet.` };
       } else {
         const log = lastEvent(input.events, job.stage, ["info", "warn"]);
         if (log) note = { kind: "log", text: log.message };

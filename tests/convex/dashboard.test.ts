@@ -79,7 +79,7 @@ describe("dashboard aggregates", () => {
     const insights = (await owner.as.query(api.dashboard.insights, { spaceId })).map((i) => i.map((s) => s.text).join(""));
     expect(insights).toContain("1 invite not accepted yet.");
     expect(insights.some((i) => i.includes("Tools & Stack") && i.includes("refresh"))).toBe(true);
-    expect(insights).toContain("Glossary has only 1 fact — connect a tool that covers it.");
+    expect(insights).toContain("Glossary has only 1 fact. Connect a tool that covers it.");
   });
 
   it("counts unprocessed diff_events per connector on the Tools tab", async () => {

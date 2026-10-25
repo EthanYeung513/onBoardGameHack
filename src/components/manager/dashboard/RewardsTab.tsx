@@ -48,7 +48,7 @@ export function RewardsTab({ space, toast }: TabProps) {
   };
 
   const rewardFields = (r?: Reward): FormField[] => [
-    { name: "name", label: "Reward name", placeholder: "e.g. Coffee voucher — $5", initial: r?.name, required: true },
+    { name: "name", label: "Reward name", placeholder: "e.g. Coffee voucher ($5)", initial: r?.name, required: true },
     { name: "cost", label: "Cost in coins", type: "number", placeholder: "120", initial: r ? String(r.costCoins) : "", required: true, min: 1 },
   ];
 
@@ -86,7 +86,7 @@ export function RewardsTab({ space, toast }: TabProps) {
       <div className="top">
         <div>
           <h1>Rewards</h1>
-          <p>Send perks to hires — funded by your rewards budget.</p>
+          <p>Send perks to hires.</p>
         </div>
       </div>
       <div className="panel">
@@ -98,7 +98,7 @@ export function RewardsTab({ space, toast }: TabProps) {
         </div>
         <div className="shop-grid" id="reward-list">
           {data && data.rewards.length === 0 && (
-            <p style={{ fontSize: 13, color: "var(--muted)" }}>No rewards yet — add perks hires can buy in the in-game shop.</p>
+            <p style={{ fontSize: 13, color: "var(--muted)" }}>No rewards yet.</p>
           )}
           {data?.rewards.map((r) => (
             <div className="reward" key={r._id}>

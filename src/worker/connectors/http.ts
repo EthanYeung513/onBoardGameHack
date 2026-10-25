@@ -86,7 +86,7 @@ export function createHttp(opts: {
 /** Nango proxy client for one connection (https://nango.dev/docs/reference/api/proxy). */
 export function nangoHttp(service: string, connection: { connectionId: string; providerConfigKey: string }, fetchFn?: FetchFn): Http {
   const key = process.env.NANGO_SECRET_KEY;
-  if (!key) throw new ConnectorAuthError(`Nango is not configured (set NANGO_SECRET_KEY) — ${service} can't sync`);
+  if (!key) throw new ConnectorAuthError(`Nango is not configured (set NANGO_SECRET_KEY), so ${service} can't sync`);
   const host = (process.env.NANGO_HOST || "https://api.nango.dev").replace(/\/$/, "");
   return createHttp({
     service,

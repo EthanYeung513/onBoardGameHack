@@ -74,7 +74,7 @@ export const decide = mutation({
   handler: async (ctx, { spaceId, field, chosen: raw }) => {
     const { userId, space } = await requireRole(ctx, spaceId, MANAGERS);
     const profile = await latestProfile(ctx, space);
-    if (!profile) return fail(404, "No brand profile yet — run a scan first");
+    if (!profile) return fail(404, "No brand profile yet. Run a scan first.");
     const chosen = normaliseChoice(field, raw);
     const tokensVersion = profile.tokensVersion + 1;
     const { decisionId, d, requestId } = await recordDecision(ctx, { spaceId, userId, space, profile, field, chosen, tokensVersion });
@@ -108,7 +108,7 @@ export const pickTheme = mutation({
   handler: async (ctx, { spaceId, themeId }) => {
     const { userId, space } = await requireRole(ctx, spaceId, MANAGERS);
     const profile = await latestProfile(ctx, space);
-    if (!profile) return fail(404, "No brand profile yet — run a scan first");
+    if (!profile) return fail(404, "No brand profile yet. Run a scan first.");
     const theme = ((profile.themes ?? []) as Theme[]).find((t) => t.id === themeId);
     if (!theme) return fail(404, "That theme is not one of this space's options");
     const tokensVersion = profile.tokensVersion + 1;
