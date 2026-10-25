@@ -5,13 +5,13 @@ import { useConvex, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@convex/_generated/api";
-import { APPLE_PATH, OrthoMark, TILES } from "./marks";
+import { OrthoMark, TILES } from "./marks";
 
 // login.html (main) made real: same layout, hero video, welcome tiles and Auth0-style overlay
-// steps (email → password | sign up), backed by Convex Auth. Google/Apple/work-SSO only sign in
+// steps (email → password | sign up), backed by Convex Auth. Google/work-SSO only sign in
 // when the deployment has that provider; otherwise the overlay says so instead of faking it.
 
-type Overlay = null | "auth" | "google" | "apple";
+type Overlay = null | "auth" | "google";
 type AuthStep = "a-email" | "a-pass" | "a-signup-form";
 const emailOK = (v: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
 
@@ -183,7 +183,6 @@ export function LoginCard({ next }: { next?: string }) {
               <button className="btn btn-dark" id="b-work" onClick={() => open(true)}>
                 Login with work account
               </button>
-              <p className="note">Only if your company&apos;s IT team has set up Orthogonal sign-in. Otherwise, use Login above.</p>
             </div>
           </div>
         </div>
@@ -214,12 +213,6 @@ export function LoginCard({ next }: { next?: string }) {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="/assets/google.svg" width={20} height={20} alt="" />
                   Continue with Google
-                </button>
-                <button className="osbtn" style={ssoHide} id="a-apple" onClick={() => setOverlay("apple")}>
-                  <svg width="18" height="18" viewBox="0 0 384 512" fill="currentColor">
-                    <path d={APPLE_PATH} />
-                  </svg>
-                  Continue with Apple
                 </button>
                 <div className="swap" style={ssoHide}>
                   Don&apos;t have an account? <a id="a-signup" onClick={() => setStep("a-signup-form")}>Sign up</a>
@@ -259,19 +252,13 @@ export function LoginCard({ next }: { next?: string }) {
         </div>
       )}
 
-      {(overlay === "google" || overlay === "apple") && (
-        <div className="ov dark" style={overlay === "apple" ? { background: "#1c1c1e" } : undefined} onClick={(e) => e.target === e.currentTarget && setOverlay(null)}>
+      {overlay === "google" && (
+        <div className="ov dark" onClick={(e) => e.target === e.currentTarget && setOverlay(null)}>
           <div className="apcard">
-            {overlay === "apple" ? (
-              <svg width="34" height="34" viewBox="0 0 384 512" fill="#000">
-                <path d={APPLE_PATH} />
-              </svg>
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src="/assets/google.svg" width={34} height={34} alt="" style={{ marginBottom: 14 }} />
-            )}
-            <h2>{overlay === "apple" ? "Apple sign-in isn't set up yet" : "Google sign-in isn't set up yet"}</h2>
-            <p>This Orthogonal deployment has no {overlay === "apple" ? "Apple" : "Google"} OAuth keys. Use your email and password instead.</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/google.svg" width={34} height={34} alt="" style={{ marginBottom: 14 }} />
+            <h2>Google sign-in isn&apos;t set up yet</h2>
+            <p>This Orthogonal deployment has no Google OAuth keys. Use your email and password instead.</p>
             <button className="btn btn-primary" onClick={() => open(false)}>
               Log in with email
             </button>

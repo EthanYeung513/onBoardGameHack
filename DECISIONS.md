@@ -261,6 +261,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (mapping is one pure function, `src/components/manager/scanSteps.ts`)
 - **Revisit?:** if the crawl stage reports its own sub-steps, map "Reading public pages" back to crawl progress
 
+### D-31: Google sign-in live; Apple dropped; login note removed
+- **Task:** auth steering (Nicole 2026-10-25)
+- **Time:** 2026-10-25T02:10Z
+- **Context:** Google OAuth keys are now in both Convex deployments. Nicole is not an Apple developer, and wants the "Only if your company's IT team has set up Orthogonal sign-in…" line gone — both overrides of the login.html mockup
+- **Options:** keep the mockup's Apple button with a "not set up" message / remove it
+- **Chosen:** remove "Continue with Apple" and its overlay and the note; both Google buttons run the Convex Auth Google flow (`signIn("google")`); the honest "not set up" overlay remains only for deployments without Google keys
+- **Why:** product direction overrides the mockup for these two elements; no dead buttons
+- **Reversibility:** easy
+- **Revisit?:** no
+
 ## Blockers
 
 None yet.
