@@ -130,4 +130,14 @@ describe("pipeline jobs", () => {
     const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["extract_design", "seed_brain"], scanOnly: true });
     expect(c?.job).toMatchObject({ stage: "extract_design", scanId });
   });
+
+  it("Generate's deploy job jumps background work, on the reserved lane too", async () => {
+    const { t, spaceId } = await setup();
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 5; i++) await ctx.db.insert("jobs", { spaceId, stage: "seed_brain", status: "queued", progress: 0, attempt: 0, cursor: {}, runAfter: i });
+      await ctx.db.insert("jobs", { spaceId, stage: "deploy", status: "queued", progress: 0, attempt: 0, cursor: {}, runAfter: 10 });
+    });
+    const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["seed_brain", "deploy"], scanOnly: true });
+    expect(c?.job.stage).toBe("deploy");
+  });
 });

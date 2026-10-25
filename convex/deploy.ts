@@ -32,8 +32,30 @@ async function onboardingInput(ctx: QueryCtx, space: Doc<"spaces">) {
   const rewards = (await ctx.db.query("rewards").withIndex("by_space", (q) => q.eq("spaceId", space._id)).collect()).filter((r) => r.active);
   return {
     space: { name: space.name, host: space.host, slug: space.slug, mode: space.mode },
-    brand: brand ? { primary: pick("primary"), accent: pick("accent"), surface: pick("surface"), voice: brand.voice } : null,
-    courses: courses.map((c) => ({ packType: c.packType, title: c.title, icon: c.icon, building: c.building, game: c.game, spec: c.spec })),
+    brand: brand
+      ? {
+          primary: pick("primary"),
+          accent: pick("accent"),
+          surface: pick("surface"),
+          text: pick("text"),
+          voice: brand.voice,
+          headingFont: brand.typography.heading.family,
+          bodyFont: brand.typography.body.family,
+          logoUrl: brand.logoRefs.find((l) => l.kind !== "favicon")?.url ?? null,
+        }
+      : null,
+    // The current spec (not a publish snapshot): when the brain changes and a course refreshes,
+    // the hire's world follows on its next load (the Mubit continuous-learning loop, end to end).
+    courses: courses.map((c) => ({
+      packType: c.packType,
+      title: c.title,
+      icon: c.icon,
+      building: c.building,
+      game: c.game,
+      spec: c.spec,
+      desc: typeof (c.spec as { desc?: unknown })?.desc === "string" ? (c.spec as { desc: string }).desc : undefined,
+      staleSteps: c.staleStepIds?.length ?? 0,
+    })),
     facts,
     rejected: rejected.map((f) => ({ text: f.text, category: f.category })),
     rewards: rewards.map((r) => ({ name: r.name, costCoins: r.costCoins })),
