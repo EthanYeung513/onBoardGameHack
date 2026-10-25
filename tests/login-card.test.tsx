@@ -26,7 +26,7 @@ describe("login page", () => {
     providers = { password: true, magicLink: false, google: true };
     render(<LoginCard next="/dashboard" />);
     fireEvent.click(screen.getByRole("button", { name: /Login with Google/ }));
-    expect(signIn).toHaveBeenCalledWith("google", { redirectTo: "/dashboard" });
+    expect(signIn).toHaveBeenCalledWith("google", { redirectTo: `${window.location.origin}/dashboard` });
     fireEvent.click(screen.getByRole("button", { name: "Login" }));
     fireEvent.click(screen.getByRole("button", { name: /Continue with Google/ }));
     expect(signIn).toHaveBeenCalledTimes(2);

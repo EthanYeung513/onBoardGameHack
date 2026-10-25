@@ -165,5 +165,8 @@ when both are set. Authorised redirect URIs on the Google OAuth client:
 - cloud: `https://rapid-mosquito-655.convex.site/api/auth/callback/google`
 
 After Google, Convex Auth returns to the deployment's `SITE_URL` (local `http://localhost:3000`;
-set it to the Vercel URL on the cloud deployment when S17 deploys). Apple sign-in is out of scope.
+set on the cloud deployment to `https://orthogonal-app.vercel.app`, 2026-10-25). Sign-in returns to the origin
+the manager started on when it is `SITE_URL`, listed in `SITE_URL_ALLOWLIST`, or loopback on a dev backend
+(`convex/lib/authRedirect.ts`). The cloud deployment also needs `JWT_PRIVATE_KEY`/`JWKS`
+(`node scripts/convex-auth-keys.mjs` with the deploy key) — without them every sign-in fails. Apple sign-in is out of scope.
 
