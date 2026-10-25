@@ -51,13 +51,13 @@ export async function ingest(t: T, convex: WorkerConvex, spaceId: Id<"spaces">, 
 
 export async function runStage(
   def: StageDefinition,
-  opts: { t: T; convex: WorkerConvex; spaceId: Id<"spaces">; llm: Llm; cursor?: Record<string, unknown>; remaining?: () => number },
+  opts: { t: T; convex: WorkerConvex; spaceId: Id<"spaces">; llm: Llm; cursor?: Record<string, unknown>; remaining?: () => number; scanId?: Id<"scans"> },
 ) {
   const space = (await opts.t.run((ctx) => ctx.db.get(opts.spaceId)))!;
   const t0 = Date.now();
   const events: string[] = [];
   const ctx: StageContext = {
-    job: { cursor: opts.cursor ?? {} } as Doc<"jobs">,
+    job: { cursor: opts.cursor ?? {}, scanId: opts.scanId } as Doc<"jobs">,
     space,
     scan: null,
     connector: null,
@@ -94,6 +94,15 @@ export function scriptedLlm() {
     live: true,
     async json(req) {
       users.push(req.user);
+      if (req.task === "brain_classify") {
+        // Triage: "[skip]" / "[low]" in a passage picks its label; everything else is high.
+        const results = [...req.user.matchAll(/### id: (c\d+)\n[^\n]*\n([^\n]*)/g)].map((m) => ({
+          id: m[1],
+          value: m[2].includes("[skip]") ? "skip" : m[2].includes("[low]") ? "low" : "high",
+          reason: m[2].includes("[skip]") ? "navigation" : "",
+        }));
+        return { value: req.schema.parse({ results }), mode: "live", model: "scripted", requestId: null };
+      }
       if (req.task === "brain_extract_batch") {
         // Batched calls: one result per "### Passage id: pN … <<< … >>>" block.
         const results = [...req.user.matchAll(/### Passage id: (p\d+)[\s\S]*?<<<\n([\s\S]*?)\n>>>/g)].map((m) => ({ id: m[1], ...scriptExtract(m[2]) }));

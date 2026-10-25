@@ -35,7 +35,7 @@ describe("providers", () => {
     const llm = createLlm({ chat: { completions: { create } } } as never);
     const r = await llm.json({ task: "t", system: "s", user: "u", schema });
     vi.unstubAllEnvs();
-    expect(r).toEqual({ value: { answer: 4 }, mode: "live", model: "gpt-x", requestId: "req-1" });
+    expect(r).toMatchObject({ value: { answer: 4 }, mode: "live", model: "gpt-x", requestId: "req-1", usage: { attempts: 2, retryErrors: [expect.stringMatching(/answer/)] } });
     expect(create.mock.calls[0][1].headers).toEqual({ "X-Mubit-Task": "t" });
     expect(create.mock.calls[1][0].messages.at(-1).content).toMatch(/answer: .*number/i);
   });

@@ -4,8 +4,9 @@ import { describe, expect, it, vi } from "vitest";
 import { api } from "@convex/_generated/api";
 import { factKey, hardKeys } from "@/lib/brain/normalize";
 import { offlineExtract, OFFLINE_CONFIDENCE } from "@/lib/brain/offline";
-import { ExtractionBatch } from "@/lib/brain/types";
-import { BRAIN_EXTRACT_BATCH_SYSTEM_PROMPT, BRAIN_EXTRACT_SYSTEM_PROMPT, BRAIN_RESOLVE_SYSTEM_PROMPT } from "@/lib/prompts";
+import { ExtractionBatch, MultiExtraction } from "@/lib/brain/types";
+import { offlineClassify } from "@/lib/brain/classify";
+import { BRAIN_CLASSIFY_SYSTEM_PROMPT, BRAIN_EXTRACT_BATCH_SYSTEM_PROMPT, BRAIN_EXTRACT_SYSTEM_PROMPT, BRAIN_RESOLVE_SYSTEM_PROMPT } from "@/lib/prompts";
 import { dedupeBatch, resolveEntities } from "@/worker/brain/resolve";
 import type { Llm } from "@/worker/providers/llm";
 import type { WorkerConvex } from "@/worker/types";
@@ -15,6 +16,47 @@ describe("brain prompts", () => {
     expect(BRAIN_EXTRACT_SYSTEM_PROMPT).toMatchSnapshot("brain_extract");
     expect(BRAIN_EXTRACT_BATCH_SYSTEM_PROMPT).toMatchSnapshot("brain_extract_batch");
     expect(BRAIN_RESOLVE_SYSTEM_PROMPT).toMatchSnapshot("brain_resolve");
+    expect(BRAIN_CLASSIFY_SYSTEM_PROMPT).toMatchSnapshot("brain_classify");
+  });
+});
+
+describe("extraction output tolerance", () => {
+  it("accepts the shapes the model really writes and drops only the invalid items, without a retry", () => {
+    const r = MultiExtraction.parse({
+      results: [
+        {
+          id: "p1",
+          entities: [
+            { type: "person", name: "Dana Kim", aliases: [], keys: ["dana@acme.com", "https://example.com/danak"] },
+            { type: "tool", name: "Vault", keys: [] },
+            { type: "spaceship", name: "Nope", keys: {} },
+          ],
+          facts: [
+            { category: "People", text: "Dana Kim owns the Vault rollout.", entity_names: ["Dana Kim"], confidence: 0.9, span: [3, 40] },
+            { category: "People", text: "short", entity_names: [], confidence: 0.9, span: { start: 0, end: 1 } },
+          ],
+          edges: [
+            { source: "Dana Kim", target: "Vault", relation: "owns", evidence: "owns" },
+            { source: "Dana Kim", target: "Vault", relation: "maintains", evidence: "" },
+          ],
+        },
+      ],
+    });
+    const [p] = r.results;
+    expect(p.entities.map((e) => e.name)).toEqual(["Dana Kim", "Vault"]);
+    expect(p.entities[0].keys).toEqual({ email: "dana@acme.com", url: "https://example.com/danak" });
+    expect(p.facts).toEqual([expect.objectContaining({ span: { start: 3, end: 40 } })]);
+    expect(p.edges.map((e) => e.relation)).toEqual(["owns"]);
+  });
+});
+
+describe("offline triage stand-in", () => {
+  it("skips link lists, boilerplate and fragments, and keeps passages that name owners, tools or rules high", () => {
+    expect(offlineClassify({ text: "- [Home](/)\n- [Pricing](/pricing)\n- [Blog](/blog)\n- [Careers](/careers)\n- [Docs](/docs)" }).value).toBe("skip");
+    expect(offlineClassify({ text: "We use cookies to improve your experience. Accept all or manage preferences in our privacy policy." }).value).toBe("skip");
+    expect(offlineClassify({ text: "Read more" }).value).toBe("skip");
+    expect(offlineClassify({ text: "The Payments team owns the ledger service and deploys every Tuesday after review." }).value).toBe("high");
+    expect(offlineClassify({ text: "Beautifully simple, delightfully fast, made with love for makers everywhere around the world." }).value).toBe("low");
   });
 });
 

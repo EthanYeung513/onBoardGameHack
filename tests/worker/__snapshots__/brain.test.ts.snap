@@ -1,5 +1,16 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`brain prompts > keeps the extraction and resolution system prompts byte-identical (one Mubit task each) > brain_classify 1`] = `
+"You triage passages from a company's documents and website before a slower step extracts onboarding facts from them.
+You receive many passages, each with an id, its source and a preview of its text.
+Label every passage with exactly one value:
+- "high": states concrete things a new hire should know about this company: who owns what, which tools are used for what, rules and policies with their limits, recurring rituals and their timing, product names and terms with their meaning, company history, teams and people with their roles.
+- "low": about the company but vague or promotional, with at most one weak fact (slogans, generic benefit copy, testimonials, case study fluff).
+- "skip": nothing to learn: navigation menus, link lists, footers, cookie banners, legal boilerplate, sign-up or contact forms, pricing tables without new facts, code or data dumps, and near-duplicates of another passage in this list.
+When unsure between high and low, choose high. When unsure between low and skip, choose low.
+Return JSON {"results": [{"id": "<id>", "value": "high" | "low" | "skip", "reason": "<at most 8 words>"}]} with exactly one result per id, in the order given."
+`;
+
 exports[`brain prompts > keeps the extraction and resolution system prompts byte-identical (one Mubit task each) > brain_extract 1`] = `
 "You build a company knowledge graph from internal documents for onboarding new hires.
 You receive one chunk of a source document (website page, handbook, wiki page, Slack messages, ticket or repository file) and a list of facts a manager rejected earlier.

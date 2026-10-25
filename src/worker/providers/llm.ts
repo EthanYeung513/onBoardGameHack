@@ -36,6 +36,8 @@ export interface JsonResult<T> {
   model: string;
   /** Mubit request id of the accepted call (for feedback/corrections); null offline. */
   requestId: string | null;
+  /** Live calls: tokens across every attempt and wall time of the call (profiling, job events). */
+  usage?: { input: number; output: number; ms: number; attempts: number; retryErrors: string[] };
 }
 
 export interface Llm {
@@ -54,9 +56,26 @@ export function createLlm(openai?: OpenAI): Llm {
         if (!req.offline) throw new ProviderOffline("The LLM provider");
         return { value: stripEmDashDeep(req.schema.parse(req.offline())), mode: "offline", model: "offline-stand-in", requestId: null };
       }
-      const r = await mubit.json({ task: req.task, system: req.system, user: req.user, schema: req.schema, validate: req.validate, model: req.model, retries: req.retries });
+      const usage = { input: 0, output: 0, ms: 0, attempts: 0, retryErrors: [] as string[] };
+      const t0 = Date.now();
+      const r = await mubit.json({
+        task: req.task,
+        system: req.system,
+        user: req.user,
+        schema: req.schema,
+        validate: req.validate,
+        model: req.model,
+        retries: req.retries,
+        onAttempt: (a) => {
+          usage.input += a.usage.input;
+          usage.output += a.usage.output;
+          usage.attempts = a.attempt;
+          usage.retryErrors.push(...a.errors.slice(0, 3));
+        },
+      });
+      usage.ms = Date.now() - t0;
       // Em-dash rule (src/lib/emdash.ts): every generated string, after validation.
-      return { value: stripEmDashDeep(r.value), mode: "live", model: r.model, requestId: r.requestId };
+      return { value: stripEmDashDeep(r.value), mode: "live", model: r.model, requestId: r.requestId, usage };
     },
   };
 }
