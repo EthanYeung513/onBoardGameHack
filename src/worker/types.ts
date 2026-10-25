@@ -35,11 +35,13 @@ export interface StageContext {
 }
 
 export type SliceResult =
-  | { done: true; summary?: string; next?: { stage: StageName; cursor?: Record<string, unknown> }[] }
+  | { done: true; summary?: string; next?: { stage: StageName; cursor?: Record<string, unknown>; detached?: boolean }[] }
   | { done: false; cursor: Record<string, unknown>; progress: number };
 
 export interface StageDefinition {
   name: StageName;
   maxAttempts?: number;
+  /** Time budget per slice (default SLICE_BUDGET_MS). Heartbeats keep a long slice alive. */
+  budgetMs?: number;
   run(ctx: StageContext): Promise<SliceResult>;
 }

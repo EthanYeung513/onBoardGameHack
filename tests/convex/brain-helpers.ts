@@ -76,22 +76,31 @@ export async function runStage(
  * Scripted "live" extractor: every `- line {0.95}` in the chunk becomes a fact about the chunk's
  * heading (a term entity); `owner: Name <email>` lines become people. Records each user message.
  */
+function scriptExtract(text: string) {
+  const heading = text.match(/^#+\s+(.+)$/m)?.[1] ?? "General";
+  const entities: unknown[] = [{ type: "term", name: heading, aliases: [], keys: {} }];
+  const facts: unknown[] = [];
+  for (const m of text.matchAll(/^- (.+?)(?: \{([\d.]+)\})?$/gm)) {
+    const start = m.index ?? 0;
+    facts.push({ category: "Rituals", text: m[1], entity_names: [heading], confidence: m[2] ? Number(m[2]) : 0.95, span: { start, end: start + m[0].length } });
+  }
+  for (const m of text.matchAll(/^owner: (.+?) <(.+?)>$/gm)) entities.push({ type: "person", name: m[1], aliases: [], keys: { email: m[2] } });
+  return { facts, entities, edges: [] };
+}
+
 export function scriptedLlm() {
   const users: string[] = [];
   const llm: Llm = {
     live: true,
     async json(req) {
       users.push(req.user);
-      const text = req.user.split("<<<\n")[1]?.split("\n>>>")[0] ?? "";
-      const heading = text.match(/^#+\s+(.+)$/m)?.[1] ?? "General";
-      const entities: unknown[] = [{ type: "term", name: heading, aliases: [], keys: {} }];
-      const facts: unknown[] = [];
-      for (const m of text.matchAll(/^- (.+?)(?: \{([\d.]+)\})?$/gm)) {
-        const start = m.index ?? 0;
-        facts.push({ category: "Rituals", text: m[1], entity_names: [heading], confidence: m[2] ? Number(m[2]) : 0.95, span: { start, end: start + m[0].length } });
+      if (req.task === "brain_extract_batch") {
+        // Batched calls: one result per "### Passage id: pN … <<< … >>>" block.
+        const results = [...req.user.matchAll(/### Passage id: (p\d+)[\s\S]*?<<<\n([\s\S]*?)\n>>>/g)].map((m) => ({ id: m[1], ...scriptExtract(m[2]) }));
+        return { value: req.schema.parse({ results }), mode: "live", model: "scripted", requestId: null };
       }
-      for (const m of text.matchAll(/^owner: (.+?) <(.+?)>$/gm)) entities.push({ type: "person", name: m[1], aliases: [], keys: { email: m[2] } });
-      return { value: req.schema.parse({ facts, entities, edges: [] }), mode: "live", model: "scripted", requestId: null };
+      const text = req.user.split("<<<\n")[1]?.split("\n>>>")[0] ?? "";
+      return { value: req.schema.parse(scriptExtract(text)), mode: "live", model: "scripted", requestId: null };
     },
   };
   return { llm, users };

@@ -1,7 +1,7 @@
-import { v } from "convex/values";
+import { v, type ObjectType } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
-import { internalQuery, type QueryCtx } from "./_generated/server";
+import { internalQuery, type MutationCtx, type QueryCtx } from "./_generated/server";
 import { factKey, hardKeys, normName } from "../src/lib/brain/normalize";
 import { addCitation, canonical, entityKeys, findByHardKeys, statusFor, upsertFact, type FactOutcome, type HardKeyCache } from "./lib/brainWrite";
 import { fail } from "./lib/errors";
@@ -125,20 +125,23 @@ function mentionSpan(text: string, names: string[]) {
  * Commit one chunk's extraction: resolved entities (version bumps on merge), mentions, edges, facts
  * (dedupe + citations + threshold), then `extractedAt`. Idempotent: an already-extracted chunk is a no-op.
  */
-export const commitChunk = workerMutation({
-  args: {
-    spaceId: v.id("spaces"),
-    chunkId: v.id("doc_chunks"),
-    mode: v.union(v.literal("live"), v.literal("offline")),
-    model: v.string(),
-    actor: v.optional(v.string()),
-    entities: v.array(v.object({ ...candidateV.fields, match: v.optional(v.id("entities")), decision: decisionV, embedding: v.optional(v.array(v.float64())) })),
-    edges: v.array(v.object({ source: v.number(), target: v.number(), relation, evidence: v.string(), rule: v.optional(v.string()) })),
-    facts: v.array(
-      v.object({ category: factCategory, text: v.string(), entity: v.optional(v.number()), confidence: v.number(), span: v.object({ start: v.number(), end: v.number() }) }),
-    ),
-  },
-  handler: async (ctx, a) => {
+const commitArgs = {
+  spaceId: v.id("spaces"),
+  chunkId: v.id("doc_chunks"),
+  mode: v.union(v.literal("live"), v.literal("offline")),
+  model: v.string(),
+  actor: v.optional(v.string()),
+  entities: v.array(v.object({ ...candidateV.fields, match: v.optional(v.id("entities")), decision: decisionV, embedding: v.optional(v.array(v.float64())) })),
+  edges: v.array(v.object({ source: v.number(), target: v.number(), relation, evidence: v.string(), rule: v.optional(v.string()) })),
+  facts: v.array(
+    v.object({ category: factCategory, text: v.string(), entity: v.optional(v.number()), confidence: v.number(), span: v.object({ start: v.number(), end: v.number() }) }),
+  ),
+};
+
+type CommitArgs = ObjectType<typeof commitArgs>;
+
+/** One chunk's extraction → entities, mentions, edges, facts (+ citations), `extractedAt`. */
+async function commitOne(ctx: MutationCtx, a: CommitArgs, hardKeyCache: HardKeyCache = new Map()) {
     const chunk = await ctx.db.get(a.chunkId);
     if (!chunk || chunk.spaceId !== a.spaceId) return fail(404, "Chunk not found");
     if (chunk.extractedAt) return { skipped: true as const };
@@ -154,7 +157,6 @@ export const commitChunk = workerMutation({
     const ids: Id<"entities">[] = [];
     let created = 0;
     let merged = 0;
-    const hardKeyCache: HardKeyCache = new Map();
     for (const e of a.entities) {
       let target = e.match ? await canonical(ctx, e.match) : null;
       let method = e.decision.method;
@@ -256,6 +258,29 @@ export const commitChunk = workerMutation({
       payload: { chunkId: chunk._id, sourceItemId: item._id, source: await describeSource(ctx, item), mode: a.mode, model: a.model, ...counts },
     });
     return { skipped: false as const, ...counts };
+}
+
+export const commitChunk = workerMutation({
+  args: commitArgs,
+  handler: async (ctx, a) => commitOne(ctx, a),
+});
+
+/** A whole pack of chunks in one transaction (batched seed_brain). Later chunks see earlier ones' entities. */
+export const commitChunks = workerMutation({
+  args: {
+    spaceId: v.id("spaces"),
+    mode: v.union(v.literal("live"), v.literal("offline")),
+    model: v.string(),
+    actor: v.optional(v.string()),
+    chunks: v.array(v.object({ chunkId: v.id("doc_chunks"), entities: commitArgs.entities, edges: commitArgs.edges, facts: commitArgs.facts })),
+  },
+  handler: async (ctx, { chunks, ...shared }) => {
+    // One secondary-key scan per type for the whole pack (16 MB read limit); new entities from
+    // earlier chunks are still found by the indexed primary key.
+    const cache: HardKeyCache = new Map();
+    const out = [];
+    for (const c of chunks) out.push(await commitOne(ctx, { ...shared, ...c }, cache));
+    return out;
   },
 });
 

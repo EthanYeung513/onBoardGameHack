@@ -27,7 +27,7 @@ export async function runSlice(claimed: Claimed, deps: RunnerDeps): Promise<"don
   const def = deps.registry[job.stage];
   const jobId = job._id;
   const t0 = Date.now();
-  const budget = deps.budgetMs ?? SLICE_BUDGET_MS;
+  const budget = deps.budgetMs ?? def?.budgetMs ?? SLICE_BUDGET_MS;
   let progress = job.progress;
   let cursor: Record<string, unknown> | undefined;
   let lost = false;

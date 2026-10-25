@@ -71,34 +71,51 @@ async function adjudicate(ctx: ResolveCtx, cand: ExtractedEntity, other: { name:
   return { ...r.value, mode: r.mode };
 }
 
-export async function resolveEntities(ctx: ResolveCtx, entities: ExtractedEntity[], context: string): Promise<ResolvedEntity[]> {
+/** Resolution reads run this many vector searches / adjudications at once (no writes here). */
+export const RESOLVE_CONCURRENCY = 8;
+
+export async function resolveEntities(ctx: ResolveCtx, entities: ExtractedEntity[], context: string | ((i: number) => string)): Promise<ResolvedEntity[]> {
   if (!entities.length) return [];
-  const hard = await ctx.convex.query(api.brainWorker.matchHardKeys, { spaceId: ctx.space._id, items: entities });
-  const vectors = await ctx.embed.embed(entities.map(entityEmbedText));
-  const out: ResolvedEntity[] = [];
-  for (let i = 0; i < entities.length; i++) {
-    const e = entities[i];
-    const h = hard[i];
-    if (h) {
-      out.push({ ...e, match: h.id, decision: { method: "hard_key", score: 1, reason: `shares ${h.key}` }, embedding: vectors[i] });
-      continue;
+  const ctxFor = typeof context === "string" ? () => context : context;
+  // One hard-key query and one (batched) embedding call for the whole list.
+  const [hard, vectors] = await Promise.all([
+    ctx.convex.query(api.brainWorker.matchHardKeys, { spaceId: ctx.space._id, items: entities }),
+    ctx.embed.embed(entities.map(entityEmbedText)),
+  ]);
+  const out: ResolvedEntity[] = new Array(entities.length);
+  let next = 0;
+  const lane = async () => {
+    while (next < entities.length) {
+      const i = next++;
+      out[i] = await resolveOne(ctx, entities[i], hard[i], vectors[i], ctxFor(i));
     }
-    if (!ctx.convex.action) throw new Error("Entity resolution needs worker actions (vector search)");
-    const similar = await ctx.convex.action(api.brainWorker.similarEntities, { spaceId: ctx.space._id, type: e.type, vector: vectors[i], k: 3 });
-    const top = similar[0];
-    if (top && top.score >= EMBED_MATCH) {
-      out.push({ ...e, match: top.id, decision: { method: "embedding", score: top.score, candidateId: top.id, reason: `nearest "${top.name}"` }, embedding: vectors[i] });
-    } else if (top && top.score >= EMBED_AMBIGUOUS) {
-      const verdict = await adjudicate(ctx, e, top, context);
-      out.push({
-        ...e,
-        match: verdict.same ? top.id : undefined,
-        decision: { method: "llm", score: top.score, candidateId: top.id, reason: verdict.reason || (verdict.same ? "same" : "different"), mode: verdict.mode },
-        embedding: vectors[i],
-      });
-    } else {
-      out.push({ ...e, decision: { method: "new", score: top?.score, candidateId: top?.id }, embedding: vectors[i] });
-    }
-  }
+  };
+  await Promise.all(Array.from({ length: Math.min(RESOLVE_CONCURRENCY, entities.length) }, lane));
   return out;
+}
+
+async function resolveOne(
+  ctx: ResolveCtx,
+  e: ExtractedEntity,
+  h: { id: Id<"entities">; key: string } | null,
+  vector: number[],
+  context: string,
+): Promise<ResolvedEntity> {
+  if (h) return { ...e, match: h.id, decision: { method: "hard_key", score: 1, reason: `shares ${h.key}` }, embedding: vector };
+  if (!ctx.convex.action) throw new Error("Entity resolution needs worker actions (vector search)");
+  const similar = await ctx.convex.action(api.brainWorker.similarEntities, { spaceId: ctx.space._id, type: e.type, vector, k: 3 });
+  const top = similar[0];
+  if (top && top.score >= EMBED_MATCH) {
+    return { ...e, match: top.id, decision: { method: "embedding", score: top.score, candidateId: top.id, reason: `nearest "${top.name}"` }, embedding: vector };
+  }
+  if (top && top.score >= EMBED_AMBIGUOUS) {
+    const verdict = await adjudicate(ctx, e, top, context);
+    return {
+      ...e,
+      match: verdict.same ? top.id : undefined,
+      decision: { method: "llm", score: top.score, candidateId: top.id, reason: verdict.reason || (verdict.same ? "same" : "different"), mode: verdict.mode },
+      embedding: vector,
+    };
+  }
+  return { ...e, decision: { method: "new", score: top?.score, candidateId: top?.id }, embedding: vector };
 }
