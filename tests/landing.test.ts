@@ -26,6 +26,28 @@ describe("landing page", () => {
     const refs = new Set([...html.matchAll(/(?:src|href)="assets\/([^"?#]+)/g)].map((m) => decodeURIComponent(m[1])));
     for (const ref of refs) expect(() => readFileSync(`public/assets/${ref}`), ref).not.toThrow();
   });
+
+  // D-34: the five media slots show footage captured from our own games (scripts/capture-landing-media.mjs).
+  it("shows our gameplay media in the five slots, every file present", () => {
+    const media = new Set([...html.matchAll(/assets\/media\/([^"&,]+)/g)].map((m) => m[1]));
+    for (const clip of ["hero-dilemma", "why-world-talk", "brain-games", "agents-dilemma", "agents-battle", "agents-word-match"])
+      for (const ext of ["mp4", "webm", "jpg"]) expect(media, `${clip}.${ext}`).toContain(`${clip}.${ext}`);
+    expect(media).toContain("explore-world.webp");
+    for (const file of media) expect(() => readFileSync(`public/assets/media/${file}`), file).not.toThrow();
+    expect(html).not.toMatch(/How_02\.png|How_03\.png|Game-07\.mp4|ortho_(dashboard|gate|world)\.webp/);
+  });
+
+  it("gives every gameplay <video> a poster, both formats and lightweight preload", () => {
+    const videos = [...html.matchAll(/<video\b[^>]*>[\s\S]*?<\/video>/g)].map((m) => m[0]).filter((v) => v.includes("assets/media/"));
+    expect(videos.length).toBeGreaterThanOrEqual(8);
+    for (const v of videos) {
+      expect(v).toMatch(/\sposter="assets\/media\/[\w-]+\.jpg"/);
+      expect(v).toMatch(/preload="metadata"/);
+      expect(v).toMatch(/\smuted\b/);
+      expect(v).toMatch(/type="video\/webm"/);
+      expect(v).toMatch(/type="video\/mp4"/);
+    }
+  });
 });
 
 describe("proxy with no keys", () => {
