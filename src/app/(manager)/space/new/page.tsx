@@ -1,26 +1,58 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useMutation, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { SplitHero } from "@/components/manager/Logo";
+import { ScanStep } from "./ScanStep";
 
-// space.html steps 1–2: welcome → name + company website → create the space and start its scan.
-export default function NewSpacePage() {
+const errorText = (err: unknown, fallback: string) => (err instanceof ConvexError ? (err.data as { message: string }).message : fallback);
+
+// space.html, one page with three steps: welcome → name + company website → live scan.
+// The URL carries the space (and scan) once created so a refresh stays on the scan;
+// `?rescan=1` (dashboard Settings) skips the form and scans the current space straight away.
+function NewSpace() {
+  const params = useSearchParams();
+  const spaceParam = params.get("space") as Id<"spaces"> | null;
+  const scanParam = params.get("scan") as Id<"scans"> | null;
+  const rescan = params.get("rescan") === "1";
+  const { isAuthenticated } = useConvexAuth();
+  const spaces = useQuery(api.spaces.mine, isAuthenticated && rescan && !spaceParam ? {} : "skip");
+  const rescanSpace = spaceParam ?? spaces?.[0]?._id ?? null;
+  const latest = useQuery(api.scans.latest, spaceParam && !scanParam && !rescan ? { spaceId: spaceParam } : "skip");
+  const startScan = useMutation(api.scans.start);
   const viewer = useQuery(api.users.viewer);
   const createSpace = useMutation(api.spaces.create);
   const updateProfile = useMutation(api.users.updateProfile);
   const { signOut } = useAuthActions();
   const router = useRouter();
   const [step, setStep] = useState<"welcome" | "info">("welcome");
+  const started = useRef(false);
   const [nameInput, setName] = useState<string | null>(null);
   const name = nameInput ?? viewer?.name ?? "";
   const [site, setSite] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const showScan = (spaceId: Id<"spaces">, scanId: Id<"scans">) => router.replace(`/space/new?space=${spaceId}&scan=${scanId}`);
+
+  // Re-scan: start a new scan for the current space; no space yet → the form (mockup behaviour).
+  useEffect(() => {
+    if (!rescan || started.current || !isAuthenticated) return;
+    if (!rescanSpace) return;
+    started.current = true;
+    startScan({ spaceId: rescanSpace })
+      .then((scanId) => showScan(rescanSpace, scanId))
+      .catch((err) => {
+        setError(errorText(err, "Couldn't start the scan. Please try again."));
+        setStep("info");
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rescan, rescanSpace, spaces, isAuthenticated]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,13 +66,20 @@ export default function NewSpacePage() {
       const host = site.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "");
       const companyName = host.split(/[./]/)[0].replace(/^./, (c) => c.toUpperCase());
       const { spaceId } = await createSpace({ name: companyName, website: site });
-      // S5 replaces this with the live scan screen (`/space/:id/scan`).
-      router.push(`/dashboard?space=${spaceId}`);
+      const scanId = await startScan({ spaceId });
+      showScan(spaceId, scanId);
     } catch (err) {
-      setError(err instanceof ConvexError ? (err.data as { message: string }).message : "Couldn't create the space. Please try again.");
+      setError(errorText(err, "Couldn't create the space. Please try again."));
       setBusy(false);
     }
   }
+
+  const scanId = scanParam ?? latest?._id ?? null;
+  if (spaceParam && scanId) return <ScanStep spaceId={spaceParam} scanId={scanId} />;
+  // Waiting for the re-scan to start, or for the space's latest scan to load.
+  const noSpaceToRescan = rescan && !spaceParam && spaces?.length === 0;
+  const formStep = noSpaceToRescan ? "info" : step;
+  if ((rescan && step === "welcome" && !noSpaceToRescan) || (spaceParam && !scanParam && latest === undefined)) return null;
 
   return (
     <div className="split">
@@ -50,7 +89,7 @@ export default function NewSpacePage() {
           Logout
         </button>
         <div className="card">
-          {step === "welcome" ? (
+          {formStep === "welcome" ? (
             <div>
               <h1>
                 Welcome to
@@ -91,5 +130,13 @@ export default function NewSpacePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NewSpacePage() {
+  return (
+    <Suspense>
+      <NewSpace />
+    </Suspense>
   );
 }

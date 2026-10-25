@@ -1,0 +1,11 @@
+/* space.html step 3 — states the mockup's timer never reaches (live log, retry, stall, failure).
+   The scan layout itself is styles.css's `.scan`, ported in manager.css. */
+/* The latest job_events line sits under the active step's text (the steps grid is unchanged). */
+.ob .scan .steps li .log { display: block; margin-top: 4px; font-size: 12px; line-height: 1.4; color: rgba(255,255,255,.6); }
+.ob .scan .steps li .log.warn, .ob .scan .steps li .log.waiting, .ob .scan .steps li .log.stalled { color: #ffb31f; }
+.ob .scan .steps li .log.error { color: #ff8a70; }
+.ob .scan .scan-actions { margin-top: 18px; display: flex; gap: 10px; align-items: center; }
+.ob .scan .tag .pill { color: #ca8a04; }
+.ob .scan .frame .page.branded { background: var(--paper, #fdf7e7); }
+.ob .scan .frame .page.branded .skl { background: color-mix(in srgb, var(--brand) 22%, #ece3cc); }
+.ob .scan .frame .page.branded .skl:nth-child(4) { background: color-mix(in srgb, var(--accent) 35%, #ece3cc); }

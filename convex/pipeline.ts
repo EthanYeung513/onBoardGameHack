@@ -210,8 +210,26 @@ export const scanStatus = query({
     const stalled = jobs.some((j) => j.status === "running" && (j.heartbeatAt ?? 0) < Date.now() - STALL_MS);
     return {
       scan,
-      jobs: jobs.map((j) => ({ id: j._id, stage: j.stage, label: STAGE_LABELS[j.stage], status: j.status, progress: j.progress, attempt: j.attempt, error: j.error ?? null })),
-      events: events.reverse().map((e) => ({ id: e._id, at: e._creationTime, stage: e.stage, level: e.level, message: e.message })),
+      jobs: jobs.map((j) => ({
+        id: j._id,
+        stage: j.stage,
+        label: STAGE_LABELS[j.stage],
+        status: j.status,
+        progress: j.progress,
+        attempt: j.attempt,
+        error: j.error ?? null,
+        queuedAt: j._creationTime,
+        startedAt: j.startedAt ?? null,
+      })),
+      events: events.reverse().map((e) => ({
+        id: e._id,
+        at: e._creationTime,
+        stage: e.stage,
+        level: e.level,
+        message: e.message,
+        // A stage may report a page count as `data.pages` (crawl: pages found via sitemap).
+        pages: typeof (e.data as { pages?: unknown } | undefined)?.pages === "number" ? (e.data as { pages: number }).pages : null,
+      })),
       stalled,
     };
   },

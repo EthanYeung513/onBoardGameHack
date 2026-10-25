@@ -250,6 +250,17 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy
 - **Revisit?:** retire `src/lib/llm/client.ts` with the legacy studio
 
+
+### D-22: Scan screen is step 3 of `/space/new`; mockup lines lit by pipeline stages in mockup order
+- **Task:** S5 (live scan screen, F7)
+- **Time:** 2026-10-25T01:10Z
+- **Context:** space.html shows the scan as a third step of the same page (no navigation) and re-scans via `space.html?rescan=1`. Its six SCAN_STEPS lines don't map 1:1 to the stage chain (crawl → extract_design → analyse → seed_brain → generate_courses → ready); "Reading public pages" is listed after brand extraction
+- **Options:** A) separate `/space/[id]/scan` route / B) step 3 of `/space/new`, URL carries `?space=&scan=` (refresh-safe), `?rescan=1&space=` starts a new scan straight away
+- **Chosen:** B. Lines: "Resolving {host}" + "Found {n} pages via sitemap.xml" = crawl (n from `scans.pageCount` or a crawl event's `data.pages`); brand = extract_design; "Reading public pages" = analyse (the stage that reads the crawled pages, keeping the mockup's top-to-bottom order); knowledge graph = seed_brain; "Calibrating" = generate_courses + ready. The latest job_events line sits under the active step; failed → Retry, stalled → Resume (`pipeline.resume`); a stage queued > 20 s with no worker shows an honest "waiting" line. Success → `/editor?space=` after 900 ms like the mockup
+- **Why:** matches the mockup's single-page transition and line order exactly; every lit line is a real job state
+- **Reversibility:** easy (mapping is one pure function, `src/components/manager/scanSteps.ts`)
+- **Revisit?:** if the crawl stage reports its own sub-steps, map "Reading public pages" back to crawl progress
+
 ## Blockers
 
 None yet.
