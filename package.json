@@ -66,6 +66,7 @@
     "openai": "^7.43.0",
     "phaser": "^4.2.1",
     "postgres": "^3.4.9",
+    "posthog-js": "^1.438.21",
     "qrcode": "^1.5.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

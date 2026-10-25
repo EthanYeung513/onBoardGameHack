@@ -145,3 +145,12 @@ describe('game result -> course progress and credits', () => {
     expect(getCredits()).toBe(0);
   });
 });
+
+describe('world_opened slug', () => {
+  it('reads the space slug from /o/<slug>, else falls back to the company host', async () => {
+    const { spaceSlug } = await import('./analytics');
+    expect(spaceSlug('/o/linear', 'linear.app')).toBe('linear');
+    expect(spaceSlug('/o/acme-pay/', 'acme.com')).toBe('acme-pay');
+    expect(spaceSlug('/', 'acme.com')).toBe('acme.com');
+  });
+});
