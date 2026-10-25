@@ -28,6 +28,8 @@ export class TownScene extends Phaser.Scene {
   private world!: WorldSpec;
   private drops: Phaser.GameObjects.Image[] = [];
   private lastHover: Course | 'shop' | null = null;
+  private hoverBd: BuildingSpec | null = null;
+  private lastTip = { x: -1, y: -1 };
   private enterHint: Phaser.GameObjects.Text | null = null;
   // Zombie scene instances (created then destroyed before their first shutdown,
   // e.g. React StrictMode remounts) keep their bus subscriptions — guard them off.
@@ -255,17 +257,32 @@ export class TownScene extends Phaser.Scene {
     const wp = this.cameras.main.getWorldPoint(p.x, p.y);
     const tx = Math.floor(wp.x / T), ty = Math.floor(wp.y / T);
     let found: Course | 'shop' | null = null;
+    let foundBd: BuildingSpec | null = null;
     for (const bd of this.buildings) {
       if ((bd.course || bd.shop) && tx >= bd.x - 1 && tx < bd.x + bd.w + 1 && ty >= bd.y - 1 && ty < bd.y + bd.h + 1) {
-        found = bd.course ?? 'shop'; break;
+        found = bd.course ?? 'shop'; foundBd = bd; break;
       }
     }
-    const ev = (x: number, y: number) => ({ course: found === 'shop' ? null : found, shop: found === 'shop', x, y });
+    this.hoverBd = foundBd;
     if (found !== this.lastHover) {
       this.lastHover = found;
-      bus.emit('hover-building', ev(0, 0));
+      bus.emit('hover-building', { course: found === 'shop' ? null : found, shop: found === 'shop', x: 0, y: 0 });
     }
-    if (found) bus.emit('hover-building', ev(p.x, p.y));
+    this.emitTip();
+  }
+
+  // info card anchors statically to the building's top-centre, in screen
+  // space — it does not follow the cursor
+  private emitTip() {
+    const bd = this.hoverBd;
+    if (!bd) return;
+    const cam = this.cameras.main;
+    const sx = Math.round(((bd.x + bd.w / 2) * T - cam.scrollX) * cam.zoom);
+    const sy = Math.round((bd.y * T - cam.scrollY) * cam.zoom);
+    if (sx !== this.lastTip.x || sy !== this.lastTip.y) {
+      this.lastTip = { x: sx, y: sy };
+      bus.emit('hover-building', { course: bd.course ?? null, shop: !!bd.shop, x: sx, y: sy });
+    }
   }
 
   private tryInteract() {
@@ -371,6 +388,9 @@ export class TownScene extends Phaser.Scene {
     // re-evaluate hover every frame: the world moves under a stationary
     // pointer as the camera pans, so pointermove alone goes stale
     this.onHover(this.input.activePointer);
+
+    // info card follows the building if the camera moved
+    if (this.lastHover && this.hoverBd) this.emitTip();
 
     // --- weather drops ---
     if (this.drops.length) {
