@@ -1,13 +1,14 @@
 import type { CourseGame } from "./course-spec";
 
 // The four default courses, exactly as the mockup's state.js `COURSES` (title, building, icon,
-// game, description, lesson outline). Each pack is built from the brain categories that feed it.
+// game, description, lesson outline); pack ids are PRD "Subsystem: courses and editor". Each pack
+// is built from the brain categories that feed it.
 // `packType` is the upsert key with the space (courses.by_space_pack).
 
 export type FactCategory = "Glossary" | "People" | "Tools" | "Rituals" | "Docs & History" | "Policy" | "Product" | "Other";
 
 export interface CoursePack {
-  packType: "company" | "people" | "tools" | "conversations";
+  packType: "company" | "people-culture" | "tools-stack" | "hard-conversations";
   title: string;
   building: string;
   icon: string;
@@ -31,7 +32,7 @@ export const COURSE_PACKS: CoursePack[] = [
     categories: ["Docs & History", "Product", "Glossary", "Other"],
   },
   {
-    packType: "people",
+    packType: "people-culture",
     title: "People & Culture",
     building: "Community Hall",
     icon: "users",
@@ -41,7 +42,7 @@ export const COURSE_PACKS: CoursePack[] = [
     categories: ["People", "Rituals"],
   },
   {
-    packType: "tools",
+    packType: "tools-stack",
     title: "Tools & Stack",
     building: "Workshop",
     icon: "wrench",
@@ -51,7 +52,7 @@ export const COURSE_PACKS: CoursePack[] = [
     categories: ["Tools"],
   },
   {
-    packType: "conversations",
+    packType: "hard-conversations",
     title: "Hard Conversations",
     building: "Dojo",
     icon: "target",

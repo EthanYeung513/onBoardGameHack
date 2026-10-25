@@ -94,14 +94,14 @@ describe("generate_courses stage", () => {
 
     const rows = await courses(t);
     expect(rows.map((c) => [c.packType, c.title, c.building, c.icon, c.game]).sort()).toEqual([
-      ["conversations", "Hard Conversations", "Dojo", "target", "scenario"],
-      ["people", "People & Culture", "Community Hall", "users", "inbox"],
-      ["tools", "Tools & Stack", "Workshop", "wrench", "road"],
+      ["hard-conversations", "Hard Conversations", "Dojo", "target", "scenario"],
+      ["people-culture", "People & Culture", "Community Hall", "users", "inbox"],
+      ["tools-stack", "Tools & Stack", "Workshop", "wrench", "road"],
     ]);
     expect(events.join("\n")).toMatch(/Skipped Company 101: 0 approved .* needs 2/);
     expect(events.join("\n")).toMatch(/Drafted Tools & Stack: \d+ steps teaching 2 facts \(offline stand-in\)/);
 
-    const tools = rows.find((c) => c.packType === "tools")!;
+    const tools = rows.find((c) => c.packType === "tools-stack")!;
     expect(tools).toMatchObject({ status: "draft", mode: "offline", version: 1, needsRefresh: false });
     const spec = tools.spec as CourseSpec;
     expect(spec.steps[0].kind).toBe("welcome");
@@ -115,7 +115,7 @@ describe("generate_courses stage", () => {
     // A re-scan keeps existing courses — they only regenerate on the manager's confirm.
     await queueScanJob(t, spaceId);
     expect((await runCourseJob(t, offlineLlm())).events.join("\n")).toMatch(/Kept Tools & Stack as it is/);
-    expect((await courses(t)).find((c) => c.packType === "tools")!.version).toBe(1);
+    expect((await courses(t)).find((c) => c.packType === "tools-stack")!.version).toBe(1);
   });
 
   it("live: sends invalid model output back with the error, then saves the corrected course", async () => {
@@ -137,7 +137,7 @@ describe("generate_courses stage", () => {
       withResponse: async () => ({ data: { model: "gpt-x", choices: [{ message: { content: JSON.stringify(s) } }] }, response: new Response(null) }),
     });
     const create = vi.fn().mockReturnValueOnce(reply(course([deploy, vault]))).mockReturnValueOnce(reply(course([deploy, falcon])));
-    await t.run((ctx) => ctx.db.insert("jobs", { spaceId, stage: "generate_courses", status: "queued", progress: 0, attempt: 0, cursor: { targets: [{ packType: "tools" }] }, runAfter: 0 }));
+    await t.run((ctx) => ctx.db.insert("jobs", { spaceId, stage: "generate_courses", status: "queued", progress: 0, attempt: 0, cursor: { targets: [{ packType: "tools-stack" }] }, runAfter: 0 }));
     expect((await runCourseJob(t, createLlm({ chat: { completions: { create } } } as never))).outcome).toBe("done");
 
     expect(create).toHaveBeenCalledTimes(2);
@@ -161,7 +161,7 @@ describe("course regeneration (F36)", () => {
     const factIds = await addFacts(s.t, s.spaceId, s.connectorId, FACTS);
     await queueScanJob(s.t, s.spaceId);
     await runCourseJob(s.t, offlineLlm());
-    const tools = (await courses(s.t)).find((c) => c.packType === "tools")!;
+    const tools = (await courses(s.t)).find((c) => c.packType === "tools-stack")!;
     return { ...s, factIds, tools };
   }
 
