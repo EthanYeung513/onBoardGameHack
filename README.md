@@ -30,11 +30,11 @@ pushes the update with one click.
 | | |
 | --- | --- |
 | **Website to brand in ~20 s** | Paste a URL. Logo, fonts, colours and style cues (glass, gradients, radius) come back as four theme cards. Measured: apple.com 20 s, notion.com 18 s, linear.app 28 s. One click applies the look everywhere. |
-| **A company brain** | The website crawl and connected tools (GitHub, Slack, Jira, Notion, Google Drive, uploaded files) become facts. Every fact cites the chunk it came from. |
-| **Courses from the brain** | Company 101, People, Tools, Hard Conversations: validated course specs whose steps cite brain facts. The manager edits them in the editor. |
+| **A company brain** | The website crawl and connected tools (GitHub, Slack, Jira, Notion, Google Drive, uploaded files) become facts. Every fact cites the chunk it came from. A cheap Mubit triage pass routes passages first: the first fact lands ~5 s after learning starts (was 18 s). |
+| **Courses from the brain** | Company 101, People, Tools, Hard Conversations, plus any topic the manager types ("Security" in ~10 s). Validated course specs whose steps cite brain facts; four courses in ~9 s. |
 | **A world to play** | A Phaser town with one building per course. Each building plays a game: a Pokemon-style **battle**, an Ace Attorney **dilemma**, or **word match**. |
 | **Live link + QR in under a second** | Publish templates the world from current content (no model call). Measured: 0.8 s to a link; a world builds in 1 to 4 ms. |
-| **Continuous learning via Mubit** | Source changes stale the facts that cited them, courses get rewritten steps with **New** badges, and the manager clicks **Update courses**. Theme and design picks are fed back so the next recommendation is better. |
+| **Continuous learning via Mubit** | Source changes stale the facts that cited them, courses get rewritten steps with **New** badges, and the manager clicks **Update courses**. Theme picks and every course-assistant edit are fed back, so the next recommendation and the next course match how this manager works. |
 
 ## See it
 
@@ -68,6 +68,16 @@ pushes the update with one click.
 <td><b>Battle.</b> Quiz rounds from the course.</td>
 <td><b>Word match.</b> Names and what they mean here.</td>
 <td><b>Dilemma.</b> Hard conversations, your own cast.</td>
+</tr>
+<tr>
+<td><img src="docs/media/course-topics-done.png" alt="A typed topic becomes a course"></td>
+<td><img src="docs/media/course-learning-edit3.png" alt="The course assistant shows what Mubit learned from your edits"></td>
+<td><img src="docs/media/connector-cards-upload-after-team-glossary.png" alt="Upload docs"></td>
+</tr>
+<tr>
+<td><b>Ask for a course.</b> Type a topic, it is built from the brain.</td>
+<td><b>Edit by asking.</b> The assistant edits, Mubit learns.</td>
+<td><b>Feed the brain.</b> Upload docs any time.</td>
 </tr>
 </table>
 
@@ -110,6 +120,7 @@ flowchart LR
 - **Every LLM and embedding call** goes through one adapter, [`src/llm/mubit.ts`](src/llm/mubit.ts), tagged with its task name so Mubit learns per task.
 - **Drift:** a pricing page edit reached a New badge in ~36 to 40 s; **Update courses** took 0.6 s and kept the same link. Hires see a snapshot until the manager pushes.
 - **Brand learning:** theme and Design-tab picks become `brand_decisions` fed back to `brand.recommend`, alongside precedents from similar companies.
+- **Course learning:** every instruction to the course assistant (`course.assist`) is stored as a `course_edits` row, sent to Mubit, and distilled (hourly, task `course.preferences`) into manager preferences that the next course generation follows. Example: three edits became "prefer scenario steps over quizzes", and the regenerated course swapped its quizzes for scenarios.
 
 ## Run locally
 
