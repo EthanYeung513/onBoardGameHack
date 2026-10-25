@@ -1,4 +1,5 @@
 import { makeFunctionReference } from "convex/server";
+import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
 // INTEGRATION POINT (D-28). The editor's writes belong to two parallel agents whose Convex modules
@@ -35,9 +36,5 @@ export type BrandFieldOptions = {
 };
 export type BrandOptions = { fields: Partial<Record<BrandField, BrandFieldOptions>>; requestId?: string | null };
 
-export const brandFns = {
-  options: makeFunctionReference<"query", { spaceId: Id<"spaces"> }, BrandOptions | null>("brand:options"),
-  decide: makeFunctionReference<"mutation", { spaceId: Id<"spaces">; field: BrandField; chosen: string; recommended?: string }, unknown>(
-    "brand:decide",
-  ),
-};
+/** convex/brand.ts is on the base branch (D-27): the generated references. */
+export const brandFns = { options: api.brand.options, decide: api.brand.decide };

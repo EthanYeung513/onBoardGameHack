@@ -1,0 +1,287 @@
+{
+  "host": "stripe.com",
+  "url": "https://stripe.com",
+  "name": "Stripe",
+  "category": "fintech",
+  "recordedAt": "2026-10-25T01:03:50.685Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#061b31",
+        "usage": 134,
+        "where": [
+          "css-var:--hds-color-text-solid",
+          "role:link",
+          "role:button",
+          "context:heading",
+          "css-var:--hds-color-heading-solid",
+          "css-var:--hds-color-core-neutral-990",
+          "css-var:--hds-color-util-neutral-990",
+          "role:logo",
+          "css-var:--hds-color-action-text-secondary"
+        ]
+      },
+      {
+        "value": "#e5edf5",
+        "usage": 93,
+        "where": [
+          "css-var:--hds-color-surface-border-quiet",
+          "css-var:--hds-overlay-alpha",
+          "context:heading",
+          "css-var:--gradient-color",
+          "css-var:--divider-color",
+          "css-var:--hds-canary-ui-mini-stroke",
+          "css-var:--hds-color-util-neutral-50",
+          "role:logo",
+          "role:button",
+          "css-var:--hds-canary-ui-stroke"
+        ]
+      },
+      {
+        "value": "#64748d",
+        "usage": 68,
+        "where": [
+          "css-var:--hds-color-text-subdued",
+          "context:heading",
+          "css-var:--hds-color-heading-subdued",
+          "css-var:--hds-color-icon-subdued",
+          "role:button",
+          "css-var:--hds-color-core-neutral-500",
+          "css-var:--hds-color-util-neutral-500"
+        ]
+      },
+      {
+        "value": "#533afd",
+        "usage": 66,
+        "where": [
+          "role:button",
+          "css-var:--hds-color-button-primary-bg",
+          "css-var:--hds-color-button-secondary-text",
+          "css-var:--hds-color-action-text-onTransparent",
+          "role:link",
+          "css-var:--hds-color-action-text-solid",
+          "css-var:--hds-color-action-text-solidAlternate",
+          "css-var:--hds-color-input-bg-accent",
+          "css-var:--hds-color-util-brand-600",
+          "css-var:--hds-color-button-ui-icon"
+        ]
+      },
+      {
+        "value": "#ffffff",
+        "usage": 132,
+        "where": [
+          "role:button",
+          "css-var:--hds-color-button-primary-text",
+          "css-var:--hds-color-util-neutral-0",
+          "css-var:--hds-color-surface-bg-quiet",
+          "css-var:--hds-color-input-icon-onSolid",
+          "css-var:--hds-color-action-icon-onSolid",
+          "css-var:--hds-color-input-bg-popover",
+          "css-var:--hds-color-action-text-onSolid",
+          "css-var:--hds-color-core-neutral-0",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#50617a",
+        "usage": 45,
+        "where": [
+          "role:link",
+          "css-var:--hds-color-text-soft",
+          "css-var:--hds-color-util-neutral-600",
+          "css-var:--hds-color-core-neutral-600",
+          "role:button",
+          "role:logo"
+        ]
+      },
+      {
+        "value": "#665efd",
+        "usage": 20,
+        "where": [
+          "css-var:--hds-color-input-border-selected",
+          "role:button",
+          "css-var:--hds-color-input-border-hover",
+          "css-var:--bento-left-blob",
+          "css-var:--hds-color-util-brand-500",
+          "css-var:--hds-color-core-brand-500"
+        ]
+      },
+      {
+        "value": "#3c4f69",
+        "usage": 18,
+        "where": [
+          "css-var:--hds-color-util-neutral-700",
+          "css-var:--hds-color-core-neutral-700",
+          "role:button",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#f8fafd",
+        "usage": 48,
+        "where": [
+          "css-var:--hds-color-surface-bg-subdued",
+          "css-var:--hds-color-util-neutral-25",
+          "role:logo",
+          "css-var:--hds-color-core-neutral-25",
+          "role:button",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#2e2b8c",
+        "usage": 16,
+        "where": [
+          "role:button",
+          "css-var:--hds-color-button-secondary-textHover",
+          "css-var:--hds-color-action-text-solidHover",
+          "role:link",
+          "css-var:--hds-color-action-text-solidAlternateHover",
+          "css-var:--hds-color-button-ui-iconHover",
+          "css-var:--hds-color-util-action-border-max",
+          "css-var:--hds-color-util-action-text-max",
+          "css-var:--hds-color-core-brand-800",
+          "css-var:--hds-color-button-secondary-iconHover"
+        ]
+      },
+      {
+        "value": "#1a2c44",
+        "usage": 16,
+        "where": [
+          "css-var:--hds-color-util-neutral-900",
+          "role:button",
+          "context:heading",
+          "css-var:--hds-color-core-neutral-900"
+        ]
+      },
+      {
+        "value": "#d4dee9",
+        "usage": 15,
+        "where": [
+          "role:button",
+          "css-var:--hds-color-button-secondary-borderDisabled",
+          "css-var:--hds-color-input-border-default",
+          "css-var:--hds-color-input-bg-inactive",
+          "css-var:--hds-color-input-icon-disabled",
+          "css-var:--hds-space-input-border-default",
+          "css-var:--hds-color-action-border-disabled",
+          "css-var:--hds-color-core-neutral-100",
+          "css-var:--hds-space-core-border-sm",
+          "css-var:--hds-color-util-neutral-100"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "6px",
+        "usage": 123,
+        "where": [
+          "css-var:--navigation-border-radius",
+          "css-var:--hds-space-core-radius-md",
+          "role:button",
+          "role:logo",
+          "css-var:--card-radius",
+          "css-var:--carousel-item-border-radius",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "4px",
+        "usage": 74,
+        "where": [
+          "role:button",
+          "css-var:--hds-space-core-radius-sm",
+          "css-var:--hds-space-button-radius-lg",
+          "role:link",
+          "role:logo",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "999px",
+        "usage": 21,
+        "where": [
+          "role:logo"
+        ]
+      },
+      {
+        "value": "2px",
+        "usage": 18,
+        "where": [
+          "role:button",
+          "css-var:--hds-space-core-radius-xs",
+          "role:logo",
+          "css-var:--hds-space-button-radius-sm"
+        ]
+      },
+      {
+        "value": "1px",
+        "usage": 7,
+        "where": [
+          "role:link",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "5px",
+        "usage": 7,
+        "where": [
+          "role:button"
+        ]
+      },
+      {
+        "value": "0px",
+        "usage": 3,
+        "where": [
+          "context:heading"
+        ]
+      },
+      {
+        "value": "8px",
+        "usage": 2,
+        "where": [
+          "css-var:--hds-space-core-100"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "value": "sohne-var",
+        "usage": 100,
+        "where": [
+          "context:body",
+          "css-var:--hds-font-family",
+          "role:button",
+          "context:heading",
+          "role:logo"
+        ]
+      },
+      {
+        "value": "SourceCodePro",
+        "usage": 4,
+        "where": [
+          "css-var:--hds-font-family-code"
+        ]
+      },
+      {
+        "value": "Display",
+        "usage": 1,
+        "where": [
+          "css-var:--hds-font-weight-normal"
+        ]
+      },
+      {
+        "value": "Segoe UI",
+        "usage": 1,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#533afd",
+    "accent": "#061b31",
+    "radius": "6px",
+    "headline": "sohne-var"
+  }
+}

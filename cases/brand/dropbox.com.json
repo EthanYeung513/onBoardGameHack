@@ -1,0 +1,243 @@
+{
+  "host": "dropbox.com",
+  "url": "https://www.dropbox.com",
+  "name": "Dropbox: Secure cloud storage, file sharing, and more",
+  "category": "productivity",
+  "recordedAt": "2026-10-25T01:04:23.637Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#0061fe",
+        "usage": 141,
+        "where": [
+          "role:link",
+          "css-var:--dwg-theme__color__core__accent",
+          "css-var:--dig-color__primary__base",
+          "role:button",
+          "css-var:--dwg-theme__color__attention__text",
+          "css-var:--dwg-theme__color__attention__border",
+          "css-var:--color__core__accent",
+          "css-var:--color__glyph__accent",
+          "css-var:--dig-color__primary-cta__base",
+          "css-var:--dig-color__icon__accent"
+        ]
+      },
+      {
+        "value": "#2d7a02",
+        "usage": 65,
+        "where": [
+          "css-var:--dwg-theme__color__success__border",
+          "css-var:--dwg-theme__color__success__text"
+        ]
+      },
+      {
+        "value": "#9b0032",
+        "usage": 65,
+        "where": [
+          "css-var:--dwg-theme__color__alert__border",
+          "css-var:--dwg-theme__color__alert__text",
+          "css-var:--color__accent__crimson",
+          "css-var:--dig-color__accent__red",
+          "css-var:--DWG__TEMP__color__accent__crimson"
+        ]
+      },
+      {
+        "value": "#9b6400",
+        "usage": 65,
+        "where": [
+          "css-var:--dwg-theme__color__warning__border",
+          "css-var:--dwg-theme__color__warning__text",
+          "css-var:--color__accent__gold",
+          "css-var:--dig-color__accent__yellow",
+          "css-var:--DWG__TEMP__color__accent__gold"
+        ]
+      },
+      {
+        "value": "#f7f5f2",
+        "usage": 132,
+        "where": [
+          "css-var:--dwg-theme__color__core__secondary",
+          "role:button",
+          "css-var:--dwg-theme__color__faint__background",
+          "css-var:--dwg-theme__color__inverse__standard__text",
+          "css-var:--color__core__secondary",
+          "css-var:--color__inverse__core__primary",
+          "css-var:--dig-color__secondary__on-base",
+          "css-var:--DWG__TEMP__color__brand__coconut",
+          "css-var:--DWG__TEMP__color__core__secondary",
+          "css-var:--DWG__TEMP__color__inverse__core__primary"
+        ]
+      },
+      {
+        "value": "#1e1919",
+        "usage": 107,
+        "where": [
+          "role:button",
+          "css-var:--dwg-theme__color__standard__text",
+          "css-var:--dwg-theme__color__core__primary",
+          "role:logo",
+          "css-var:--color__core__primary",
+          "css-var:--color__glyph__primary",
+          "css-var:--color__inverse__core__secondary",
+          "css-var:--dig-color__glyph__primary",
+          "css-var:--DWG__TEMP__color__brand__graphite",
+          "css-var:--DWG__TEMP__color__core__primary"
+        ]
+      },
+      {
+        "value": "#c0bbb4",
+        "usage": 71,
+        "where": [
+          "role:button",
+          "css-var:--dwg-theme__color__disabled__border",
+          "css-var:--dwg-theme__color__disabled__background"
+        ]
+      },
+      {
+        "value": "#3984ff",
+        "usage": 24,
+        "where": [
+          "css-var:--dwg-theme__color__inverse__attention__text",
+          "css-var:--color__inverse__core__accent",
+          "css-var:--color__inverse__glyph__accent",
+          "css-var:--DWG__TEMP__color__inverse__core__accent"
+        ]
+      },
+      {
+        "value": "#b4dc19",
+        "usage": 24,
+        "where": [
+          "css-var:--dwg-theme__color__inverse__success__text",
+          "css-var:--color__accent__lime",
+          "css-var:--DWG__TEMP__color__accent__lime"
+        ]
+      },
+      {
+        "value": "#fa551e",
+        "usage": 24,
+        "where": [
+          "css-var:--dwg-theme__color__inverse__alert__text",
+          "css-var:--color__accent__sunset",
+          "css-var:--DWG__TEMP__color__accent__sunset"
+        ]
+      },
+      {
+        "value": "#fad24b",
+        "usage": 24,
+        "where": [
+          "css-var:--dwg-theme__color__inverse__warning__text",
+          "css-var:--color__accent__banana",
+          "css-var:--DWG__TEMP__color__accent__banana"
+        ]
+      },
+      {
+        "value": "#ffffff",
+        "usage": 38,
+        "where": [
+          "css-var:--DWG__TEMP__color__brand__coconut_200",
+          "css-var:--dwg-theme__color__standard__background",
+          "css-var:--dig-color__accent__on-accent"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "8px",
+        "usage": 5,
+        "where": [
+          "role:button",
+          "css-var:--dwg-spacing__unit--2",
+          "css-var:--dwg-spacing__unit--1_5",
+          "role:link"
+        ]
+      },
+      {
+        "value": "4px",
+        "usage": 3,
+        "where": []
+      },
+      {
+        "value": "999px",
+        "usage": 2,
+        "where": []
+      },
+      {
+        "value": "3px",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "0px",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "16px",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "40px",
+        "usage": 1,
+        "where": []
+      }
+    ],
+    "fonts": [
+      {
+        "value": "Atlas Grotesk Web",
+        "usage": 9,
+        "where": [
+          "role:link",
+          "css-var:--__dwgAtlasGroteskStack"
+        ]
+      },
+      {
+        "value": "Sharp Grotesk 23",
+        "usage": 9,
+        "where": [
+          "role:link",
+          "css-var:--__dwgSharpGrotesk23BookStack"
+        ]
+      },
+      {
+        "value": "Sharp Grotesk",
+        "usage": 8,
+        "where": [
+          "css-var:--__dwgSharpGrotesk20BookStack"
+        ]
+      },
+      {
+        "value": "Sharp Grotesk KR",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "Sharp Grotesk Thai",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "Sharp Grotesk 23 KR",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "Sharp Grotesk 23 Thai",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "SharpGroteskSuperCondensed",
+        "usage": 1,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#0061fe",
+    "accent": "#9b0032",
+    "radius": "8px",
+    "headline": "Sharp Grotesk"
+  }
+}

@@ -1,0 +1,329 @@
+{
+  "host": "twilio.com",
+  "url": "https://www.twilio.com",
+  "name": "Conversational AI and APIs for SMS, Email, Voice",
+  "category": "devtools",
+  "recordedAt": "2026-10-25T01:04:24.545Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#ffffff",
+        "usage": 406,
+        "where": [
+          "css-var:--swiper-preloader-color",
+          "css-var:--color-white",
+          "css-var:--border-thin",
+          "role:link",
+          "css-var:--badge-color",
+          "context:heading",
+          "role:button",
+          "css-var:--button-color",
+          "context:body",
+          "role:logo"
+        ]
+      },
+      {
+        "value": "#000d25",
+        "usage": 245,
+        "where": [
+          "css-var:--color-ink",
+          "context:heading",
+          "css-var:--accordion-text-color",
+          "css-var:--accordion-icon-stroke-color",
+          "role:link",
+          "css-var:--color-default",
+          "role:button",
+          "css-var:--copyright-text-color",
+          "css-var:--link-list-title-color",
+          "css-var:--link-list-text-color"
+        ]
+      },
+      {
+        "value": "#1866ee",
+        "usage": 70,
+        "where": [
+          "css-var:--color-blue-500",
+          "role:link",
+          "role:button",
+          "css-var:--button-background",
+          "css-var:--radius-small",
+          "context:heading",
+          "css-var:--link-list-link-hover-color",
+          "css-var:--svg-color",
+          "css-var:--link-list-link-action-color",
+          "css-var:--link-list-secondary-link-color"
+        ]
+      },
+      {
+        "value": "#db132a",
+        "usage": 66,
+        "where": [
+          "css-var:--swiper-pagination-color",
+          "css-var:--color-twilio-red",
+          "css-var:--play-color",
+          "css-var:--badge-background",
+          "context:heading",
+          "role:button",
+          "role:link",
+          "css-var:--border-medium",
+          "css-var:--card-default-icon-color",
+          "css-var:--bg-image"
+        ]
+      },
+      {
+        "value": "#191f36",
+        "usage": 62,
+        "where": [
+          "css-var:--color-gray-850",
+          "role:link",
+          "role:button",
+          "css-var:--border-thin",
+          "context:heading",
+          "context:body"
+        ]
+      },
+      {
+        "value": "#0263e0",
+        "usage": 61,
+        "where": [
+          "role:button",
+          "css-var:--color-blue-60",
+          "context:heading",
+          "css-var:--radius-small",
+          "role:link",
+          "css-var:--color-link",
+          "css-var:--hover-fill-color",
+          "css-var:--social-share-icon-color",
+          "css-var:--border-thin",
+          "css-var:--border-light"
+        ]
+      },
+      {
+        "value": "#b10f23",
+        "usage": 46,
+        "where": [
+          "css-var:--color-red-dark",
+          "css-var:--color-accessible-red",
+          "context:body",
+          "css-var:--radius-small",
+          "role:link",
+          "context:heading",
+          "css-var:--border-thin",
+          "css-var:--asterix-color",
+          "css-var:--field-border-width",
+          "css-var:--icon-background"
+        ]
+      },
+      {
+        "value": "#ef223a",
+        "usage": 39,
+        "where": [
+          "css-var:--color-red-light",
+          "context:heading",
+          "css-var:--banner-component-eyebrow-color",
+          "role:link",
+          "role:button",
+          "css-var:--color-ink",
+          "css-var:--marker-background"
+        ]
+      },
+      {
+        "value": "#dde0e6",
+        "usage": 35,
+        "where": [
+          "css-var:--color-gray-100",
+          "role:link",
+          "css-var:--border-thin",
+          "role:button",
+          "css-var:--tabs-border-color"
+        ]
+      },
+      {
+        "value": "#3acefa",
+        "usage": 32,
+        "where": [
+          "role:link",
+          "css-var:--border-thin",
+          "css-var:--color-blue-200",
+          "role:button",
+          "css-var:--text-code-color-7",
+          "css-var:--tag-hover-color",
+          "css-var:--line-highlight-border-start-color"
+        ]
+      },
+      {
+        "value": "#232b45",
+        "usage": 29,
+        "where": [
+          "role:link",
+          "css-var:--color-gray-800",
+          "role:button",
+          "css-var:--color-twilio-red",
+          "context:heading",
+          "css-var:--border-thin",
+          "role:logo"
+        ]
+      },
+      {
+        "value": "#606b85",
+        "usage": 22,
+        "where": [
+          "css-var:--color-gray-60",
+          "role:button",
+          "role:logo",
+          "role:link",
+          "css-var:--footer-links",
+          "context:heading"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "6px",
+        "usage": 69,
+        "where": [
+          "css-var:--radius-base",
+          "role:button",
+          "role:link",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "16px",
+        "usage": 60,
+        "where": [
+          "css-var:--radius-large",
+          "role:logo",
+          "context:heading",
+          "role:button",
+          "css-var:--tabs-radius"
+        ]
+      },
+      {
+        "value": "999px",
+        "usage": 58,
+        "where": [
+          "role:button",
+          "css-var:--radius-circle",
+          "role:link",
+          "context:heading",
+          "css-var:--icon-radius"
+        ]
+      },
+      {
+        "value": "80px",
+        "usage": 56,
+        "where": [
+          "role:button",
+          "css-var:--radius-2x-large",
+          "context:heading",
+          "role:link"
+        ]
+      },
+      {
+        "value": "32px",
+        "usage": 38,
+        "where": [
+          "css-var:--radius-extra-large",
+          "role:link",
+          "css-var:--video-radius",
+          "css-var:--audio-radius",
+          "role:button"
+        ]
+      },
+      {
+        "value": "3px",
+        "usage": 16,
+        "where": [
+          "role:button",
+          "context:heading",
+          "css-var:--radius-small",
+          "role:link"
+        ]
+      },
+      {
+        "value": "0px",
+        "usage": 13,
+        "where": [
+          "role:button",
+          "role:link"
+        ]
+      },
+      {
+        "value": "13px",
+        "usage": 11,
+        "where": [
+          "css-var:--spacing-size-1",
+          "context:heading",
+          "role:link"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "value": "Whitney SSm",
+        "usage": 70,
+        "where": [
+          "css-var:--font-family-text",
+          "context:heading",
+          "css-var:--font-family-default",
+          "role:button",
+          "context:body"
+        ]
+      },
+      {
+        "value": "Twilio_Sans_Text",
+        "usage": 9,
+        "where": [
+          "role:button"
+        ]
+      },
+      {
+        "value": "Twilio Sans Mono",
+        "usage": 7,
+        "where": [
+          "css-var:--font-family-mono"
+        ]
+      },
+      {
+        "value": "Buffalo",
+        "usage": 3,
+        "where": [
+          "css-var:--font-family-buffalo"
+        ]
+      },
+      {
+        "value": "Twilio_Sans_Mono",
+        "usage": 2,
+        "where": [
+          "role:link"
+        ]
+      },
+      {
+        "value": "SSm",
+        "usage": 1,
+        "where": [
+          "context:heading",
+          "css-var:--font-family-text"
+        ]
+      },
+      {
+        "value": "Consolas",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "Neue",
+        "usage": 1,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#db132a",
+    "accent": "#0263e0",
+    "radius": "6px",
+    "headline": "Twilio_Sans_Text"
+  }
+}

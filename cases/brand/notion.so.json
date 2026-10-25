@@ -1,0 +1,292 @@
+{
+  "host": "notion.so",
+  "url": "https://www.notion.so",
+  "name": "The AI workspace that works for you.",
+  "category": "productivity",
+  "recordedAt": "2026-10-25T01:04:01.999Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#ffffff",
+        "usage": 120,
+        "where": [
+          "context:body",
+          "css-var:--tatami-color-text-strong",
+          "role:link",
+          "css-var:--tatami-color-text-muted",
+          "context:heading",
+          "css-var:--tatami-color-white",
+          "css-var:--color-navigation-dropdown",
+          "css-var:--tatami-color-link-secondary-text",
+          "css-var:--tatami-color-link-secondary-text-hover",
+          "role:button"
+        ]
+      },
+      {
+        "value": "#93cdfe",
+        "usage": 26,
+        "where": [
+          "role:button",
+          "css-var:--tatami-color-link-primary-text",
+          "role:link",
+          "css-var:--tatami-color-link-primary-text-hover",
+          "css-var:--tatami-color-link-primary-text-focus",
+          "css-var:--tatami-color-link-primary-text-active",
+          "css-var:--tatami-color-button-tertiary-text",
+          "css-var:--tatami-color-button-tertiary-border",
+          "css-var:--tatami-color-badge-light-text",
+          "css-var:--tatami-color-blue-300"
+        ]
+      },
+      {
+        "value": "#02093a",
+        "usage": 22,
+        "where": [
+          "context:body",
+          "css-var:--tatami-color-background-base",
+          "css-var:--tatami-color-card-background",
+          "css-var:--graphic-fill-color",
+          "role:button"
+        ]
+      },
+      {
+        "value": "#f6f5f4",
+        "usage": 39,
+        "where": [
+          "css-var:--tatami-color-text-normal",
+          "context:heading",
+          "role:link",
+          "css-var:--tatami-color-gray-200",
+          "role:button",
+          "css-var:--tatami-color-button-secondary-background-hover",
+          "css-var:--tatami-color-button-secondary-background-focus",
+          "css-var:--tatami-color-button-secondary-background-active"
+        ]
+      },
+      {
+        "value": "#000000",
+        "usage": 31,
+        "where": [
+          "css-var:--tatami-color-alpha-black-600",
+          "css-var:--tatami-color-black",
+          "role:link",
+          "role:button",
+          "css-var:--tatami-color-action-button-primary-background",
+          "css-var:--tatami-color-interaction-control-icon-checked",
+          "css-var:--tatami-color-accent-strong",
+          "css-var:--tatami-color-background-surface-accent-hover",
+          "css-var:--tatami-color-background-surface-accent-focus",
+          "css-var:--tatami-color-background-surface-accent-active"
+        ]
+      },
+      {
+        "value": "#31302e",
+        "usage": 29,
+        "where": [
+          "css-var:--tatami-color-border-base",
+          "css-var:--tatami-color-background-surface-neutral",
+          "role:link",
+          "css-var:--tatami-color-banner-body-text",
+          "css-var:--tatami-color-action-button-primary-background-hover",
+          "css-var:--tatami-color-action-button-primary-background-focus",
+          "css-var:--tatami-color-action-button-primary-background-active",
+          "css-var:--tatami-border-width-1",
+          "css-var:--tatami-color-button-primary-background-hover",
+          "css-var:--contentful-rich-text-code-border"
+        ]
+      },
+      {
+        "value": "#494744",
+        "usage": 18,
+        "where": [
+          "css-var:--tatami-color-background-surface-neutral-hover",
+          "css-var:--tatami-color-gray-700",
+          "css-var:--tatami-color-background-surface-neutral-focus",
+          "css-var:--tatami-color-background-surface-neutral-active",
+          "css-var:--tatami-color-badge-mono-background",
+          "css-var:--tatami-color-badge-muted-background",
+          "css-var:--tatami-color-button-primary-background-focus",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#f64932",
+        "usage": 4,
+        "where": [
+          "css-var:--tatami-color-red-500"
+        ]
+      },
+      {
+        "value": "#2383e2",
+        "usage": 4,
+        "where": [
+          "role:button"
+        ]
+      },
+      {
+        "value": "#62aef0",
+        "usage": 3,
+        "where": [
+          "role:button",
+          "css-var:--tatami-color-interaction-focus-ring"
+        ]
+      },
+      {
+        "value": "#097fe8",
+        "usage": 3,
+        "where": [
+          "css-var:--tatami-color-blue-500",
+          "css-var:--tatami-color-badge-bold-background"
+        ]
+      },
+      {
+        "value": "#1313ba",
+        "usage": 2,
+        "where": [
+          "role:button",
+          "css-var:--tatami-color-menu-button-text",
+          "css-var:--tatami-color-campaigns-dev-platform-dos-blue",
+          "css-var:--tatami-color-assets-chat-text-primary",
+          "css-var:--tatami-color-assets-chat-text-secondary",
+          "css-var:--tatami-color-assets-database-text-primary",
+          "css-var:--tatami-color-assets-database-text-secondary"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "999px",
+        "usage": 15,
+        "where": [
+          "role:button",
+          "css-var:--tatami-border-radius-round"
+        ]
+      },
+      {
+        "value": "0px",
+        "usage": 15,
+        "where": [
+          "css-var:--tatami-border-card-radius",
+          "css-var:--tatami-border-screenshot-radius",
+          "role:button",
+          "css-var:--tatami-border-icon-button-radius",
+          "css-var:--tatami-border-menu-button-radius",
+          "css-var:--tatami-border-menu-list-item-radius",
+          "css-var:--tatami-border-popover-radius",
+          "css-var:--tatami-border-button-radius"
+        ]
+      },
+      {
+        "value": "5px",
+        "usage": 15,
+        "where": [
+          "css-var:--tatami-border-radius-300",
+          "role:link",
+          "css-var:--contentful-rich-text-code-border-radius",
+          "role:button"
+        ]
+      },
+      {
+        "value": "12px",
+        "usage": 11,
+        "where": [
+          "css-var:--tatami-border-radius-700",
+          "css-var:--tatami-border-banner-radius"
+        ]
+      },
+      {
+        "value": "6px",
+        "usage": 10,
+        "where": [
+          "css-var:--tatami-border-radius-400",
+          "css-var:--calendar-hero-icon-border-radius"
+        ]
+      },
+      {
+        "value": "4px",
+        "usage": 8,
+        "where": [
+          "css-var:--block-media-border-radius",
+          "css-var:--tatami-border-radius-200",
+          "css-var:--tatami-border-badge-radius",
+          "css-var:--graphic-border-radius"
+        ]
+      },
+      {
+        "value": "8px",
+        "usage": 7,
+        "where": [
+          "role:logo",
+          "css-var:--tatami-border-radius-500"
+        ]
+      },
+      {
+        "value": "3px",
+        "usage": 2,
+        "where": [
+          "role:button"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "value": "Symbol",
+        "usage": 55,
+        "where": [
+          "context:heading",
+          "css-var:--tatami-typography-sans-700-bold-font",
+          "css-var:--tatami-typography-sans-800-bold-font",
+          "css-var:--tatami-typography-sans-400-regular-font",
+          "css-var:--tatami-typography-sans-150-regular-font",
+          "css-var:--tatami-typography-sans-150-bold-font",
+          "css-var:--tatami-typography-sans-300-regular-font",
+          "css-var:--tatami-typography-sans-300-medium-font",
+          "css-var:--tatami-typography-sans-200-regular-font",
+          "css-var:--tatami-typography-sans-100-semibold-font"
+        ]
+      },
+      {
+        "value": "NotionInter",
+        "usage": 2,
+        "where": [
+          "context:body",
+          "css-var:--tatami-font-family-sans"
+        ]
+      },
+      {
+        "value": "SF Pro Rounded",
+        "usage": 1,
+        "where": [
+          "role:logo"
+        ]
+      },
+      {
+        "value": "Segoe UI",
+        "usage": 10,
+        "where": []
+      },
+      {
+        "value": "Roboto",
+        "usage": 2,
+        "where": []
+      },
+      {
+        "value": "Lyon-Text",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "iawriter-mono",
+        "usage": 1,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#000000",
+    "accent": "#f64932",
+    "radius": "8px",
+    "headline": "NotionInter"
+  }
+}

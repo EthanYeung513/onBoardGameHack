@@ -1,0 +1,273 @@
+{
+  "host": "asana.com",
+  "url": "https://asana.com",
+  "name": "Work & Project Management for Human",
+  "category": "productivity",
+  "recordedAt": "2026-10-25T01:04:21.925Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#0d0d0d",
+        "usage": 228,
+        "where": [
+          "css-var:--icon",
+          "css-var:--lightmode-text-strong",
+          "css-var:--lightmode-link-hover",
+          "css-var:--lightmode-link-text",
+          "context:heading",
+          "css-var:--text",
+          "css-var:--btn-secondary-text",
+          "role:button",
+          "role:link",
+          "css-var:--btn-primary-background"
+        ]
+      },
+      {
+        "value": "#ffffff",
+        "usage": 226,
+        "where": [
+          "css-var:--bg",
+          "role:button",
+          "role:link",
+          "css-var:--btn-primary-text",
+          "css-var:--lightmode-button-text-primary",
+          "context:body",
+          "context:heading",
+          "role:logo",
+          "css-var:--accordion-bg",
+          "css-var:--main-navigation_background-color"
+        ]
+      },
+      {
+        "value": "#151b26",
+        "usage": 45,
+        "where": [
+          "role:button",
+          "context:heading",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#222b37",
+        "usage": 38,
+        "where": [
+          "context:body",
+          "role:button",
+          "role:link",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#f06a6a",
+        "usage": 25,
+        "where": [
+          "role:link",
+          "role:button",
+          "context:heading",
+          "role:logo",
+          "css-var:--darkmode-button-primary-hover",
+          "css-var:--darkmode-button-secondary-hover"
+        ]
+      },
+      {
+        "value": "#796eff",
+        "usage": 23,
+        "where": [
+          "role:button",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#f6f8f9",
+        "usage": 63,
+        "where": [
+          "context:heading",
+          "role:logo",
+          "role:button",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#cd4848",
+        "usage": 22,
+        "where": [
+          "role:link",
+          "context:body",
+          "role:button",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#edf1f2",
+        "usage": 20,
+        "where": [
+          "role:button",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#6e6e6e",
+        "usage": 50,
+        "where": [
+          "css-var:--btn-secondary-outline",
+          "css-var:--text-weak",
+          "role:button",
+          "role:link",
+          "css-var:--btn-primary-background-hover",
+          "css-var:--btn-tertiary-link-text-hover",
+          "css-var:--btn-tertiary-background-hover",
+          "css-var:--link-text-hover",
+          "css-var:--icon-disabled",
+          "css-var:--icon-medium-hover"
+        ]
+      },
+      {
+        "value": "#f3f3f3",
+        "usage": 47,
+        "where": [
+          "css-var:--btn-secondary-background-hover",
+          "role:button",
+          "role:link",
+          "css-var:--btn-secondary-alt-background",
+          "css-var:--bg-medium",
+          "css-var:--btn-primary-background-disabled",
+          "css-var:--tag-bg",
+          "css-var:--chip-bg",
+          "css-var:--bg-hover",
+          "css-var:--black-50"
+        ]
+      },
+      {
+        "value": "#0d0e10",
+        "usage": 46,
+        "where": [
+          "role:link",
+          "role:button",
+          "context:heading",
+          "role:logo",
+          "css-var:--darkmode-button-secondary",
+          "css-var:--darkmode-button-text-primary",
+          "css-var:--darkmode-button-text-primary-hover",
+          "css-var:--darkmode-button-text-secondary-hover"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "999px",
+        "usage": 51,
+        "where": [
+          "role:button",
+          "role:link",
+          "role:logo"
+        ]
+      },
+      {
+        "value": "3px",
+        "usage": 50,
+        "where": [
+          "css-var:--border-radius",
+          "role:button",
+          "context:heading",
+          "role:link"
+        ]
+      },
+      {
+        "value": "8px",
+        "usage": 31,
+        "where": [
+          "role:button",
+          "css-var:--card-border-radius",
+          "role:link",
+          "css-var:--plyr-menu-radius"
+        ]
+      },
+      {
+        "value": "4px",
+        "usage": 12,
+        "where": [
+          "role:link",
+          "css-var:--plyr-control-radius"
+        ]
+      },
+      {
+        "value": "16px",
+        "usage": 12,
+        "where": [
+          "role:button"
+        ]
+      },
+      {
+        "value": "5px",
+        "usage": 12,
+        "where": [
+          "context:heading",
+          "role:button",
+          "css-var:--plyr-range-track-height",
+          "css-var:--plyr-tooltip-radius"
+        ]
+      },
+      {
+        "value": "2px",
+        "usage": 8,
+        "where": [
+          "role:button",
+          "css-var:--plyr-badge-border-radius"
+        ]
+      },
+      {
+        "value": "6px",
+        "usage": 7,
+        "where": [
+          "role:link"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "value": "TWK Lausanne",
+        "usage": 130,
+        "where": [
+          "context:heading",
+          "context:body",
+          "role:link",
+          "role:button"
+        ]
+      },
+      {
+        "value": "Hiragino Kaku Gothic ProN",
+        "usage": 94,
+        "where": [
+          "context:heading",
+          "context:body",
+          "role:link",
+          "role:button"
+        ]
+      },
+      {
+        "value": "Ghost",
+        "usage": 1,
+        "where": [
+          "context:heading"
+        ]
+      },
+      {
+        "value": "Consolas",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "asanaIcons",
+        "usage": 1,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#f06a6a",
+    "accent": "#796eff",
+    "radius": "8px",
+    "headline": "TWK Lausanne"
+  }
+}

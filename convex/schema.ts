@@ -101,6 +101,8 @@ export const factStatus = v.union(v.literal("draft"), v.literal("approved"), v.l
 
 export const courseStatus = v.union(v.literal("draft"), v.literal("published"), v.literal("stale"), v.literal("archived"));
 
+export const brandField = v.union(v.literal("primary"), v.literal("accent"), v.literal("radius"), v.literal("headline"));
+
 export const fontSpec = v.object({ family: v.string(), weight: v.optional(v.string()), fallback: v.optional(v.string()) });
 
 export default defineSchema({
@@ -197,7 +199,48 @@ export default defineSchema({
     radius: v.optional(v.string()),
     /** "partial" when dembrandt could not run and the HTML/CSS fallback produced the tokens. */
     quality: v.optional(v.union(v.literal("full"), v.literal("partial"), v.literal("offline"))),
-  }).index("by_space", ["spaceId"]),
+    /** Every candidate value extract_design saw, with where it was found and usage counts
+     * (`BrandCandidates` in src/lib/brand/candidates.ts). The final tokens are picked from these. */
+    candidates: v.optional(v.any()),
+    /** Scan-time learned recommendation (src/lib/brand/types.ts StoredRecommendation, D-27). */
+    recommendation: v.optional(v.any()),
+  })
+    .index("by_space", ["spaceId"])
+    .index("by_scan", ["scanId"]),
+
+  /** F37 / D-27: every Design-tab pick, with the evidence the brand ranker and Mubit learn from. */
+  brand_decisions: defineTable({
+    spaceId: v.id("spaces"),
+    field: brandField,
+    candidates: v.array(v.object({ value: v.string(), evidence: v.string() })),
+    recommended: v.string(),
+    recommendedSource: v.union(v.literal("mubit"), v.literal("learned"), v.literal("heuristic")),
+    chosen: v.string(),
+    accepted: v.boolean(),
+    companyProfile: v.object({
+      host: v.string(),
+      name: v.optional(v.string()),
+      category: v.optional(v.string()),
+      industry: v.optional(v.string()),
+      voice: v.optional(v.string()),
+      description: v.optional(v.string()),
+      paletteSummary: v.string(),
+    }),
+    /** Per candidate: role hints, usage, saturation/lightness, contrast, where found (features.ts). */
+    features: v.array(v.object({ value: v.string(), f: v.record(v.string(), v.number()) })),
+    chosenFeatures: v.record(v.string(), v.number()),
+    featureVersion: v.number(),
+    mubitRequestId: v.optional(v.string()),
+    /** brand_profiles.tokensVersion after this decision was applied. */
+    tokensVersion: v.number(),
+    actor: v.string(),
+    embedding: v.optional(v.array(v.float64())),
+    embeddingMode: v.optional(v.union(v.literal("live"), v.literal("offline"))),
+    /** Outcome of the Mubit loop (feedback + memory), written by convex/brandLoop.ts. */
+    loop: v.optional(v.any()),
+  })
+    .index("by_space", ["spaceId"])
+    .index("by_field", ["field"]),
 
   /** Sliced pipeline work (BUILD-CONTRACT "The pipeline is the unit of long work"). */
   jobs: defineTable({

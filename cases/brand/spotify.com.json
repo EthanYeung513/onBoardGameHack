@@ -1,0 +1,248 @@
+{
+  "host": "spotify.com",
+  "url": "https://www.spotify.com",
+  "name": "Spotify",
+  "category": "media",
+  "recordedAt": "2026-10-25T01:04:05.941Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#ffffff",
+        "usage": 213,
+        "where": [
+          "role:link",
+          "css-var:--essential-base",
+          "css-var:--text-base",
+          "role:button",
+          "context:body",
+          "context:heading",
+          "css-var:--encore-border-width-hairline",
+          "css-var:--encore-border-width-focus",
+          "css-var:--parents-essential-base"
+        ]
+      },
+      {
+        "value": "#1ed760",
+        "usage": 57,
+        "where": [
+          "css-var:--text-bright-accent",
+          "css-var:--essential-bright-accent",
+          "role:link",
+          "role:button",
+          "css-var:--encore-form-checkbox-semantic-color",
+          "css-var:--encore-form-radio-semantic-color",
+          "css-var:--encore-form-toggle-semantic-color",
+          "css-var:--encore-link-color",
+          "css-var:--text-positive"
+        ]
+      },
+      {
+        "value": "#b3b3b3",
+        "usage": 92,
+        "where": [
+          "context:body",
+          "role:link",
+          "css-var:--text-subdued",
+          "role:button",
+          "context:heading",
+          "css-var:--encore-image-color"
+        ]
+      },
+      {
+        "value": "#121212",
+        "usage": 62,
+        "where": [
+          "context:body",
+          "css-var:--background-base",
+          "css-var:--carousel-start-chevron-gradient",
+          "css-var:--carousel-end-chevron-gradient",
+          "role:button",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#000000",
+        "usage": 56,
+        "where": [
+          "css-var:--background-press",
+          "role:link",
+          "role:button"
+        ]
+      },
+      {
+        "value": "#1f1f1f",
+        "usage": 40,
+        "where": [
+          "css-var:--background-elevated-base",
+          "css-var:--background-highlight",
+          "css-var:--chevrons-button-color",
+          "role:button"
+        ]
+      },
+      {
+        "value": "#ed2c3f",
+        "usage": 11,
+        "where": [
+          "css-var:--encore-focus-outline-color",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#2a2a2a",
+        "usage": 28,
+        "where": [
+          "css-var:--background-elevated-highlight",
+          "css-var:--chevrons-button-hover-color",
+          "role:link",
+          "css-var:--encore-container-hover-bg",
+          "role:button",
+          "css-var:--list-row-hover-bg"
+        ]
+      },
+      {
+        "value": "#282828",
+        "usage": 26,
+        "where": [
+          "css-var:--generic-tooltip-background-color",
+          "css-var:--extracted-entity-color",
+          "css-var:--image-placeholder-bg-color",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#7c7c7c",
+        "usage": 18,
+        "where": [
+          "css-var:--essential-subdued",
+          "role:button",
+          "css-var:--encore-border-width-hairline"
+        ]
+      },
+      {
+        "value": "#f3727f",
+        "usage": 5,
+        "where": [
+          "css-var:--text-negative"
+        ]
+      },
+      {
+        "value": "#292929",
+        "usage": 12,
+        "where": [
+          "role:button",
+          "role:link",
+          "css-var:--decorative-subdued",
+          "css-var:--encore-border-width-hairline"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "999px",
+        "usage": 66,
+        "where": [
+          "role:button",
+          "role:link",
+          "css-var:--encore-button-corner-radius",
+          "css-var:--encore-border-radius-rounded"
+        ]
+      },
+      {
+        "value": "4px",
+        "usage": 61,
+        "where": [
+          "css-var:--encore-corner-radius-base",
+          "role:button",
+          "role:link"
+        ]
+      },
+      {
+        "value": "8px",
+        "usage": 48,
+        "where": [
+          "css-var:--encore-corner-radius-larger-2"
+        ]
+      },
+      {
+        "value": "2px",
+        "usage": 23,
+        "where": [
+          "css-var:--context-menu-artwork-border-radius",
+          "css-var:--encore-corner-radius-smaller",
+          "css-var:--encore-image-border-radius"
+        ]
+      },
+      {
+        "value": "6px",
+        "usage": 19,
+        "where": [
+          "css-var:--encore-corner-radius-larger",
+          "role:link"
+        ]
+      },
+      {
+        "value": "16px",
+        "usage": 13,
+        "where": [
+          "css-var:--encore-corner-radius-larger-3",
+          "role:link"
+        ]
+      },
+      {
+        "value": "0px",
+        "usage": 12,
+        "where": [
+          "css-var:--os-track-border-radius",
+          "css-var:--os-handle-border-radius",
+          "css-var:--encore-list-row-border-radius"
+        ]
+      },
+      {
+        "value": "3px",
+        "usage": 3,
+        "where": []
+      }
+    ],
+    "fonts": [
+      {
+        "value": "SpotifyMixUI",
+        "usage": 16,
+        "where": [
+          "role:button",
+          "context:body",
+          "css-var:--encore-body-font-stack",
+          "css-var:--encore-text-font-family"
+        ]
+      },
+      {
+        "value": "SpotifyMixUITitle",
+        "usage": 6,
+        "where": [
+          "css-var:--encore-title-font-stack",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "SpotifyMixMono",
+        "usage": 2,
+        "where": [
+          "css-var:--encore-bodyMono-font-stack"
+        ]
+      },
+      {
+        "value": "SpotifyMixUITitleVariable",
+        "usage": 1,
+        "where": [
+          "css-var:--encore-variable-font-stack"
+        ]
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#1ed760",
+    "accent": "#121212",
+    "radius": "999px",
+    "headline": "SpotifyMixUITitle"
+  }
+}

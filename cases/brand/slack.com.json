@@ -1,0 +1,256 @@
+{
+  "host": "slack.com",
+  "url": "https://slack.com",
+  "name": "Slack",
+  "category": "productivity",
+  "recordedAt": "2026-10-25T01:04:10.922Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#ffffff",
+        "usage": 390,
+        "where": [
+          "context:body",
+          "role:link",
+          "context:heading",
+          "role:button",
+          "role:logo",
+          "css-var:--bck-color",
+          "css-var:--swiper-preloader-color",
+          "css-var:--article-theme-secondary"
+        ]
+      },
+      {
+        "value": "#730394",
+        "usage": 127,
+        "where": [
+          "role:button",
+          "role:link",
+          "role:logo",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#481a54",
+        "usage": 98,
+        "where": [
+          "context:heading",
+          "role:button",
+          "role:link",
+          "css-var:--article-theme-primary",
+          "role:logo",
+          "context:body"
+        ]
+      },
+      {
+        "value": "#0b5cab",
+        "usage": 88,
+        "where": [
+          "role:button",
+          "role:logo",
+          "role:link",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#181818",
+        "usage": 74,
+        "where": [
+          "context:body",
+          "context:heading",
+          "role:button",
+          "role:link",
+          "role:logo"
+        ]
+      },
+      {
+        "value": "#5c5c5c",
+        "usage": 66,
+        "where": [
+          "role:button",
+          "role:link",
+          "role:logo",
+          "context:heading",
+          "context:body"
+        ]
+      },
+      {
+        "value": "#000000",
+        "usage": 65,
+        "where": [
+          "context:body",
+          "context:heading",
+          "role:button",
+          "role:link",
+          "css-var:--attachment-color",
+          "css-var:--swiper-scrollbar-drag-bg-color"
+        ]
+      },
+      {
+        "value": "#00b3ff",
+        "usage": 18,
+        "where": [
+          "role:link",
+          "role:button"
+        ]
+      },
+      {
+        "value": "#1d1d1d",
+        "usage": 44,
+        "where": [
+          "role:link",
+          "role:button",
+          "role:logo",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#f5f4f5",
+        "usage": 32,
+        "where": [
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#2e844a",
+        "usage": 11,
+        "where": [
+          "role:button"
+        ]
+      },
+      {
+        "value": "#f9f0ff",
+        "usage": 28,
+        "where": [
+          "context:heading",
+          "role:button",
+          "role:link",
+          "role:logo"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "4px",
+        "usage": 60,
+        "where": [
+          "role:button",
+          "role:link",
+          "context:heading",
+          "role:logo"
+        ]
+      },
+      {
+        "value": "999px",
+        "usage": 39,
+        "where": [
+          "role:button",
+          "role:logo",
+          "role:link",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "16px",
+        "usage": 24,
+        "where": [
+          "context:heading",
+          "context:body"
+        ]
+      },
+      {
+        "value": "0px",
+        "usage": 22,
+        "where": [
+          "role:button",
+          "role:link"
+        ]
+      },
+      {
+        "value": "8px",
+        "usage": 22,
+        "where": [
+          "context:body",
+          "role:link"
+        ]
+      },
+      {
+        "value": "12px",
+        "usage": 10,
+        "where": [
+          "context:heading"
+        ]
+      },
+      {
+        "value": "10px",
+        "usage": 8,
+        "where": [
+          "css-var:--swiper-scrollbar-border-radius"
+        ]
+      },
+      {
+        "value": "2px",
+        "usage": 6,
+        "where": [
+          "role:button"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "value": "Salesforce-Avant-Garde",
+        "usage": 330,
+        "where": [
+          "context:heading",
+          "css-var:--font-family-heading",
+          "role:button",
+          "role:logo",
+          "context:body",
+          "role:link"
+        ]
+      },
+      {
+        "value": "Salesforce-Sans",
+        "usage": 19,
+        "where": [
+          "context:body",
+          "css-var:--font-family-body",
+          "role:button",
+          "context:heading",
+          "role:link",
+          "role:logo"
+        ]
+      },
+      {
+        "value": "Monaco",
+        "usage": 9,
+        "where": [
+          "context:body",
+          "css-var:--font-family-monospace"
+        ]
+      },
+      {
+        "value": "arial",
+        "usage": 3,
+        "where": []
+      },
+      {
+        "value": "Slack-Lato",
+        "usage": 3,
+        "where": []
+      },
+      {
+        "value": "NotoSansJP",
+        "usage": 1,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#481a54",
+    "accent": "#00b3ff",
+    "radius": "4px",
+    "headline": "Salesforce-Avant-Garde"
+  }
+}
