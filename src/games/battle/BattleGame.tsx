@@ -333,7 +333,7 @@ export function BattleGame({ spec, onComplete, instant = false }: GameProps<Batt
         </button>
       </div>
 
-      <div ref={screenRef} className={`${styles.screen} ${fx.crit ? styles.crit : ""}`}>
+      <div ref={screenRef} className={`${styles.screen} ${fx.crit ? styles.crit : ""}`} data-arena={spec.arena ?? "meadow"} data-testid="battle-screen">
         <div className={styles.foeSide}>
           <div className={styles.platform} />
           <div className={styles.spriteFrame}>

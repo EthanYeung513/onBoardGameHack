@@ -1,4 +1,5 @@
 import type { GameId } from "@/games/core/types";
+import { battleThemeFor } from "./offline-battle-theme";
 import type { GenerateGameInput } from "./generate-game";
 import { kebab, sectionRules } from "./offline-generate";
 
@@ -126,18 +127,18 @@ function battle(input: GenerateGameInput) {
       prompt: item.prompt,
       choices,
       answer,
-      explanation:
-        fitText(`"${item.heading}": ${item.text} Source: ${item.doc}.`, 220) ??
-        fitText(`"${item.heading}" requires this. Source: ${item.doc}.`, 220) ??
-        `It's in "${fitWords(item.heading, 120)}".`,
+      // The doc is cited by `source`, which the results card shows on its own line, so the explanation doesn't repeat it.
+      explanation: fitText(`"${item.heading}": ${item.text}`, 220) ?? `It's in "${fitWords(item.heading, 200)}".`,
       source: { doc: item.doc, section: item.heading },
     };
   });
+  const { arena, opponent } = battleThemeFor(input);
   return {
     title: titleOf(input.packTitle, " battle"),
-    intro: "Answer with the rule to land a hit.",
-    opponent: { name: "SLACKER", pokemon: 96, level: 30, moves: ["Corner Cut", "Vague Ask", "Policy Fog"] },
+    intro: quote(`${opponent.name} is loose in `, `${input.packTitle}. Answer with the rule to land a hit.`, 300) ?? "Answer with the rule to land a hit.",
+    opponent: { ...opponent, level: 30 },
     player: { name: fitWords(input.playerName ?? "NEW JOINER", 16), pokemon: 25, level: 30 },
+    arena,
     lives: 3,
     rounds,
   };
@@ -149,38 +150,64 @@ function titleOf(packTitle: string, suffix: string): string {
   return full.length <= 80 ? full : fitWords(packTitle, 80);
 }
 
-function termFor(rule: string, heading: string): string {
-  const bold = rule.match(/\*\*(.+?)\*\*/)?.[1];
-  if (bold) return fitWords(bold, 40);
-  const words = rule
-    .replace(/\*\*/g, "")
-    .split(/\s+/)
-    .map((w) => w.replace(/[^\w£'-]+$/, ""))
-    .filter((w) => /^[A-Z]/.test(w) && w.length > 2)
-    .slice(0, 3);
-  return fitWords(words.length ? words.join(" ") : heading, 40);
+/** Capitalised words that start sentences or instructions, not names: never a term on their own or at a term's edge. */
+const NOT_TERMS = new Set(
+  (
+    "a an the and or but of to in on at for with from by as if when while every everyone everything anyone anything all any each no " +
+    "not never always only also just do don't does use ask tell make keep get gets report check book submit send share call " +
+    "please before after during until once we you your our they their it its this that these those there here who what why how " +
+    "is are be can may must should will off about up out over under per via plus"
+  ).split(" "),
+);
+
+/**
+ * Candidate terms for a rule, best first: multi-word names from the rule ("Customer Support", "SOC 2", "Report
+ * Phish"), then the section heading, then single names used mid-sentence. A word is only a name when it is
+ * capitalised somewhere other than the start of a sentence, or runs into another capitalised word.
+ */
+function termCandidates(rule: string, heading: string): string[] {
+  const tokens = rule.replace(/\*\*/g, "").split(/\s+/).filter(Boolean);
+  const runs: { words: string[]; atStart: boolean }[] = [];
+  let run: { words: string[]; atStart: boolean } | null = null;
+  tokens.forEach((raw, i) => {
+    const word = raw.replace(/^[^\w£#]+|[^\w£'-]+$/g, "");
+    const atStart = i === 0 || /[.!?:;]$/.test(tokens[i - 1]);
+    const named = /^[A-Z]{2,}\d*$/.test(word) || (/^[A-Z]/.test(word) && !NOT_TERMS.has(word.toLowerCase()));
+    // Numbers only continue a name ("ISO 27001"), never start one.
+    if (named || (run && /^\d+$/.test(word))) {
+      if (!run || atStart) runs.push((run = { words: [], atStart }));
+      run.words.push(word);
+    } else run = null;
+    if (/[,.!?:;)]$/.test(raw)) run = null;
+  });
+  const multi = runs.filter((r) => r.words.length >= 2).map((r) => r.words.join(" "));
+  const single = runs.filter((r) => r.words.length === 1 && !r.atStart && r.words[0].length > 2).map((r) => r.words[0]);
+  const title = heading.replace(/^\s*[\d.]+\s*/, "").trim();
+  return [...new Set([...multi, title, ...single].filter(Boolean).map((t) => fitWords(t, 40)))];
 }
 
 function wordMatch(input: GenerateGameInput) {
   const seen = new Set<string>();
   const pairs: { id: string; term: string; meaning: string; source: { doc: string; section: string } }[] = [];
-  const push = (term: string, meaning: string, doc: string, section: string) => {
-    const key = term.toLowerCase();
-    if (seen.has(key) || pairs.length >= 16) return;
-    seen.add(key);
+  // Takes the first candidate term not already on the board; terms and meanings must each be distinct.
+  const push = (terms: string[], meaning: string, doc: string, section: string) => {
+    const term = terms.find((t) => !seen.has(t.toLowerCase()));
+    if (!term || seen.has(meaning.toLowerCase()) || pairs.length >= 16) return;
+    seen.add(term.toLowerCase());
+    seen.add(meaning.toLowerCase());
     pairs.push({ id: kebab(term) || `p${pairs.length}`, term, meaning, source: { doc, section } });
   };
   // Meanings are shown whole on the cards (max 120): each rule as written, else its leading sentences, else skipped.
   const meanings = (text: string) => sectionRules(text).flatMap((rule) => fitText(rule, 120) ?? []);
   for (const s of input.sections) {
     const [meaning] = meanings(s.text);
-    if (meaning) push(termFor(meaning, s.heading), meaning, s.doc, s.heading);
+    if (meaning) push(termCandidates(meaning, s.heading), meaning, s.doc, s.heading);
   }
   // Fewer than four sections: pair the remaining rules of each section under "Spot the rule".
   if (pairs.length < 4) {
     for (const s of input.sections) {
       for (const meaning of meanings(s.text).slice(1, 4)) {
-        push(fitWords(meaning.split(" ").slice(0, 3).join(" "), 40), meaning, s.doc, s.heading);
+        push([...termCandidates(meaning, s.heading), fitWords(meaning.split(" ").slice(0, 3).join(" "), 40)], meaning, s.doc, s.heading);
       }
     }
   }

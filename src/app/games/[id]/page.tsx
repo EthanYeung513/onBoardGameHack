@@ -1,11 +1,10 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db/client";
 import { findGame } from "@/games/core/instantiate";
 import { getLlm } from "@/llm";
 import { generateGameForPack } from "@/services/games";
 import type { GameId } from "@/games/core/types";
-import { SampleGame } from "./SampleGame";
+import { GameShell } from "@/games/core/GameShell";
 
 export default async function GameSamplePage({
   params,
@@ -32,23 +31,21 @@ export default async function GameSamplePage({
   }
 
   const playing = generated ?? { spec: game.sample, packTitle: null, sectionsUsed: 0 };
-  const title = (playing.spec as { title?: string }).title ?? game.name;
+  const title = generated?.packTitle ?? (playing.spec as { title?: string }).title ?? game.name;
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-6">
-      <nav className="flex items-center justify-between text-sm">
-        <Link href="/games" className="underline">
-          ← Game library
-        </Link>
-        <span className="text-ink/60">
-          {generated ? `Generated from “${generated.packTitle}” · ${generated.sectionsUsed} sections` : `Sample: ${game.name}`}
-        </span>
-      </nav>
+    <>
       {generateError && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-900">
+        <p role="alert" className="fixed left-1/2 top-3 z-50 -translate-x-1/2 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-900 shadow">
           {generateError} — showing the sample instead.
         </p>
       )}
-      <SampleGame game={game.id} spec={playing.spec} title={title} />
-    </main>
+      <GameShell
+        game={game.id as GameId}
+        spec={playing.spec}
+        packId={packId ?? "sample"}
+        packTitle={title}
+        exitHref="/games"
+      />
+    </>
   );
 }

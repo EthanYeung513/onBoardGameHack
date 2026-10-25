@@ -20,6 +20,10 @@ export const battleRoundSchema = z
   .refine((r) => r.answer < r.choices.length, { message: "answer must be an index into choices", path: ["answer"] })
   .refine((r) => new Set(r.choices).size === r.choices.length, { message: "choices must be distinct", path: ["choices"] });
 
+/** Battle backdrops: each maps to a field palette in battle.module.css. */
+export const BATTLE_ARENAS = ["meadow", "beach", "cave", "city", "haunted", "snow", "desert", "volcano"] as const;
+export type BattleArena = (typeof BATTLE_ARENAS)[number];
+
 const fighterSchema = z.object({
   name: z.string().min(1).max(16).describe("Shown in the HP box, max 16 characters"),
   pokemon: pokemonSchema,
@@ -36,6 +40,12 @@ export const battleSpecSchema = gameBaseSchema.extend({
       .describe("Attack names the opponent uses when the player answers wrong, themed on the topic"),
   }),
   player: fighterSchema.default({ name: "New Joiner", pokemon: 25, level: 30 }),
+  arena: z
+    .enum(BATTLE_ARENAS)
+    .default("meadow")
+    .describe(
+      "Where the battle takes place, themed on the course: meadow (green field), beach, cave, city (at night), haunted (purple dusk), snow, desert or volcano",
+    ),
   rounds: z.array(battleRoundSchema).min(3).max(12).describe("Questions with exactly one correct answer"),
   lives: z.number().int().min(1).max(5).default(3).describe("How many wrong answers the player survives"),
 });
@@ -50,6 +60,7 @@ export const battleSample: BattleSpec = battleSpecSchema.parse({
   intro: "Every new joiner completes security training in their first 14 days. Answer right to land a hit.",
   opponent: { name: "PHISHMONGER", pokemon: 94, level: 32, moves: ["Spoofed Link", "Urgent Ask", "Gift Card Scam"] },
   player: { name: "NEW JOINER", pokemon: 25, level: 30 },
+  arena: "haunted",
   lives: 3,
   rounds: [
     {
@@ -114,7 +125,9 @@ export const battleGame: GameSpecDefinition<BattleSpec> = {
     "Make wrong choices plausible mistakes a new joiner would make, not jokes.",
     "Keep choices under 48 characters: they are shown as move buttons.",
     "Put the reason and the rule in `explanation`, and cite the section in `source`.",
-    "Theme the opponent on the topic (e.g. a ghost for phishing) and name its moves after the risks.",
+    "Pick a different opponent for every course: a classic Pokémon (dex 1-251, no legendaries) that fits the topic, e.g. a ghost like 94 Gengar for phishing, 52 Meowth for payments, 126 Magmar for incidents, 54 Psyduck for customer support.",
+    "Name the opponent (max 16 characters) after the risk the course guards against, in the course's own words (e.g. PHISHMONGER, DOUBLE PAYOUT), and name its moves after the mistakes it tempts.",
+    "Set `arena` to match the course's world (e.g. haunted for security, city for payments, volcano for incidents, beach for support); meadow is the plain default.",
   ],
   schema: battleSpecSchema,
   sample: battleSample,

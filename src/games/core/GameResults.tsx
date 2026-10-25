@@ -6,6 +6,9 @@ import styles from "./GameResults.module.css";
 
 const seconds = (ms: number) => `${Math.max(1, Math.round(ms / 1000))}s`;
 
+/** Drops a trailing "Source: …" a generated explanation may carry, when the card shows the source on its own line. */
+export const withoutSourceTail = (explanation: string) => explanation.replace(/\s*[(\[]?\bSource:.*$/is, "").trim();
+
 /** Each game's own name for its end screen, so the results read as part of that game. */
 const KICKER: Record<GameId, string> = {
   battle: "Battle report",
@@ -70,7 +73,9 @@ export function GameResults({
                   <p className={styles.expected}>
                     <span aria-hidden>✓</span> Answer: {m.expected}
                   </p>
-                  {m.explanation && <p className={styles.explanation}>{m.explanation}</p>}
+                  {m.explanation && (
+                    <p className={styles.explanation}>{m.source ? withoutSourceTail(m.explanation) || m.explanation : m.explanation}</p>
+                  )}
                   {m.source && (
                     <p className={styles.source}>
                       Source: {m.source.doc}

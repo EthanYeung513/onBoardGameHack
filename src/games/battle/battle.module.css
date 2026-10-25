@@ -34,9 +34,23 @@
   image-rendering: pixelated;
   /* Text sizes below are cqw of the screen, so they keep the DS's proportions at any size. */
   container-type: inline-size;
+  /* Field palette: the defaults are the meadow; `data-arena` swaps them per course (see Arenas below). */
+  --glow: rgba(255, 255, 255, 0.55);
+  --sky-top: #8fd3f5;
+  --sky-low: #c9ecf7;
+  --haze: #e9f7d6;
+  --ground-1: #a8dc7c;
+  --ground-2: #7cc45a;
+  --ground-3: #5fae46;
+  --hill-1: #6fbf63;
+  --hill-2: #7ccb6b;
+  --hill-3: #64b45a;
+  --pad-1: #8fd06a;
+  --pad-2: #6aae4c;
+  --pad-3: #4f8f39;
   background:
-    radial-gradient(120% 70% at 75% 28%, rgba(255, 255, 255, 0.55), transparent 60%),
-    linear-gradient(180deg, #8fd3f5 0%, #c9ecf7 38%, #e9f7d6 46%, #a8dc7c 47%, #7cc45a 70%, #5fae46 100%);
+    radial-gradient(120% 70% at 75% 28%, var(--glow), transparent 60%),
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-low) 38%, var(--haze) 46%, var(--ground-1) 47%, var(--ground-2) 70%, var(--ground-3) 100%);
 }
 
 /* Distant hills and grass stripes. */
@@ -45,9 +59,9 @@
   position: absolute;
   inset: 34% 0 52% 0;
   background:
-    radial-gradient(40% 120% at 15% 100%, #6fbf63 60%, transparent 61%),
-    radial-gradient(35% 100% at 55% 100%, #7ccb6b 60%, transparent 61%),
-    radial-gradient(45% 140% at 95% 100%, #64b45a 60%, transparent 61%);
+    radial-gradient(40% 120% at 15% 100%, var(--hill-1) 60%, transparent 61%),
+    radial-gradient(35% 100% at 55% 100%, var(--hill-2) 60%, transparent 61%),
+    radial-gradient(45% 140% at 95% 100%, var(--hill-3) 60%, transparent 61%);
   opacity: 0.85;
 }
 .screen::after {
@@ -56,6 +70,56 @@
   inset: 47% 0 0 0;
   background: repeating-linear-gradient(180deg, transparent 0 14px, rgba(255, 255, 255, 0.07) 14px 18px);
   pointer-events: none;
+}
+
+/* Arenas ------------------------------------------------------------------------------------------ */
+/* Order: glow, sky top/low, horizon haze, ground near-horizon/mid/front, the three hills, platform centre/rim/edge. */
+
+.screen[data-arena="beach"] {
+  --sky-top: #6ec6ff; --sky-low: #bfe8ff; --haze: #fff4d6;
+  --ground-1: #f3dc9a; --ground-2: #e8c878; --ground-3: #d6ae5c;
+  --hill-1: #4aa8e0; --hill-2: #5cb8ec; --hill-3: #3c98d4;
+  --pad-1: #f6e2a8; --pad-2: #e0c27c; --pad-3: #b8964e;
+}
+.screen[data-arena="cave"] {
+  --glow: rgba(255, 220, 160, 0.18);
+  --sky-top: #2b2433; --sky-low: #3e3447; --haze: #4f4458;
+  --ground-1: #6b5a4a; --ground-2: #574838; --ground-3: #3f3328;
+  --hill-1: #3a3040; --hill-2: #463a4c; --hill-3: #302838;
+  --pad-1: #8a7660; --pad-2: #6e5c48; --pad-3: #4a3c2e;
+}
+.screen[data-arena="city"] {
+  --glow: rgba(255, 230, 150, 0.25);
+  --sky-top: #1c2a4a; --sky-low: #34497a; --haze: #6b7fb0;
+  --ground-1: #8a8f9c; --ground-2: #6e7380; --ground-3: #555a66;
+  --hill-1: #2a3558; --hill-2: #33406a; --hill-3: #232c4a;
+  --pad-1: #b0b4be; --pad-2: #8c909a; --pad-3: #63666e;
+}
+.screen[data-arena="haunted"] {
+  --glow: rgba(200, 160, 255, 0.3);
+  --sky-top: #2a1840; --sky-low: #4a2d6b; --haze: #7a5a9a;
+  --ground-1: #5a4a6e; --ground-2: #463a58; --ground-3: #342a44;
+  --hill-1: #3a2652; --hill-2: #45305e; --hill-3: #2e1e44;
+  --pad-1: #7a6890; --pad-2: #5e4e74; --pad-3: #42365a;
+}
+.screen[data-arena="snow"] {
+  --sky-top: #a9c8e8; --sky-low: #dde9f5; --haze: #ffffff;
+  --ground-1: #f4f8fc; --ground-2: #dfe8f2; --ground-3: #c6d4e4;
+  --hill-1: #e6eef7; --hill-2: #f2f6fb; --hill-3: #d8e3ef;
+  --pad-1: #ffffff; --pad-2: #dbe5f0; --pad-3: #aebfd4;
+}
+.screen[data-arena="desert"] {
+  --sky-top: #f5c27a; --sky-low: #fbe2b0; --haze: #fff1d0;
+  --ground-1: #e8c27a; --ground-2: #d9a85c; --ground-3: #c48e44;
+  --hill-1: #d49a50; --hill-2: #e0aa60; --hill-3: #c88a40;
+  --pad-1: #f0cf8a; --pad-2: #d6ac64; --pad-3: #a87e3c;
+}
+.screen[data-arena="volcano"] {
+  --glow: rgba(255, 140, 60, 0.35);
+  --sky-top: #3a1410; --sky-low: #7a2a18; --haze: #c4502a;
+  --ground-1: #5a3a30; --ground-2: #4a2e26; --ground-3: #38221c;
+  --hill-1: #2e1612; --hill-2: #3a1c16; --hill-3: #26120e;
+  --pad-1: #7a5446; --pad-2: #5e4034; --pad-3: #3e2a22;
 }
 
 .shake {
@@ -99,7 +163,7 @@
   bottom: 0;
   height: 22%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, #8fd06a 0 55%, #6aae4c 70%, #4f8f39 100%);
+  background: radial-gradient(closest-side, var(--pad-1) 0 55%, var(--pad-2) 70%, var(--pad-3) 100%);
   box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.18);
 }
 

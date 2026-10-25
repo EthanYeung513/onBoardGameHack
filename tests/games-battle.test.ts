@@ -15,6 +15,11 @@ describe("battle spec", () => {
     expect(parsed.lives).toBe(3);
   });
 
+  it("defaults the arena to the meadow and rejects unknown arenas", () => {
+    expect(battleSpecSchema.parse({ ...spec, arena: undefined }).arena).toBe("meadow");
+    expect(battleSpecSchema.safeParse({ ...spec, arena: "moon" }).success).toBe(false);
+  });
+
   it("rejects an answer index outside the choices, duplicate choices and too few rounds", () => {
     const round = { ...spec.rounds[0] };
     expect(battleSpecSchema.safeParse({ ...spec, rounds: [{ ...round, answer: 9 }, ...spec.rounds.slice(1)] }).success).toBe(false);
