@@ -13,6 +13,8 @@ import { OrthoMark, TILES } from "./marks";
 
 type Overlay = null | "auth" | "google";
 type AuthStep = "a-email" | "a-pass" | "a-signup-form";
+/** Absolute return URL on this origin, so OAuth comes back to wherever the manager started. */
+const returnTo = (next?: string) => `${window.location.origin}${next ?? "/dashboard"}`;
 const emailOK = (v: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
 
 export function LoginCard({ next }: { next?: string }) {
@@ -119,7 +121,7 @@ export function LoginCard({ next }: { next?: string }) {
   }
 
   function openGoogle() {
-    if (providers?.google) void signIn("google", { redirectTo: next ?? "/dashboard" });
+    if (providers?.google) void signIn("google", { redirectTo: returnTo(next) });
     else setOverlay("google");
   }
 

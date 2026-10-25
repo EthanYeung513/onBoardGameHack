@@ -28,6 +28,7 @@ import type * as http from "../http.js";
 import type * as ingest from "../ingest.js";
 import type * as join from "../join.js";
 import type * as lib_access from "../lib/access.js";
+import type * as lib_authRedirect from "../lib/authRedirect.js";
 import type * as lib_brainWrite from "../lib/brainWrite.js";
 import type * as lib_brand from "../lib/brand.js";
 import type * as lib_connectors from "../lib/connectors.js";
@@ -76,6 +77,7 @@ declare const fullApi: ApiFromModules<{
   ingest: typeof ingest;
   join: typeof join;
   "lib/access": typeof lib_access;
+  "lib/authRedirect": typeof lib_authRedirect;
   "lib/brainWrite": typeof lib_brainWrite;
   "lib/brand": typeof lib_brand;
   "lib/connectors": typeof lib_connectors;
