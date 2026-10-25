@@ -6,6 +6,7 @@
 // 3. Run `convex dev` (watch) and `next dev` together and print where to go.
 // Provider keys are optional: without them every provider runs its labelled offline stand-in.
 import { execFileSync, spawn, spawnSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -34,6 +35,7 @@ const FUNCTION_ENV = [
   "AUTH_GOOGLE_ID",
   "AUTH_GOOGLE_SECRET",
   "OFFLINE",
+  "WORKER_SECRET",
 ];
 
 function readEnv() {
@@ -87,26 +89,28 @@ async function ensureBackend() {
     console.error("convex: Docker is not available. Start Docker, or run `npx convex dev --local` / set CONVEX_DEPLOYMENT in .env.local.");
     process.exit(1);
   }
-  // The compose file reads PORT for the backend; never let the web port leak into it.
-  const composeEnv = { ...process.env, PORT: "3210", SITE_PROXY_PORT: "3211" };
-  execFileSync("docker", ["compose", "-f", compose, "up", "-d"], { stdio: "inherit", env: composeEnv });
-  if (!(await waitFor("http://127.0.0.1:3210/version"))) {
-    console.error("convex: local backend did not become healthy on :3210");
+  // One Docker backend per CONVEX_LOCAL_PORT (default 3210), so parallel checkouts don't push
+  // over each other's functions. The compose file reads PORT; never let the web port leak into it.
+  const cport = Number(process.env.CONVEX_LOCAL_PORT ?? 3210);
+  const project = cport === 3210 ? "convex-local" : `convex-${cport}`;
+  const backendUrl = `http://127.0.0.1:${cport}`;
+  const composeEnv = { ...process.env, PORT: String(cport), SITE_PROXY_PORT: String(cport + 1), DASHBOARD_PORT: cport === 3210 ? "6791" : String(cport + 2) };
+  const dc = (...args) => ["compose", "-p", project, "-f", compose, ...args];
+  execFileSync("docker", dc("up", "-d"), { stdio: "inherit", env: composeEnv });
+  if (!(await waitFor(`${backendUrl}/version`))) {
+    console.error(`convex: local backend did not become healthy on :${cport}`);
     process.exit(1);
   }
-  if (!env.CONVEX_SELF_HOSTED_ADMIN_KEY) {
-    const out = execFileSync("docker", ["compose", "-f", compose, "exec", "-T", "backend", "./generate_admin_key.sh"], {
-      encoding: "utf8",
-      env: composeEnv,
-    });
+  if (!env.CONVEX_SELF_HOSTED_ADMIN_KEY || env.CONVEX_SELF_HOSTED_URL !== backendUrl) {
+    const out = execFileSync("docker", dc("exec", "-T", "backend", "./generate_admin_key.sh"), { encoding: "utf8", env: composeEnv });
     const key = out.trim().split("\n").pop().trim();
     upsertEnv({
-      CONVEX_SELF_HOSTED_URL: "http://127.0.0.1:3210",
+      CONVEX_SELF_HOSTED_URL: backendUrl,
       CONVEX_SELF_HOSTED_ADMIN_KEY: key,
-      NEXT_PUBLIC_CONVEX_URL: "http://127.0.0.1:3210",
-      NEXT_PUBLIC_CONVEX_SITE_URL: "http://127.0.0.1:3211",
+      NEXT_PUBLIC_CONVEX_URL: backendUrl,
+      NEXT_PUBLIC_CONVEX_SITE_URL: `http://127.0.0.1:${cport + 1}`,
     });
-    console.log("convex: wrote local backend credentials to .env.local");
+    console.log(`convex: wrote local backend (${project}) credentials to .env.local`);
     env = readEnv();
   }
   return env;
@@ -122,7 +126,12 @@ function run(cmd, args, opts = {}) {
   if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
-const env = await ensureBackend();
+let env = await ensureBackend();
+// Shared secret between the Convex functions and the pipeline worker (convex/lib/worker.ts).
+if (!env.WORKER_SECRET) {
+  upsertEnv({ WORKER_SECRET: randomBytes(24).toString("hex") });
+  env = readEnv();
+}
 run(npx, ["convex", "dev", "--once"]);
 run("node", [path.join(root, "scripts", "convex-auth-keys.mjs")]);
 // Idempotent: the demo manager + Acme Pay space exist after every boot.
@@ -138,6 +147,8 @@ console.log(`convex: function env synced (${fnEnv.length} provider vars)${offlin
 const children = [
   spawn(npx, ["convex", "dev"], { stdio: ["ignore", "inherit", "inherit"], env: cliEnv, cwd: root }),
   spawn(npx, ["next", "dev", "-p", port], { stdio: "inherit", env: process.env, cwd: root }),
+  // The pipeline worker (scan stages, connector syncs, the drift cascade) — on Modal in production.
+  spawn("node", [path.join(root, "scripts", "run-ts.mjs"), "src/worker/main.ts"], { stdio: "inherit", env: cliEnv, cwd: root }),
 ];
 console.log(`
   Orthogonal is starting:
@@ -145,7 +156,8 @@ console.log(`
     Sign up      http://localhost:${port}/login      (email + password; no keys needed)
     Demo scan    http://localhost:${port}/try        (public constructor)
     Convex       ${env.NEXT_PUBLIC_CONVEX_URL ?? env.CONVEX_DEPLOYMENT}
-    Convex UI    http://127.0.0.1:6791               (self-hosted dashboard; admin key in .env.local)
+    Convex UI    http://127.0.0.1:${process.env.CONVEX_LOCAL_PORT ? Number(process.env.CONVEX_LOCAL_PORT) + 2 : 6791}               (self-hosted dashboard; admin key in .env.local)
+  Worker         pipeline jobs (${offline ? "LLM/embeddings OFFLINE — labelled stand-ins" : "Mubit live"})
   Demo login:    demo@orthogonal.dev / demo-password   (seeded Acme Pay space)
 `);
 const stop = () => children.forEach((c) => c.kill("SIGINT"));

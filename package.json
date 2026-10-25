@@ -25,7 +25,8 @@
     "crawl:sample": "node scripts/run-ts.mjs scripts/crawl-sample.ts",
     "test:e2e": "playwright test",
     "deploy:modal": "modal deploy deploy/modal_app.py",
-    "convex:auth-keys": "node scripts/convex-auth-keys.mjs"
+    "convex:auth-keys": "node scripts/convex-auth-keys.mjs",
+    "worker": "node scripts/run-ts.mjs src/worker/main.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.87",
@@ -43,6 +44,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.48.0",
+    "convex-helpers": "^0.1.129",
     "dembrandt": "^0.39.2",
     "diff": "^9.0.0",
     "drizzle-orm": "^0.45.4",

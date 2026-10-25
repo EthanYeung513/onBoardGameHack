@@ -214,8 +214,13 @@ export default defineSchema({
     error: v.optional(v.string()),
     startedAt: v.optional(v.number()),
     finishedAt: v.optional(v.number()),
+    /** Not claimable before this time (retry backoff). */
+    runAfter: v.optional(v.number()),
+    /** Worker process holding the job while `running`. */
+    workerId: v.optional(v.string()),
   })
     .index("by_space", ["spaceId"])
+    .index("by_status_run", ["status", "runAfter"])
     .index("by_scan", ["scanId"])
     .index("by_connector", ["connectorId"])
     .index("by_status", ["status"]),
@@ -290,7 +295,9 @@ export default defineSchema({
     extractedAt: v.optional(v.number()),
   })
     .index("by_source", ["sourceItemId"])
+    .index("by_source_version", ["sourceItemId", "version", "idx"])
     .index("by_space", ["spaceId"])
+    .index("by_space_extracted", ["spaceId", "extractedAt"])
     .searchIndex("search_text", { searchField: "text", filterFields: ["spaceId"] })
     .vectorIndex("by_embedding", { vectorField: "embedding", dimensions: EMBEDDING_DIMS, filterFields: ["spaceId"] }),
 

@@ -24,7 +24,11 @@ npm run dev      # Docker Convex backend + functions + auth keys + demo seed + n
 `CONVEX_SELF_HOSTED_*`/`NEXT_PUBLIC_CONVEX_*` to `.env.local` on first boot, pushes `convex/`,
 sets the Convex Auth signing keys, copies provider keys into the Convex function env, seeds
 `demo@orthogonal.dev` / `demo-password` (Acme Pay), then runs `convex dev` + `next dev`.
-`PORT=3100 npm run dev` picks another web port.
+`PORT=3100 npm run dev` picks another web port; `CONVEX_LOCAL_PORT=3510` gives this checkout
+its own Docker backend (`convex-3510`, ports 3510–3512) — **use this whenever another checkout
+or agent may be running `npm run dev`**, or the two `convex dev` watchers overwrite each other's
+functions ("Schema was overwritten by another push"). `npm run dev` also starts the pipeline
+worker (`npm run worker`) and generates `WORKER_SECRET`.
 
 Entry points: `/` landing · `/login` manager sign-in · `/space/new` · `/dashboard` ·
 `/try` public constructor · `/studio` legacy (Supabase) · Convex dashboard `http://127.0.0.1:6791`.
