@@ -7,7 +7,8 @@ const env = { ...process.env };
 if (existsSync(".env.local")) {
   for (const line of readFileSync(".env.local", "utf8").split("\n")) {
     const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
-    if (m && env[m[1]] === undefined) env[m[1]] = m[2];
+    // Values may be quoted (dev.mjs quotes the Convex admin key, which contains "|").
+    if (m && env[m[1]] === undefined) env[m[1]] = m[2].trim().replace(/^"(.*)"$|^'(.*)'$/, (_, a, b) => (a ?? b).replace(/\\(["\\$`])/g, "$1"));
   }
 }
 if (env.HTTPS_PROXY || env.https_proxy) {
