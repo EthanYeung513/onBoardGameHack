@@ -1,0 +1,230 @@
+{
+  "host": "shopify.com",
+  "url": "https://www.shopify.com",
+  "name": "Shopify: The All",
+  "category": "commerce",
+  "recordedAt": "2026-10-25T01:04:09.130Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#ffffff",
+        "usage": 62,
+        "where": [
+          "css-var:--color-white",
+          "role:button",
+          "css-var:--color-theme-content-cta-inverse",
+          "css-var:--uc-glass",
+          "css-var:--color-theme-bg-header",
+          "role:link",
+          "css-var:--color-link-dark-focus",
+          "css-var:--color-theme-content-cta-inverse-focus",
+          "css-var:--color-component-button-primary-content",
+          "css-var:--color-component-button-primary-content-hover"
+        ]
+      },
+      {
+        "value": "#000000",
+        "usage": 36,
+        "where": [
+          "context:body",
+          "css-var:--color-black",
+          "role:button",
+          "css-var:--color-theme-border-cta",
+          "css-var:--color-theme-bg-cta",
+          "css-var:--color-theme-content-cta",
+          "role:link",
+          "css-var:--color-theme-bg-cta-focus",
+          "css-var:--color-theme-content-cta-focus",
+          "css-var:--color-theme-border-cta-focus"
+        ]
+      },
+      {
+        "value": "#751be9",
+        "usage": 5,
+        "where": [
+          "role:link"
+        ]
+      },
+      {
+        "value": "#71717a",
+        "usage": 15,
+        "where": [
+          "css-var:--color-shade-50",
+          "role:button",
+          "css-var:--color-theme-border-cta-active",
+          "css-var:--color-theme-bg-cta-active",
+          "role:link",
+          "css-var:--color-theme-content-cta-active",
+          "css-var:--color-theme-content-cta-inverse-disabled",
+          "css-var:--color-link-dark-disabled",
+          "css-var:--color-component-button-primary-bg-active",
+          "css-var:--color-component-button-primary-content-disabled"
+        ]
+      },
+      {
+        "value": "#d4d4d8",
+        "usage": 15,
+        "where": [
+          "css-var:--color-shade-30",
+          "role:button",
+          "role:link",
+          "css-var:--color-link-dark-hover",
+          "css-var:--color-theme-border-cta-disabled",
+          "css-var:--color-theme-bg-cta-disabled",
+          "css-var:--color-theme-content-cta-inverse-hover",
+          "css-var:--color-component-button-primary-bg-disabled",
+          "css-var:--color-component-button-secondary-border-disabled"
+        ]
+      },
+      {
+        "value": "#a1a1aa",
+        "usage": 14,
+        "where": [
+          "css-var:--color-shade-40",
+          "role:button",
+          "role:link",
+          "css-var:--color-link-dark-active",
+          "css-var:--color-theme-content-cta-disabled",
+          "css-var:--color-theme-content-cta-inverse-active",
+          "css-var:--color-component-button-secondary-content-disabled"
+        ]
+      },
+      {
+        "value": "#18181b",
+        "usage": 13,
+        "where": [
+          "css-var:--color-theme-content-header",
+          "css-var:--color-shade-90"
+        ]
+      },
+      {
+        "value": "#3f3f46",
+        "usage": 9,
+        "where": [
+          "role:button",
+          "css-var:--color-theme-border-cta-hover",
+          "css-var:--color-theme-bg-cta-hover",
+          "css-var:--color-shade-70",
+          "role:link",
+          "css-var:--color-theme-content-cta-hover",
+          "css-var:--color-component-button-primary-bg-hover",
+          "css-var:--color-component-button-secondary-border-hover"
+        ]
+      },
+      {
+        "value": "#d4f9e0",
+        "usage": 2,
+        "where": [
+          "css-var:--color-pistachio-10"
+        ]
+      },
+      {
+        "value": "#f4f4f5",
+        "usage": 7,
+        "where": [
+          "css-var:--color-shade-10"
+        ]
+      },
+      {
+        "value": "#9797a2",
+        "usage": 6,
+        "where": [
+          "role:link",
+          "css-var:--color-link-dark"
+        ]
+      },
+      {
+        "value": "#e4e4e7",
+        "usage": 5,
+        "where": [
+          "css-var:--color-shade-20"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "8px",
+        "usage": 6,
+        "where": [
+          "css-var:--radius-lg"
+        ]
+      },
+      {
+        "value": "16px",
+        "usage": 5,
+        "where": [
+          "css-var:--radius-2xl"
+        ]
+      },
+      {
+        "value": "999px",
+        "usage": 5,
+        "where": [
+          "css-var:--uc-unit",
+          "role:button",
+          "css-var:--radius-theme-full"
+        ]
+      },
+      {
+        "value": "12px",
+        "usage": 4,
+        "where": [
+          "css-var:--radius-xl"
+        ]
+      },
+      {
+        "value": "0px",
+        "usage": 3,
+        "where": [
+          "role:button"
+        ]
+      },
+      {
+        "value": "6px",
+        "usage": 1,
+        "where": [
+          "css-var:--radius-md"
+        ]
+      },
+      {
+        "value": "38px",
+        "usage": 5,
+        "where": []
+      },
+      {
+        "value": "4px",
+        "usage": 1,
+        "where": []
+      }
+    ],
+    "fonts": [
+      {
+        "value": "Shopify-Inter",
+        "usage": 8,
+        "where": [
+          "context:body",
+          "css-var:--font-sans",
+          "css-var:--default-font-family",
+          "css-var:--font-base",
+          "role:button",
+          "role:link"
+        ]
+      },
+      {
+        "value": "SFMono-Regular",
+        "usage": 2,
+        "where": [
+          "css-var:--default-mono-font-family",
+          "css-var:--font-mono"
+        ]
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#000000",
+    "accent": "#751be9",
+    "radius": "8px",
+    "headline": "Shopify-Inter"
+  }
+}

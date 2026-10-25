@@ -23,6 +23,10 @@ const FUNCTION_ENV = [
   "MUBIT_MODEL",
   "MUBIT_EMBED_MODEL",
   "MUBIT_TASK_HEADER",
+  // Brand-learning loop (convex/brandLoop.ts): feedback endpoint + Mubit memory switch.
+  "MUBIT_FEEDBACK_URL",
+  "MUBIT_ENDPOINT",
+  "MEMORY_PROVIDER",
   "ANTHROPIC_API_KEY",
   "CLOUDFLARE_ACCOUNT_ID",
   "CLOUDFLARE_API_TOKEN",

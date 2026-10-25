@@ -1,0 +1,409 @@
+{
+  "ranAt": "2026-10-25T01:23:40.153Z",
+  "mode": "offline",
+  "companies": [
+    "airbnb.com",
+    "asana.com",
+    "dropbox.com",
+    "intercom.com",
+    "monzo.com",
+    "notion.so",
+    "revolut.com",
+    "shopify.com",
+    "slack.com",
+    "spotify.com",
+    "stripe.com",
+    "twilio.com",
+    "vercel.com",
+    "wise.com"
+  ],
+  "firstTimeRight": {
+    "cold (heuristic)": {
+      "primary": 0.5714285714285714,
+      "accent": 0.2857142857142857,
+      "radius": 0.7142857142857143,
+      "headline": 0.7857142857142857,
+      "overall": 0.5892857142857143
+    },
+    "new company (learned, LOO)": {
+      "primary": 0.6428571428571429,
+      "accent": 0.35714285714285715,
+      "radius": 0.7142857142857143,
+      "headline": 0.7857142857142857,
+      "overall": 0.625
+    },
+    "returning company (learned)": {
+      "primary": 1,
+      "accent": 1,
+      "radius": 1,
+      "headline": 1,
+      "overall": 1
+    }
+  },
+  "perCase": {
+    "airbnb.com": {
+      "chosen": {
+        "primary": "#ff385c",
+        "accent": "#222222",
+        "radius": "12px",
+        "headline": "Airbnb Cereal VF"
+      },
+      "cold (heuristic)": {
+        "primary": "#ff385c [heuristic]",
+        "accent": "#6c6c6c [heuristic]",
+        "radius": "12px [heuristic]",
+        "headline": "Airbnb Cereal VF [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#ff385c [learned]",
+        "accent": "#6c6c6c [learned]",
+        "radius": "12px [learned]",
+        "headline": "Airbnb Cereal VF [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#ff385c [learned]",
+        "accent": "#222222 [learned]",
+        "radius": "12px [learned]",
+        "headline": "Airbnb Cereal VF [learned]"
+      }
+    },
+    "asana.com": {
+      "chosen": {
+        "primary": "#f06a6a",
+        "accent": "#796eff",
+        "radius": "8px",
+        "headline": "TWK Lausanne"
+      },
+      "cold (heuristic)": {
+        "primary": "#f06a6a [heuristic]",
+        "accent": "#796eff [heuristic]",
+        "radius": "8px [heuristic]",
+        "headline": "TWK Lausanne [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#f06a6a [learned]",
+        "accent": "#cd4848 [learned]",
+        "radius": "8px [learned]",
+        "headline": "TWK Lausanne [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#f06a6a [learned]",
+        "accent": "#796eff [learned]",
+        "radius": "8px [learned]",
+        "headline": "TWK Lausanne [learned]"
+      }
+    },
+    "dropbox.com": {
+      "chosen": {
+        "primary": "#0061fe",
+        "accent": "#9b0032",
+        "radius": "8px",
+        "headline": "Sharp Grotesk"
+      },
+      "cold (heuristic)": {
+        "primary": "#0061fe [heuristic]",
+        "accent": "#9b6400 [heuristic]",
+        "radius": "8px [heuristic]",
+        "headline": "Atlas Grotesk Web [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#0061fe [learned]",
+        "accent": "#9b0032 [learned]",
+        "radius": "8px [learned]",
+        "headline": "Atlas Grotesk Web [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#0061fe [learned]",
+        "accent": "#9b0032 [learned]",
+        "radius": "8px [learned]",
+        "headline": "Sharp Grotesk [learned]"
+      }
+    },
+    "intercom.com": {
+      "chosen": {
+        "primary": "#ff5600",
+        "accent": "#0007cb",
+        "radius": "6px",
+        "headline": "Saans"
+      },
+      "cold (heuristic)": {
+        "primary": "#ff5600 [heuristic]",
+        "accent": "#0007cb [heuristic]",
+        "radius": "6px [heuristic]",
+        "headline": "Serrif [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#ff5600 [learned]",
+        "accent": "#0007cb [learned]",
+        "radius": "0px [learned]",
+        "headline": "Serrif [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#ff5600 [learned]",
+        "accent": "#0007cb [learned]",
+        "radius": "6px [learned]",
+        "headline": "Saans [learned]"
+      }
+    },
+    "monzo.com": {
+      "chosen": {
+        "primary": "#ff4f40",
+        "accent": "#218fb7",
+        "radius": "16px",
+        "headline": "MonzoSansDisplay"
+      },
+      "cold (heuristic)": {
+        "primary": "#ff4f40 [heuristic]",
+        "accent": "#016b83 [heuristic]",
+        "radius": "24px [heuristic]",
+        "headline": "MonzoSansDisplay [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#ff4f40 [learned]",
+        "accent": "#016b83 [learned]",
+        "radius": "24px [learned]",
+        "headline": "MonzoSansDisplay [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#ff4f40 [learned]",
+        "accent": "#218fb7 [learned]",
+        "radius": "16px [learned]",
+        "headline": "MonzoSansDisplay [learned]"
+      }
+    },
+    "notion.so": {
+      "chosen": {
+        "primary": "#000000",
+        "accent": "#f64932",
+        "radius": "8px",
+        "headline": "NotionInter"
+      },
+      "cold (heuristic)": {
+        "primary": "#f64932 [heuristic]",
+        "accent": "#2383e2 [heuristic]",
+        "radius": "5px [heuristic]",
+        "headline": "NotionInter [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#000000 [learned]",
+        "accent": "#2383e2 [learned]",
+        "radius": "999px [learned]",
+        "headline": "NotionInter [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#000000 [learned]",
+        "accent": "#f64932 [learned]",
+        "radius": "8px [learned]",
+        "headline": "NotionInter [learned]"
+      }
+    },
+    "revolut.com": {
+      "chosen": {
+        "primary": "#4f55f1",
+        "accent": "#191c1f",
+        "radius": "12px",
+        "headline": "Aeonik Pro"
+      },
+      "cold (heuristic)": {
+        "primary": "#4f55f1 [heuristic]",
+        "accent": "#ffffff [heuristic]",
+        "radius": "12px [heuristic]",
+        "headline": "Aeonik Pro [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#4f55f1 [learned]",
+        "accent": "#191c1f [learned]",
+        "radius": "12px [learned]",
+        "headline": "Aeonik Pro [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#4f55f1 [learned]",
+        "accent": "#191c1f [learned]",
+        "radius": "12px [learned]",
+        "headline": "Aeonik Pro [learned]"
+      }
+    },
+    "shopify.com": {
+      "chosen": {
+        "primary": "#000000",
+        "accent": "#751be9",
+        "radius": "8px",
+        "headline": "Shopify-Inter"
+      },
+      "cold (heuristic)": {
+        "primary": "#751be9 [heuristic]",
+        "accent": "#d4f9e0 [heuristic]",
+        "radius": "8px [heuristic]",
+        "headline": "Shopify-Inter [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#000000 [learned]",
+        "accent": "#751be9 [learned]",
+        "radius": "8px [learned]",
+        "headline": "Shopify-Inter [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#000000 [learned]",
+        "accent": "#751be9 [learned]",
+        "radius": "8px [learned]",
+        "headline": "Shopify-Inter [learned]"
+      }
+    },
+    "slack.com": {
+      "chosen": {
+        "primary": "#481a54",
+        "accent": "#00b3ff",
+        "radius": "4px",
+        "headline": "Salesforce-Avant-Garde"
+      },
+      "cold (heuristic)": {
+        "primary": "#730394 [heuristic]",
+        "accent": "#0b5cab [heuristic]",
+        "radius": "4px [heuristic]",
+        "headline": "Salesforce-Avant-Garde [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#730394 [learned]",
+        "accent": "#0b5cab [learned]",
+        "radius": "4px [learned]",
+        "headline": "Salesforce-Avant-Garde [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#481a54 [learned]",
+        "accent": "#00b3ff [learned]",
+        "radius": "4px [learned]",
+        "headline": "Salesforce-Avant-Garde [learned]"
+      }
+    },
+    "spotify.com": {
+      "chosen": {
+        "primary": "#1ed760",
+        "accent": "#121212",
+        "radius": "999px",
+        "headline": "SpotifyMixUITitle"
+      },
+      "cold (heuristic)": {
+        "primary": "#1ed760 [heuristic]",
+        "accent": "#ed2c3f [heuristic]",
+        "radius": "4px [heuristic]",
+        "headline": "SpotifyMixUITitle [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#ed2c3f [learned]",
+        "accent": "#1ed760 [learned]",
+        "radius": "999px [learned]",
+        "headline": "SpotifyMixUITitle [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#1ed760 [learned]",
+        "accent": "#1f1f1f [learned]",
+        "radius": "999px [learned]",
+        "headline": "SpotifyMixUITitle [learned]"
+      }
+    },
+    "stripe.com": {
+      "chosen": {
+        "primary": "#533afd",
+        "accent": "#061b31",
+        "radius": "6px",
+        "headline": "sohne-var"
+      },
+      "cold (heuristic)": {
+        "primary": "#533afd [heuristic]",
+        "accent": "#665efd [heuristic]",
+        "radius": "6px [heuristic]",
+        "headline": "sohne-var [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#533afd [learned]",
+        "accent": "#665efd [learned]",
+        "radius": "6px [learned]",
+        "headline": "sohne-var [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#533afd [learned]",
+        "accent": "#061b31 [learned]",
+        "radius": "6px [learned]",
+        "headline": "sohne-var [learned]"
+      }
+    },
+    "twilio.com": {
+      "chosen": {
+        "primary": "#db132a",
+        "accent": "#0263e0",
+        "radius": "6px",
+        "headline": "Twilio_Sans_Text"
+      },
+      "cold (heuristic)": {
+        "primary": "#1866ee [heuristic]",
+        "accent": "#db132a [heuristic]",
+        "radius": "6px [heuristic]",
+        "headline": "Whitney SSm [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#1866ee [learned]",
+        "accent": "#db132a [learned]",
+        "radius": "6px [learned]",
+        "headline": "Whitney SSm [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#db132a [learned]",
+        "accent": "#0263e0 [learned]",
+        "radius": "6px [learned]",
+        "headline": "Twilio_Sans_Text [learned]"
+      }
+    },
+    "vercel.com": {
+      "chosen": {
+        "primary": "#000000",
+        "accent": "#0070f7",
+        "radius": "6px",
+        "headline": "GeistSans"
+      },
+      "cold (heuristic)": {
+        "primary": "#0064e2 [heuristic]",
+        "accent": "#0070f7 [heuristic]",
+        "radius": "6px [heuristic]",
+        "headline": "GeistSans [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#0064e2 [learned]",
+        "accent": "#0070f7 [learned]",
+        "radius": "6px [learned]",
+        "headline": "GeistSans [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#000000 [learned]",
+        "accent": "#0070f7 [learned]",
+        "radius": "6px [learned]",
+        "headline": "GeistSans [learned]"
+      }
+    },
+    "wise.com": {
+      "chosen": {
+        "primary": "#163300",
+        "accent": "#00a2dd",
+        "radius": "999px",
+        "headline": "Wise Sans"
+      },
+      "cold (heuristic)": {
+        "primary": "#008fc9 [heuristic]",
+        "accent": "#00a2dd [heuristic]",
+        "radius": "10px [heuristic]",
+        "headline": "Wise Sans [heuristic]"
+      },
+      "new company (learned, LOO)": {
+        "primary": "#cb272f [learned]",
+        "accent": "#008fc9 [learned]",
+        "radius": "10px [learned]",
+        "headline": "Wise Sans [learned]"
+      },
+      "returning company (learned)": {
+        "primary": "#163300 [learned]",
+        "accent": "#00a2dd [learned]",
+        "radius": "999px [learned]",
+        "headline": "Wise Sans [learned]"
+      }
+    }
+  }
+}

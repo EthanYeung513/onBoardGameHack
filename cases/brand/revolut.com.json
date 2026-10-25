@@ -1,0 +1,102 @@
+{
+  "host": "revolut.com",
+  "url": "https://www.revolut.com",
+  "name": "Just a quick security check",
+  "category": "fintech",
+  "recordedAt": "2026-10-25T01:04:19.906Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#191c1f",
+        "usage": 2,
+        "where": [
+          "css-var:--rui-color-foreground"
+        ]
+      },
+      {
+        "value": "#4f55f1",
+        "usage": 0,
+        "where": [
+          "css-var:--rui-color-accent"
+        ]
+      },
+      {
+        "value": "#e2e2e7",
+        "usage": 1,
+        "where": [
+          "css-var:--rui-color-grey-tone-10"
+        ]
+      },
+      {
+        "value": "#edeefd",
+        "usage": 1,
+        "where": [
+          "css-var:--rui-color-action-background"
+        ]
+      },
+      {
+        "value": "#f7f7f7",
+        "usage": 1,
+        "where": [
+          "css-var:--rui-color-grey-tone-2"
+        ]
+      },
+      {
+        "value": "#e6f0fd",
+        "usage": 1,
+        "where": [
+          "css-var:--rui-color-channel-action-background"
+        ]
+      },
+      {
+        "value": "#ffffff",
+        "usage": 1,
+        "where": [
+          "context:body",
+          "css-var:--website-layout-background-channel-legacy",
+          "css-var:--rui-color-on-accent"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "12px",
+        "usage": 1,
+        "where": [
+          "css-var:--rui-radius-r12"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "value": "Segoe UI",
+        "usage": 1,
+        "where": [
+          "css-var:--rui-font-system"
+        ]
+      },
+      {
+        "value": "Inter",
+        "usage": 3,
+        "where": []
+      },
+      {
+        "value": "Aeonik Pro",
+        "usage": 3,
+        "where": []
+      },
+      {
+        "value": "Aeonik Pro Capitalised",
+        "usage": 1,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#4f55f1",
+    "accent": "#191c1f",
+    "radius": "12px",
+    "headline": "Aeonik Pro"
+  }
+}

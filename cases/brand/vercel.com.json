@@ -1,0 +1,243 @@
+{
+  "host": "vercel.com",
+  "url": "https://vercel.com",
+  "name": "Agentic Infrastructure",
+  "category": "devtools",
+  "recordedAt": "2026-10-25T01:04:00.207Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#000000",
+        "usage": 78,
+        "where": [
+          "css-var:--ds-black",
+          "css-var:--geist-foreground",
+          "css-var:--geist-code",
+          "role:link",
+          "context:heading",
+          "theme-color"
+        ]
+      },
+      {
+        "value": "#0070f7",
+        "usage": 25,
+        "where": [
+          "css-var:--ds-blue-700",
+          "role:link",
+          "css-var:--geist-link-color",
+          "role:button",
+          "context:heading",
+          "css-var:--queue-accent"
+        ]
+      },
+      {
+        "value": "#0064e2",
+        "usage": 24,
+        "where": [
+          "css-var:--ds-blue-900",
+          "role:button",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#ffffff",
+        "usage": 55,
+        "where": [
+          "css-var:--ds-white",
+          "css-var:--ds-black",
+          "css-var:--scroller-gradient",
+          "context:heading",
+          "css-var:--caveats-toggle-false"
+        ]
+      },
+      {
+        "value": "#d60020",
+        "usage": 17,
+        "where": [
+          "css-var:--ds-red-900"
+        ]
+      },
+      {
+        "value": "#51aeff",
+        "usage": 15,
+        "where": [
+          "css-var:--ds-blue-600"
+        ]
+      },
+      {
+        "value": "#fc0035",
+        "usage": 11,
+        "where": [
+          "css-var:--ds-red-700"
+        ]
+      },
+      {
+        "value": "#0b57d0",
+        "usage": 10,
+        "where": [
+          "css-var:--bg",
+          "css-var:--fg",
+          "css-var:--dot"
+        ]
+      },
+      {
+        "value": "#107d32",
+        "usage": 9,
+        "where": [
+          "css-var:--ds-green-900"
+        ]
+      },
+      {
+        "value": "#7c00c9",
+        "usage": 9,
+        "where": [
+          "css-var:--ds-purple-900"
+        ]
+      },
+      {
+        "value": "#e70022",
+        "usage": 9,
+        "where": [
+          "css-var:--ds-red-800"
+        ]
+      },
+      {
+        "value": "#a64f00",
+        "usage": 9,
+        "where": [
+          "css-var:--ds-amber-900"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "6px",
+        "usage": 38,
+        "where": [
+          "css-var:--geist-radius",
+          "css-var:--corner-small",
+          "role:logo",
+          "role:button"
+        ]
+      },
+      {
+        "value": "999px",
+        "usage": 27,
+        "where": [
+          "role:button",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "4px",
+        "usage": 25,
+        "where": [
+          "css-var:--ds-popover-row-radius"
+        ]
+      },
+      {
+        "value": "0px",
+        "usage": 17,
+        "where": [
+          "role:button"
+        ]
+      },
+      {
+        "value": "12px",
+        "usage": 17,
+        "where": [
+          "role:link"
+        ]
+      },
+      {
+        "value": "8px",
+        "usage": 15,
+        "where": [
+          "css-var:--geist-marketing-radius"
+        ]
+      },
+      {
+        "value": "2px",
+        "usage": 8,
+        "where": [
+          "role:link",
+          "role:button"
+        ]
+      },
+      {
+        "value": "24px",
+        "usage": 4,
+        "where": [
+          "css-var:--geist-gap",
+          "css-var:--radius-3xl"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "value": "GeistSans",
+        "usage": 156,
+        "where": [
+          "context:body",
+          "css-var:--default-font-family",
+          "context:heading",
+          "css-var:--font-geist-sans",
+          "role:button",
+          "css-var:--font-sans"
+        ]
+      },
+      {
+        "value": "SFMono-Regular",
+        "usage": 24,
+        "where": [
+          "css-var:--default-mono-font-family",
+          "css-var:--font-mono"
+        ]
+      },
+      {
+        "value": "GeistPixelCircle",
+        "usage": 6,
+        "where": [
+          "css-var:--font-geist-pixel-circle",
+          "role:link"
+        ]
+      },
+      {
+        "value": "GeistPixelSquare",
+        "usage": 4,
+        "where": [
+          "css-var:--font-geist-pixel-square"
+        ]
+      },
+      {
+        "value": "GeistPixelLine",
+        "usage": 2,
+        "where": [
+          "css-var:--font-geist-pixel-line"
+        ]
+      },
+      {
+        "value": "Georgia",
+        "usage": 3,
+        "where": []
+      },
+      {
+        "value": "Geist Mono",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "GeistPixelGrid",
+        "usage": 1,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#000000",
+    "accent": "#0070f7",
+    "radius": "6px",
+    "headline": "GeistSans"
+  }
+}

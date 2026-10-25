@@ -2,6 +2,7 @@ import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { applyModelHints, buildCandidates, type BrandCandidates, type HtmlEvidence } from "@/lib/brand/candidates";
 import { pickBrandTokens, type PickedTokens } from "@/lib/brand/pick";
+import { recommendBrandTokens } from "@/lib/brand/recommend";
 import { dembrandtAvailable, htmlCssEvidence, runDembrandt } from "@/lib/design/evidence";
 import { BRAND_NORMALISE_SYSTEM_PROMPT } from "@/lib/prompts";
 import { loadImage, storeBytes } from "../storage";
@@ -146,6 +147,13 @@ export function createExtractDesignStage(deps: DesignDeps): StageDefinition {
         logos: logoRefs.length,
         tokensVersion: saved.tokensVersion,
       });
+      // F37: rank the candidates with what managers chose before (Mubit `brand.recommend`, learned
+      // ranker, heuristic) and apply the recommendation; the scan's own pick stays if it fails.
+      try {
+        await recommendBrandTokens(ctx, { ...candidates, picked }, { host: ctx.space.host, name: picked.companyName?.value ?? ctx.space.name });
+      } catch (err) {
+        await ctx.event("warn", `Brand recommendation unavailable, keeping the extracted tokens: ${err instanceof Error ? err.message : String(err)}`);
+      }
       return { done: true, summary: `primary ${primary.value}, ${picked.headline.value} headlines, ${quality}` };
     },
   };

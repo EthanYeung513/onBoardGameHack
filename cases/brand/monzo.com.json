@@ -1,0 +1,285 @@
+{
+  "host": "monzo.com",
+  "url": "https://monzo.com",
+  "name": "Monzo",
+  "category": "fintech",
+  "recordedAt": "2026-10-25T01:03:54.549Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#091723",
+        "usage": 432,
+        "where": [
+          "css-var:--semantic-content-secondary",
+          "css-var:--semantic-content-primary",
+          "role:link",
+          "css-var:--semantic-content-link-default",
+          "css-var:--color-text",
+          "context:body",
+          "role:button",
+          "css-var:--size-3x-small",
+          "css-var:--semantic-action-fill-primary-default",
+          "css-var:--checkbox-content"
+        ]
+      },
+      {
+        "value": "#ffffff",
+        "usage": 378,
+        "where": [
+          "context:body",
+          "role:logo",
+          "role:button",
+          "css-var:--semantic-inverse-content-primary",
+          "css-var:--size-3x-small",
+          "css-var:--semantic-inverse-action-fill-primary-default",
+          "css-var:--checkbox-checkmark-icon",
+          "css-var:--semantic-background-primary",
+          "context:heading",
+          "css-var:--color-white"
+        ]
+      },
+      {
+        "value": "#112231",
+        "usage": 108,
+        "where": [
+          "css-var:--semantic-inverse-background-primary",
+          "role:button",
+          "css-var:--semantic-action-fill-primary-active",
+          "context:heading",
+          "css-var:--bento-cell-background-color",
+          "css-var:--color-navy-800",
+          "context:body",
+          "css-var:--inverse-background-primary",
+          "theme-color"
+        ]
+      },
+      {
+        "value": "#218fb7",
+        "usage": 82,
+        "where": [
+          "context:body",
+          "role:button",
+          "role:link",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#f2f8f3",
+        "usage": 151,
+        "where": [
+          "css-var:--semantic-background-secondary",
+          "role:button",
+          "css-var:--semantic-inverse-action-fill-primary-active",
+          "css-var:--avatar-color-grey-97",
+          "css-var:--_compound-background-color-even",
+          "css-var:--_compound-background-color-odd",
+          "context:heading",
+          "css-var:--aura-image",
+          "context:body",
+          "css-var:--color-grey-100"
+        ]
+      },
+      {
+        "value": "#ff4f40",
+        "usage": 53,
+        "where": [
+          "css-var:--semantic-content-accent",
+          "css-var:--semantic-background-accent",
+          "css-var:--alpha-navy-10",
+          "context:body",
+          "role:logo",
+          "css-var:--color-brand",
+          "context:heading",
+          "role:button",
+          "role:link",
+          "css-var:--background-accent"
+        ]
+      },
+      {
+        "value": "#2eafc0",
+        "usage": 47,
+        "where": [
+          "role:link",
+          "context:body",
+          "role:button",
+          "css-var:--calc-chart-take-home"
+        ]
+      },
+      {
+        "value": "#016b83",
+        "usage": 34,
+        "where": [
+          "role:link",
+          "context:body",
+          "role:button"
+        ]
+      },
+      {
+        "value": "#2c3a43",
+        "usage": 32,
+        "where": [
+          "role:button",
+          "css-var:--semantic-action-fill-primary-hover",
+          "css-var:--semantic-neutral-darkest",
+          "css-var:--color-navy-700",
+          "context:body"
+        ]
+      },
+      {
+        "value": "#3b4c54",
+        "usage": 25,
+        "where": [
+          "role:link",
+          "css-var:--semantic-content-link-hover",
+          "css-var:--semantic-neutral-darker",
+          "context:body",
+          "role:button"
+        ]
+      },
+      {
+        "value": "#d9ff6f",
+        "usage": 24,
+        "where": [
+          "context:body",
+          "role:button",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#bbf6e2",
+        "usage": 18,
+        "where": [
+          "css-var:--avatar-color-turquoise-95",
+          "context:body"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "24px",
+        "usage": 58,
+        "where": [
+          "css-var:--corner-radius-large",
+          "role:link",
+          "context:heading",
+          "role:button"
+        ]
+      },
+      {
+        "value": "999px",
+        "usage": 58,
+        "where": [
+          "role:button",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "16px",
+        "usage": 57,
+        "where": [
+          "css-var:--corner-radius-medium",
+          "role:link",
+          "role:button",
+          "role:logo",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "8px",
+        "usage": 40,
+        "where": [
+          "css-var:--corner-radius-x-small",
+          "role:link",
+          "context:heading",
+          "role:button"
+        ]
+      },
+      {
+        "value": "64px",
+        "usage": 35,
+        "where": [
+          "role:button",
+          "css-var:--corner-radius-3x-large",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "32px",
+        "usage": 33,
+        "where": [
+          "css-var:--corner-radius-x-large",
+          "css-var:--swiper-slide-focus-radius",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "4px",
+        "usage": 20,
+        "where": [
+          "css-var:--corner-radius-2x-small",
+          "role:link",
+          "role:button"
+        ]
+      },
+      {
+        "value": "12px",
+        "usage": 11,
+        "where": [
+          "css-var:--corner-radius-small"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "value": "MonzoSansText",
+        "usage": 53,
+        "where": [
+          "css-var:--font-stack-body",
+          "context:body",
+          "css-var:--default-font-stack",
+          "context:heading",
+          "role:button",
+          "role:link",
+          "css-var:--font-family-content"
+        ]
+      },
+      {
+        "value": "MonzoSansDisplay",
+        "usage": 44,
+        "where": [
+          "context:heading",
+          "css-var:--font-stack-title",
+          "context:body",
+          "role:button",
+          "css-var:--font-family-display"
+        ]
+      },
+      {
+        "value": "Oldschool",
+        "usage": 20,
+        "where": [
+          "context:heading"
+        ]
+      },
+      {
+        "value": "Monzo Sans Display",
+        "usage": 1,
+        "where": [
+          "css-var:--font-family-monzo-sans-display"
+        ]
+      },
+      {
+        "value": "Maison Neue Web",
+        "usage": 1,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#ff4f40",
+    "accent": "#218fb7",
+    "radius": "16px",
+    "headline": "MonzoSansDisplay"
+  }
+}

@@ -56,6 +56,12 @@ You receive a candidate entity extracted from a document (type, name, aliases, k
 Answer same=true only when they are clearly the same person, tool, team, term, ritual, policy, product or document; different people who share a first name, or a product and the team that owns it, are not the same.
 Return JSON {"same": boolean, "confidence": number between 0 and 1, "reason": one short sentence}.`;
 
+export const BRAND_RECOMMEND_SYSTEM_PROMPT = `You recommend the brand design tokens for a company's onboarding space, choosing from candidates extracted from its website.
+For each field (primary, accent, radius, headline) pick exactly one value from that field's candidates. Never invent or modify a value.
+Signals, strongest first: the company's own past choice (a precedent with the same host); what managers of similar companies chose, and whether they accepted or corrected the previous recommendation; remembered brand preferences; the learned ranker's scores (trained on those decisions); the candidate evidence and features.
+primary is the main brand action colour used on buttons and links, not a text or background neutral. accent is a secondary highlight colour clearly distinct from the primary. radius is the corner radius for cards and buttons. headline is the font family for headings.
+Return JSON: {"primary":{"recommended":"<value>","reason":"<why>"},"accent":{...},"radius":{...},"headline":{...}}. Each reason is at most 12 plain words.`;
+
 // ---- manager scan pipeline (src/worker/stages) ------------------------------------------------
 
 /** extract_design normalisation (task `scan_brand`). It labels candidates; it never invents values. */
