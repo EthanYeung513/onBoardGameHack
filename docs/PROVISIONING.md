@@ -55,6 +55,29 @@ scaffold already deploys to Modal (`deploy/modal_app.py`).
    `deploy/modal_app.py` reads them; first deploy creates the
    `onboarding-studio` secret in the Modal dashboard with the app's env vars.
 
+## Production: the live link (what runs where)
+
+| Piece | Where | Notes |
+| --- | --- | --- |
+| Data plane | Convex cloud `rapid-mosquito-655` (`https://rapid-mosquito-655.convex.cloud`) | Functions pushed with `CONVEX_DEPLOY_KEY=dev:rapid-mosquito-655… npx convex deploy -y` from a clean `main`. Convex env: `SITE_URL=https://orthogonal-sigma.vercel.app` (OAuth return origin), `SITE_URL_ALLOWLIST`, `WORKER_SECRET`, `JWT_PRIVATE_KEY`/`JWKS`, `AUTH_GOOGLE_*`, `MUBIT_*`. |
+| Web app | Vercel project `orthogonal` (`https://orthogonal-sigma.vercel.app`) | Build = `npm run build` (world bundle + Next). Needs only the env below. |
+| Worker | Modal app `orthogonal-worker` (`deploy/modal_worker.py`, `npm run deploy:worker`) | Polls the cloud deployment and runs scan, brain, course and deploy jobs. 6-hour shifts started by a cron. Modal secret `orthogonal-worker`: `CONVEX_URL`, `WORKER_SECRET` (same as the Convex env), `MUBIT_API_KEY`, `MUBIT_BASE_URL`, `MUBIT_EMBED_MODEL`, `APP_URL`, optional `VERCEL_TOKEN`. |
+
+**Vercel environment variables (Production):**
+
+```
+NEXT_PUBLIC_CONVEX_URL=https://rapid-mosquito-655.convex.cloud
+NEXT_PUBLIC_CONVEX_SITE_URL=https://rapid-mosquito-655.convex.site
+APP_URL=https://orthogonal-sigma.vercel.app
+```
+
+No secrets are needed on Vercel: LLM calls, embeddings and connectors run in Convex and the worker.
+`NEXT_PUBLIC_*` values are inlined at build time, so redeploy after setting them. Google sign-in keeps
+working because its callback is the Convex site (`https://rapid-mosquito-655.convex.site/api/auth/callback/google`).
+
+**When `convex/` changes:** push functions again (`npx convex deploy -y` with the deploy key, from `main`),
+then `npm run deploy:worker` so the worker runs the same code.
+
 ## 4. Resend — invite + magic-link emails (FREE 3,000/mo, 100/day)
 
 1. [resend.com](https://resend.com) → sign up → **API Keys → Create API Key**

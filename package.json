@@ -30,6 +30,7 @@
     "crawl:sample": "node scripts/run-ts.mjs scripts/crawl-sample.ts",
     "test:e2e": "playwright test",
     "deploy:modal": "modal deploy deploy/modal_app.py",
+    "deploy:worker": "modal deploy deploy/modal_worker.py && python3 -c \"import modal; modal.Function.from_name('orthogonal-worker', 'worker').spawn()\"",
     "convex:auth-keys": "node scripts/convex-auth-keys.mjs",
     "worker": "node scripts/run-ts.mjs src/worker/main.ts"
   },
