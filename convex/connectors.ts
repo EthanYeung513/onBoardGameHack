@@ -6,7 +6,7 @@ import { audit, MANAGERS, requireRole } from "./lib/access";
 import { isDue, MAX_UPLOAD_BYTES, uploadExtension } from "./lib/connectors";
 import { fail } from "./lib/errors";
 import { workerMutation, workerQuery } from "./lib/worker";
-import { enqueue } from "./pipeline";
+import { enqueue, startScanJobs } from "./pipeline";
 import { connectorStatus, connectorType } from "./schema";
 
 // Tool connectors (PRD F9–F13, F34; BUILD-CONTRACT "Connector contract"). Status machine:
@@ -196,7 +196,7 @@ export const scheduleSyncs = internalMutation({
         if (!space || running) continue;
         const scanId = await ctx.db.insert("scans", { spaceId: c.spaceId, url: `https://${space.host}`, status: "running", progress: 0, pageCount: 0 });
         await ctx.db.patch(c._id, { status: "syncing" });
-        await enqueue(ctx, { spaceId: c.spaceId, scanId }, "crawl", {});
+        await startScanJobs(ctx, c.spaceId, scanId);
         await audit(ctx, c.spaceId, "system:scheduler", "scan.rescheduled", { scanId, connectorId: c._id });
       } else {
         // `stale` = the upstream moved on since lastSyncedAt; the worker flips it to syncing → ready.

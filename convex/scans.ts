@@ -4,7 +4,7 @@ import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { audit, MANAGERS, requireRole } from "./lib/access";
 import { fail } from "./lib/errors";
-import { enqueue } from "./pipeline";
+import { startScanJobs } from "./pipeline";
 
 /** Start a website scan for the space (space.html "Scan my company →", Settings re-scan F8). */
 export const start = mutation({
@@ -19,7 +19,7 @@ export const start = mutation({
     if (running) return running._id;
     const scanId = await ctx.db.insert("scans", { spaceId, url: `https://${space.host}`, status: "running", progress: 0, pageCount: 0 });
     await ctx.db.patch(spaceId, { status: "scanning" });
-    await enqueue(ctx, { spaceId, scanId }, "crawl", {});
+    await startScanJobs(ctx, spaceId, scanId);
     await audit(ctx, spaceId, `user:${userId}`, "scan.started", { scanId, url: `https://${space.host}` });
     return scanId;
   },

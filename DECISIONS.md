@@ -350,6 +350,17 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy
 - **Revisit?:** custom domains per company; hire progress back to the dashboard (the world stores progress per device today)
 
+### D-34: The scan is brand identity only → theme options the manager picks; everything else runs in the background
+
+- **Task:** fast brand scan (Nicole: "the website scan exists to understand brand identity only … its output is several theme variants the manager picks between … seconds, not minutes")
+- **Time:** 2026-10-25T03:30Z
+- **Context:** the scan chain crawled the site, analysed it, seeded the brain and drafted courses before the manager saw anything (minutes, ~5.5 min on a real site)
+- **Options:** A) speed up every stage of the old chain / B) split: the scan the manager waits on is `extract_design → ready`; `crawl → analyse → seed_brain → generate_courses` starts at the same time as a background chain (`jobs.sourceScanId`, never fails the scan)
+- **Chosen:** B. extract_design (dembrandt + HTML/CSS in parallel, dembrandt bounded to 35 s) also reads style cues (backdrop-filter glass, translucency, gradients, big radii) and builds 3–4 themes (`src/lib/brand/themes.ts`: Signature from the recommended tokens, Light, Dark, plus Frosted glass or Bold); the scan screen ends in theme cards; `brand.pickTheme` applies palette/radius/style (tokensVersion+1, courses stale) and records primary/accent/radius as brand decisions so the Mubit loop learns from theme picks. Worker lane 1 only takes scan jobs. Logos carry a light/dark tone so they get a contrasting chip only where they would vanish
+- **Why:** apple.com / notion.com / linear.app reach the theme cards in 18–28 s live; the brain and courses keep filling in afterwards
+- **Reversibility:** easy (chains in `convex/lib/stages.ts`)
+- **Revisit?:** a re-scan whose homepage is unchanged still re-extracts the brand (the crawl's change check now runs in parallel)
+
 ## Blockers
 
 None yet.

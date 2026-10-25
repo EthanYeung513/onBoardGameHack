@@ -48,17 +48,14 @@ export type ScanView = {
 /** A queued job that no worker has started after this long gets an honest "waiting" line. */
 export const WAITING_MS = 20_000;
 
-type Line = { key: string; stages: StageName[]; text: (host: string, pages: number | null) => string };
+type Line = { key: string; stages: StageName[]; text: (host: string) => string };
 
-// Mockup copy, in mockup order. "Reading public pages" is lit by `analyse`, the stage that reads
-// the crawled pages, so the lines light top to bottom exactly as the mockup animates them.
+// The scan is the brand pass only (D-34): reading the site, the brain and course drafts run in
+// the background afterwards, so these lines cover just what the manager waits for.
 const LINES: Line[] = [
-  { key: "resolve", stages: ["crawl"], text: (host) => `Resolving ${host}` },
-  { key: "sitemap", stages: ["crawl"], text: (_h, pages) => `Found ${pages ?? "…"} pages via sitemap.xml` },
-  { key: "brand", stages: ["extract_design"], text: () => "Extracting brand identity (logo, colors, typography)" },
-  { key: "read", stages: ["analyse"], text: () => "Reading public pages — about, careers, blog" },
-  { key: "brain", stages: ["seed_brain"], text: () => "Building company knowledge graph" },
-  { key: "calibrate", stages: ["generate_courses", "ready"], text: () => "Calibrating dashboard to your brand" },
+  { key: "resolve", stages: ["extract_design"], text: (host) => `Resolving ${host}` },
+  { key: "brand", stages: ["extract_design"], text: () => "Extracting brand identity (logo, colors, typography, style)" },
+  { key: "calibrate", stages: ["ready"], text: () => "Building your theme options" },
 ];
 
 /** The newest job per stage (a resumed or re-enqueued stage keeps only its latest attempt). */
@@ -68,15 +65,6 @@ function latestJobs(jobs: ScanJob[]): Partial<Record<StageName, ScanJob>> {
   return out;
 }
 
-function pageCount(input: ScanInput): number | null {
-  if (input.scan.pageCount > 0) return input.scan.pageCount;
-  for (let i = input.events.length - 1; i >= 0; i--) {
-    const e = input.events[i];
-    if (e.stage === "crawl" && e.pages !== null && e.pages > 0) return e.pages;
-  }
-  return null;
-}
-
 function lastEvent(events: ScanEvent[], stage: StageName, levels: ScanEvent["level"][]): ScanEvent | undefined {
   for (let i = events.length - 1; i >= 0; i--) if (events[i].stage === stage && levels.includes(events[i].level)) return events[i];
   return undefined;
@@ -84,14 +72,13 @@ function lastEvent(events: ScanEvent[], stage: StageName, levels: ScanEvent["lev
 
 export function scanView(input: ScanInput, host: string, now: number): ScanView {
   const byStage = latestJobs(input.jobs);
-  const pages = pageCount(input);
   const ok = (s: StageName) => byStage[s]?.status === "succeeded";
-  const crawl = byStage.crawl;
+  const first = byStage.extract_design;
   const succeeded = input.scan.status === "succeeded";
 
   const done = LINES.map((line) => {
     if (succeeded) return true;
-    if (line.key === "resolve") return !!crawl && (ok("crawl") || (crawl.startedAt !== null && (pages !== null || crawl.progress > 0)));
+    if (line.key === "resolve") return !!first && (ok("extract_design") || first.startedAt !== null);
     return line.stages.every(ok);
   });
   const activeIndex = succeeded ? -1 : done.findIndex((d) => !d);
@@ -135,7 +122,7 @@ export function scanView(input: ScanInput, host: string, now: number): ScanView 
 
   const steps: ScanStep[] = LINES.map((line, i) => ({
     key: line.key,
-    text: line.text(host, pages),
+    text: line.text(host),
     state: done[i] && (activeIndex < 0 || i < activeIndex) ? "done" : i === activeIndex ? "active" : "",
     note: i === activeIndex || (activeIndex < 0 && i === LINES.length - 1 && note) ? note : null,
   }));

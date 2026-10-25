@@ -117,6 +117,16 @@ export async function htmlCssEvidence(url: string): Promise<Record<string, unkno
   }
   const radii = new Map<string, number>();
   for (const m of css.matchAll(/border-radius\s*:\s*([^;}{]+)/gi)) radii.set(m[1].trim(), (radii.get(m[1].trim()) ?? 0) + 1);
+  // Visual style cues (glassmorphism, gradients, roundness, depth) → theme variants (D-34).
+  const count = (re: RegExp) => (css.match(re) ?? []).length;
+  const bigRadii = [...css.matchAll(/border-radius\s*:\s*(\d+)px/gi)].map((m) => Number(m[1])).filter((n) => n >= 12 && n < 200);
+  const styleCues = {
+    glass: count(/backdrop-filter\s*:\s*[^;}]*blur/gi),
+    translucent: count(/background(?:-color)?\s*:\s*rgba\([^)]*,\s*0?\.\d+\s*\)/gi),
+    gradients: count(/(?:linear|radial|conic)-gradient\(/gi),
+    shadows: count(/box-shadow\s*:\s*(?!none)[^;}]+/gi),
+    roundRadius: bigRadii.length ? Math.round(bigRadii.reduce((a, b) => a + b, 0) / bigRadii.length) : null,
+  };
   const top = (m: Map<string, number>, n: number) =>
     [...m.entries()]
       .sort((a, b) => b[1] - a[1])
@@ -133,6 +143,7 @@ export async function htmlCssEvidence(url: string): Promise<Record<string, unkno
     fonts: top(fonts, 8),
     googleFonts: parsed.stylesheets.filter((s) => s.includes("fonts.googleapis.com")),
     radii: top(radii, 8),
+    styleCues,
     // Ranked: home link in the header first; logo walls and photos penalised (src/lib/design/logo.ts).
     logoCandidates: findLogoCandidates(page.text, page.finalUrl, { siteName: parsed.meta["og:site_name"] ?? parsed.meta["application-name"] ?? null }),
     icons: parsed.icons.slice(0, 4),

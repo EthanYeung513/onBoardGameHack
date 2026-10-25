@@ -58,7 +58,9 @@ async function lane(n: number) {
   const id = `${workerId}#${n}`;
   while (!stopping) {
     try {
-      const claimed = await convex.mutation(api.pipeline.claim, { workerId: id, stages });
+      // Lane 1 only takes scan jobs (when there is more than one lane): a manager waiting on a
+      // scan never queues behind long background slices filling every lane.
+      const claimed = await convex.mutation(api.pipeline.claim, { workerId: id, stages, scanOnly: LANES > 1 && n === 1 });
       if (claimed) {
         const outcome = await runSlice(claimed, { convex, llm, embed, workerId: id, registry });
         console.log(`worker: ${claimed.job.stage} (${claimed.job._id}) → ${outcome}`);

@@ -2,12 +2,12 @@
 
 import { useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { brandVars } from "@/components/manager/brand";
 import { scanView } from "@/components/manager/scanSteps";
+import { ThemePick } from "./ThemePick";
 import "./scan.css";
 
 const SKELETON = ["60%", "90%", "75%", "40%", "80%", "55%"];
@@ -17,7 +17,6 @@ export function ScanStep({ spaceId, scanId }: { spaceId: Id<"spaces">; scanId: I
   const status = useQuery(api.pipeline.scanStatus, { scanId });
   const space = useQuery(api.spaces.get, { spaceId });
   const resume = useMutation(api.pipeline.resume);
-  const router = useRouter();
   const [now, setNow] = useState(() => Date.now());
   const [opacity, setOpacity] = useState(1);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -44,12 +43,13 @@ export function ScanStep({ spaceId, scanId }: { spaceId: Id<"spaces">; scanId: I
     return () => clearTimeout(t);
   }, [live]);
 
-  // Mockup: bar fills, then `location.href = 'editor.html'` 900 ms later.
+  // The bar fills, then the theme options built from the brand take over (D-34).
+  const [picking, setPicking] = useState(false);
   useEffect(() => {
     if (phase !== "succeeded") return;
-    const t = setTimeout(() => router.push(`/editor?space=${spaceId}&panel=design`), 900);
+    const t = setTimeout(() => setPicking(true), 700);
     return () => clearTimeout(t);
-  }, [phase, router, spaceId]);
+  }, [phase]);
 
   async function onResume() {
     if (!view?.resumeJobId) return;
@@ -66,6 +66,8 @@ export function ScanStep({ spaceId, scanId }: { spaceId: Id<"spaces">; scanId: I
 
   const offline = space?.mode === "offline" || space?.brand?.quality === "offline";
   const stuck = phase === "failed" || phase === "stalled";
+
+  if (picking) return <ThemePick spaceId={spaceId} company={space?.name ?? host} />;
 
   return (
     <div className="scan" id="step-scan" style={brandVars(space?.brand)}>

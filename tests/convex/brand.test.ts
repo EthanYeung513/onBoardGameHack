@@ -121,4 +121,27 @@ describe("brand.options / brand.decide (F37)", () => {
     expect(d?.loop).toMatchObject({ feedback: { sink: "mubit", delivered: true }, memory: { status: "skipped" } });
     expect(audits.map((a) => a.kind)).toEqual(expect.arrayContaining(["brand.feedback", "brand.memory"]));
   });
+
+  it("builds theme options from the profile and a theme pick applies its tokens as brand decisions (D-34)", async () => {
+    const { t, owner, spaceId, profileId, courseId } = await setup();
+    expect(await owner.query(api.brand.themes, { spaceId })).toMatchObject({ themes: [], themeId: null });
+    const style = { glass: 1, translucent: 2, gradients: 1, shadows: 3, roundRadius: 22 };
+    const saved = await t.mutation(api.brand.saveThemes, { secret, spaceId, style });
+    expect(saved.styles).toContain("glass");
+    const o = await owner.query(api.brand.themes, { spaceId });
+    expect(o?.themeId).toBe("signature");
+    const glass = o!.themes.find((th) => th.style === "glass" && th.id === "glass")!;
+    expect(glass.radius).toBe("22px");
+
+    const r = await owner.mutation(api.brand.pickTheme, { spaceId, themeId: "glass" });
+    expect(r).toMatchObject({ tokensVersion: 2, coursesStale: 1 });
+    const [profile, course, decisions] = await t.run(async (ctx) => [await ctx.db.get(profileId), await ctx.db.get(courseId), await ctx.db.query("brand_decisions").collect()] as const);
+    expect(profile).toMatchObject({ themeId: "glass", themeStyle: "glass", radius: "22px", tokensVersion: 2 });
+    expect(profile?.palette.find((p) => p.role === "surface")?.hex).toBe(glass.palette.surface);
+    expect(course?.needsRefresh).toBe(true);
+    // Theme picks feed the same learning loop as Design-tab picks.
+    expect(decisions.map((d) => d.field).sort()).toEqual(["accent", "primary", "radius"]);
+    expect(decisions.every((d) => d.tokensVersion === 2)).toBe(true);
+    await expect(owner.mutation(api.brand.pickTheme, { spaceId, themeId: "nope" })).rejects.toThrow(/not one of/);
+  });
 });

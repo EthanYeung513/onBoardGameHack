@@ -3,7 +3,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 import { audit, MANAGERS, requireRole } from "./lib/access";
 import { fail } from "./lib/errors";
-import { backoffMs, DEFAULT_MAX_ATTEMPTS, nextInScan, STAGE_LABELS, STALL_MS, type StageName } from "./lib/stages";
+import { backoffMs, DEFAULT_MAX_ATTEMPTS, nextInEnrich, nextInScan, SCAN_CHAIN, STAGE_LABELS, STALL_MS, type StageName } from "./lib/stages";
 import { workerMutation, workerQuery } from "./lib/worker";
 import { level, stageName } from "./schema";
 
@@ -12,7 +12,7 @@ import { level, stageName } from "./schema";
 // reports the outcome. Retries back off ≤3 times; the watchdog cron marks silent jobs stalled;
 // a manager resumes them and the cursor makes the stage skip work it already finished.
 
-type JobTarget = { spaceId: Id<"spaces">; scanId?: Id<"scans">; connectorId?: Id<"connectors"> };
+type JobTarget = { spaceId: Id<"spaces">; scanId?: Id<"scans">; connectorId?: Id<"connectors">; sourceScanId?: Id<"scans"> };
 
 /** Queue a stage unless the same stage is already queued/running for the same target. */
 export async function enqueue(ctx: MutationCtx, target: JobTarget, stage: StageName, cursor: unknown = {}) {
@@ -24,6 +24,7 @@ export async function enqueue(ctx: MutationCtx, target: JobTarget, stage: StageN
         q.eq(q.field("stage"), stage),
         q.eq(q.field("scanId"), target.scanId),
         q.eq(q.field("connectorId"), target.connectorId),
+        q.eq(q.field("sourceScanId"), target.sourceScanId),
         q.or(q.eq(q.field("status"), "queued"), q.eq(q.field("status"), "running")),
       ),
     )
@@ -59,20 +60,22 @@ export const pending = workerQuery({
 });
 
 export const claim = workerMutation({
-  args: { workerId: v.string(), stages: v.array(stageName) },
-  handler: async (ctx, { workerId, stages }) => {
+  /** `scanOnly`: a lane reserved for scans, so a fresh scan never waits behind background work. */
+  args: { workerId: v.string(), stages: v.array(stageName), scanOnly: v.optional(v.boolean()) },
+  handler: async (ctx, { workerId, stages, scanOnly }) => {
     const now = Date.now();
-    const ready = await ctx.db
-      .query("jobs")
-      .withIndex("by_status_run", (q) => q.eq("status", "queued").lte("runAfter", now))
-      .take(50);
-    // A manager watching a scan beats background enrichment: scan jobs are claimed first.
-    const job = ready.find((j) => j.scanId && stages.includes(j.stage)) ?? ready.find((j) => stages.includes(j.stage));
+    const queued = () => ctx.db.query("jobs").withIndex("by_status_run", (q) => q.eq("status", "queued").lte("runAfter", now));
+    const ready = await queued().take(50);
+    // A manager watching a scan beats background enrichment: scan jobs are claimed first. The
+    // newest jobs are checked too, since a long background backlog can push a fresh scan past 50.
+    const scanJob = (jobs: Doc<"jobs">[]) => jobs.find((j) => j.scanId && stages.includes(j.stage));
+    const job = scanJob(ready) ?? scanJob(await queued().order("desc").take(20)) ?? (scanOnly ? undefined : ready.find((j) => stages.includes(j.stage)));
     if (!job) return null;
     await ctx.db.patch(job._id, { status: "running", workerId, heartbeatAt: now, startedAt: job.startedAt ?? now, error: undefined });
     if (!job.startedAt) await logEvent(ctx, job, "info", `${STAGE_LABELS[job.stage]} started`);
     const space = await ctx.db.get(job.spaceId);
-    const scan = job.scanId ? await ctx.db.get(job.scanId) : null;
+    const scanId = job.scanId ?? job.sourceScanId;
+    const scan = scanId ? await ctx.db.get(scanId) : null;
     const connector = job.connectorId ? await ctx.db.get(job.connectorId) : null;
     return { job: { ...job, status: "running" as const, workerId }, space, scan, connector };
   },
@@ -143,10 +146,10 @@ export const finish = workerMutation({
 
     await ctx.db.patch(jobId, { status: "succeeded", progress: 1, finishedAt: now, heartbeatAt: now, error: undefined });
     await logEvent(ctx, job, "info", `${label} finished${outcome.summary ? `: ${outcome.summary}` : ""}`);
-    const target = { spaceId: job.spaceId, scanId: job.scanId, connectorId: job.connectorId };
+    const target = { spaceId: job.spaceId, scanId: job.scanId, connectorId: job.connectorId, sourceScanId: job.sourceScanId };
     // `next` adds jobs alongside the scan chain (BUILD-CONTRACT: "next: extra jobs"). The drift
     // cascade is per space (one queue, whatever source triggered it), so it is never tied to a scan.
-    const chained = job.scanId ? nextInScan(job.stage) : null;
+    const chained = job.scanId ? nextInScan(job.stage) : job.sourceScanId ? nextInEnrich(job.stage) : null;
     const next = [...(chained ? [{ stage: chained, cursor: {} }] : []), ...(outcome.next ?? []).filter((n) => n.stage !== chained)];
     for (const n of next) await enqueue(ctx, n.stage === "cascade" || n.detached ? { spaceId: job.spaceId } : target, n.stage, n.cursor ?? {});
     if (job.stage === "ready") await setScanOutcome(ctx, job, "succeeded");
@@ -159,9 +162,14 @@ export const finish = workerMutation({
 });
 
 function progressOf(stage: StageName): number {
-  const order: StageName[] = ["crawl", "extract_design", "analyse", "seed_brain", "generate_courses", "ready"];
-  const i = order.indexOf(stage);
-  return i < 0 ? 0 : (i + 1) / order.length;
+  const i = SCAN_CHAIN.indexOf(stage);
+  return i < 0 ? 0 : (i + 1) / SCAN_CHAIN.length;
+}
+
+/** Start a website scan: the brand pass the manager waits on + the background enrichment chain. */
+export async function startScanJobs(ctx: MutationCtx, spaceId: Id<"spaces">, scanId: Id<"scans">) {
+  await enqueue(ctx, { spaceId, scanId }, SCAN_CHAIN[0]);
+  await enqueue(ctx, { spaceId, sourceScanId: scanId }, "crawl");
 }
 
 // ---- watchdog + manager controls ----------------------------------------------------------

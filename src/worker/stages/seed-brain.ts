@@ -37,7 +37,7 @@ export const seedBrainStage: StageDefinition = {
   async run(ctx) {
     const c: Required<Cursor> = { chunks: 0, created: 0, entities: 0, total: 0, mode: "live", ...(ctx.job.cursor as Cursor) };
     const spaceId = ctx.space._id;
-    const firstPass = Boolean(ctx.job.scanId);
+    const firstPass = Boolean(ctx.job.scanId ?? ctx.job.sourceScanId);
     const rejected = await ctx.convex.query(api.brainWorker.rejectedExamples, { spaceId });
     if (!ctx.llm.live && c.chunks === 0) {
       await ctx.event("warn", "Offline stand-in: rule-based extraction (no MUBIT_API_KEY) — every fact lands as a draft for review");
