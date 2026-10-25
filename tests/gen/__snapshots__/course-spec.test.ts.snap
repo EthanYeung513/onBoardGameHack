@@ -9,6 +9,7 @@ Rules:
 - Teach only the given facts; never add policy, people, tools or history the facts do not state. A rewritten lesson, quiz or scenario step lists the ids of the facts it teaches in teaches_fact_ids, copied exactly from the fact list.
 - A listed step lost facts that are no longer approved. If the remaining approved facts still support its topic, rewrite it around them; if not, put its id in "remove". Never repurpose a step to teach an unrelated topic.
 - "no_longer_true" lists statements whose source changed: never keep their content, and never keep old wording by citing a different fact. Every line of a rewritten step must be supported by the facts it cites.
+- "now_true_instead" lists what the company says now in place of those statements. When a step taught one of them, teach its replacement (citing that fact's id) instead of dropping the topic.
 - quiz and scenario steps: 2 to 5 options, exactly one with "correct": true, each with a one-line "why". Lessons: at most four short lines, one fact per line.
 - Write in the company's tone of voice, second person, plain words.
 Return only the JSON object: {"steps":[{"id","kind","title","body","options":[{"label","correct","why"}],"teaches_fact_ids":[]}],"remove":[]}",

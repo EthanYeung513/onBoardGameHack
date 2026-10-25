@@ -43,6 +43,7 @@ function data(over: Partial<NonNullable<EditorData["course"]>> = {}): EditorData
         ],
       },
       staleSteps: {},
+      newStepIds: [],
       ...over,
     },
     generating: null,
@@ -104,6 +105,12 @@ describe("Editor", () => {
     expect(marker).toHaveTextContent("Slack: #eng-announcements");
     await userEvent.click(within(marker).getByRole("button", { name: "Refresh step" }));
     expect(mut("courses:regenerateSteps")).toHaveBeenCalledWith({ courseId, stepIds: ["deploys"] });
+  });
+
+  it("marks steps rewritten for a detected company change as New (D-36)", () => {
+    render(<Editor spaceId={spaceId} data={data({ newStepIds: ["deploys"] })} assets={undefined} options={null} />);
+    expect(screen.getAllByText("New")).toHaveLength(1);
+    expect(screen.getByText("New").closest(".tt")).toHaveTextContent("When do we deploy?");
   });
 
   it("Design tab leads with the recommended option and records picks via brand.decide", async () => {

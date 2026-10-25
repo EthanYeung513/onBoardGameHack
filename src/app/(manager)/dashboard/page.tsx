@@ -118,7 +118,7 @@ function DashboardView({ space, managerName }: { space: Space; managerName: stri
         </aside>
 
         <main className="main">
-          <NextStepBanner spaceId={space._id} />
+          <NextStepBanner spaceId={space._id} onToast={toast} />
           <section id="tab-overview" hidden={tab !== "overview"}>
             <OverviewTab {...props} managerName={managerName} brandPill={B.style ? `${B.style} · ${B.host}` : B.host} />
           </section>

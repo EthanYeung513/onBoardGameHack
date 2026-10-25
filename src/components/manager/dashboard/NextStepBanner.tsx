@@ -4,13 +4,27 @@ import { useQuery } from "convex/react";
 import Link from "next/link";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import { UpdateCoursesButton, usePendingUpdates } from "./UpdateCourses";
 
 // The scan keeps running when the manager leaves its screen; this makes the way back explicit:
 // a running scan → its live progress; a finished scan whose brand nobody reviewed → the theme
-// cards built from the brand (D-34).
+// cards built from the brand (D-34); a published world whose company changed → "Update courses" (D-36).
 
-export function NextStepBanner({ spaceId }: { spaceId: Id<"spaces"> }) {
+export function NextStepBanner({ spaceId, onToast }: { spaceId: Id<"spaces">; onToast?: (msg: string) => void }) {
   const next = useQuery(api.scans.nextStep, { spaceId });
+  const pending = usePendingUpdates(spaceId);
+  if (!next && pending && pending.changed.length > 0) {
+    const n = pending.changed.length;
+    return (
+      <div className="next-step" role="status" id="company-changed">
+        <span className="dot" aria-hidden />
+        <span>
+          Your company changed. {n} course{n === 1 ? " has" : "s have"} new content.
+        </span>
+        <UpdateCoursesButton spaceId={spaceId} onDone={onToast} />
+      </div>
+    );
+  }
   if (!next) return null;
   const scanning = next.kind === "scanning";
   return (

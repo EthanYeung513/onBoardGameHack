@@ -279,3 +279,15 @@ describe("cheap re-scans (only what changed goes back through the models)", () =
   });
 });
 
+
+describe("drift refresh picks the new truth (D-36)", () => {
+  it("ranks the approved facts that replace a stale one first", async () => {
+    const { likelyReplacements } = await import("@/worker/stages/generate-courses");
+    const approved = [
+      { id: "a", category: "Product", text: "Linear offers a Business plan for $18 per user/month when billed yearly.", confidence: 1 },
+      { id: "b", category: "Product", text: "You can snooze notifications from the Inbox.", confidence: 1 },
+    ];
+    const r = likelyReplacements([{ text: "The Business plan costs $16 per user per month, billed yearly." }], approved);
+    expect(r.map((f) => f.id)).toEqual(["a"]);
+  });
+});

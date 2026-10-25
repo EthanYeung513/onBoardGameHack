@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import type { CoursePatch } from "../src/lib/flow/course-patch";
 import { packFor } from "../src/lib/flow/course-packs";
 import type { CourseSpec } from "../src/lib/flow/course-spec";
-import { citedIds, patchForSpace, republishIfLive, syncCourseFacts, validateForSpace } from "./lib/courses";
+import { citedIds, DRIFT_ACTOR, patchForSpace, republishIfLive, syncCourseFacts, validateForSpace } from "./lib/courses";
 import { fail } from "./lib/errors";
 import { workerMutation, workerQuery } from "./lib/worker";
 
@@ -82,8 +82,12 @@ export const upsert = workerMutation({
     if (!regenerate) return { courseId: existing._id, version: existing.version, status: "kept" as const };
 
     const version = existing.version + 1;
-    const live = await republishIfLive(ctx, existing, spec, version, ACTOR);
-    await ctx.db.patch(existing._id, { ...fields, version, ...(existing.status === "stale" ? { status: "draft" as const } : {}), ...live });
+    // D-36: a rebuild caused by a detected company change is a draft for the manager: every step is
+    // "New" and nothing reaches hires until "Update courses".
+    const detected = requestedBy === DRIFT_ACTOR;
+    const live = detected ? {} : await republishIfLive(ctx, existing, spec, version, ACTOR);
+    const newStepIds = detected ? spec.steps.map((st) => st.id) : (existing.newStepIds ?? []).filter((id) => spec.steps.some((st) => st.id === id));
+    await ctx.db.patch(existing._id, { ...fields, version, newStepIds, ...(existing.status === "stale" ? { status: "draft" as const } : {}), ...live });
     await syncCourseFacts(ctx, existing, spec);
     await ctx.db.insert("audit_events", {
       spaceId,
@@ -114,13 +118,19 @@ export const applySteps = workerMutation({
     if (!r.ok) return fail(422, `Step refresh is invalid: ${r.errors.slice(0, 5).join("; ")}`);
     const version = course.version + 1;
     const staleStepIds = (course.staleStepIds ?? []).filter((id) => !stepIds.includes(id));
-    const live = await republishIfLive(ctx, course, r.spec, version, ACTOR);
+    // D-36: steps rewritten for a detected company change get a "New" badge and wait for the
+    // manager's "Update courses"; a manager's own refresh republishes as before.
+    const detected = requestedBy === DRIFT_ACTOR;
+    const live = detected ? {} : await republishIfLive(ctx, course, r.spec, version, ACTOR);
+    const kept = new Set(r.spec.steps.map((st) => st.id));
+    const newStepIds = [...new Set([...(course.newStepIds ?? []), ...(detected ? stepIds : [])])].filter((id) => kept.has(id));
     await ctx.db.patch(courseId, {
       spec: r.spec,
       title: r.spec.title,
       version,
       mode,
       staleStepIds,
+      newStepIds,
       needsRefresh: staleStepIds.length > 0,
       ...live,
     });

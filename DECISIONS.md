@@ -361,6 +361,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (chains in `convex/lib/stages.ts`)
 - **Revisit?:** a re-scan whose homepage is unchanged still re-extracts the brand (the crawl's change check now runs in parallel)
 
+### D-36: Detected company changes are drafts; the manager pushes them with "Update courses"
+
+- **Task:** Nicole: "when Mubit detects company changes … it should tell the manager and they decide: just a button shows saying Update courses"; plus "New" badges on what changed
+- **Time:** 2026-10-25T04:50Z
+- **Context:** since D-35 the hire's world was built from the live courses, i.e. every change auto-deployed; drift only flagged courses stale (D-26 "regenerate only on confirm")
+- **Chosen:** the cascade, when it finishes, rewrites just the stale steps of affected courses (`courses.refreshAfterDrift`, actor `system:drift`), teaching the replacement facts (`now_true_instead`; a step is only removed when nothing replaces what it taught); those steps get `newStepIds` ("New") and are not republished. The hire's world serves `world_snapshots` (taken at every push). `deploy.pendingUpdates` drives a "Your company changed" banner and an "Update courses" button that runs the existing deploy into the same project/link/QR; the push clears the badges. `npm run demo:change` simulates a source change through the real ingest → cascade path
+- **Why:** the manager stays in control of what hires see; the Mubit loop still does the work
+- **Reversibility:** easy
+- **Revisit?:** a re-scan edits pages on its own schedule; a daily digest of detected changes
+
 ## Blockers
 
 None yet.

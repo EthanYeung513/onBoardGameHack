@@ -94,16 +94,45 @@ async function buildCourse(ctx: StageContext, data: Context, pack: CoursePack, t
   return `${pack.title} ${r.status}`;
 }
 
+const words = (t: string) => new Set(t.toLowerCase().match(/[a-z0-9$€£%.]+/g) ?? []);
+function overlap(a: Set<string>, b: Set<string>): number {
+  let n = 0;
+  for (const w of a) if (b.has(w)) n++;
+  return n / Math.max(1, Math.min(a.size, b.size));
+}
+
+/**
+ * D-36: the approved facts most like the ones that stopped being true, i.e. what the company says
+ * now ("$16 per user" went stale, "$18 per user" is its replacement). They lead the refresh's fact
+ * list so a change is taught as the new truth, not just dropped.
+ */
+export function likelyReplacements(stale: { text: string }[], approved: CourseFact[], limit = 12): CourseFact[] {
+  const gone = stale.map((f) => words(f.text));
+  return approved
+    .map((f) => ({ f, score: Math.max(0, ...gone.map((g) => overlap(words(f.text), g))) }))
+    .filter((x) => x.score >= 0.35)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((x) => x.f);
+}
+
 async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, course: Context["courses"][number], target: CourseTarget): Promise<string> {
   const stepIds = (target.stepIds ?? []).filter((id) => course.spec.steps.some((s) => s.id === id));
   if (stepIds.length === 0) return buildCourse(ctx, data, pack, { packType: pack.packType, requestedBy: target.requestedBy }, false);
   const allApproved = new Set(data.facts.map((f) => f.id));
   const byId = new Map(data.facts.map((f) => [f.id, f]));
   const kinds = new Map(course.spec.steps.map((s) => [s.id, s.kind]));
-  // A teaching step whose every fact is no longer approved has nothing left to stand on: it must go.
+  // What these steps taught that stopped being true, and what the company says now instead.
+  const taughtHere = new Set(course.spec.steps.filter((st) => stepIds.includes(st.id)).flatMap((st) => st.teaches_fact_ids));
+  const replacements = likelyReplacements(data.staleFacts.filter((f) => taughtHere.has(f.id)), data.facts);
+  // A teaching step whose every fact is no longer approved, and nothing now true replaces them,
+  // has nothing left to stand on: it must go. With a replacement it is rewritten instead (D-36).
+  const staleById = new Map(data.staleFacts.map((f) => [f.id, f]));
   const orphaned = course.spec.steps
     .filter((s) => stepIds.includes(s.id) && s.teaches_fact_ids.length > 0 && s.teaches_fact_ids.every((id) => !allApproved.has(id)))
+    .filter((s) => likelyReplacements(s.teaches_fact_ids.flatMap((id) => staleById.get(id) ?? []), data.facts).length === 0)
     .map((s) => s.id);
+
   const schema = z
     .preprocess((raw) => normaliseRefresh(raw, stepIds), z.object({ steps: z.array(CourseStep).max(24), remove: z.array(z.string()).max(24) }))
     .superRefine((out, zctx) => {
@@ -114,6 +143,11 @@ async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, 
       for (const s of out.steps) if (kinds.get(s.id) !== s.kind) zctx.addIssue({ code: "custom", message: `step "${s.id}" must keep kind ${kinds.get(s.id)}` });
       for (const id of orphaned) {
         if (!out.remove.includes(id)) zctx.addIssue({ code: "custom", message: `step "${id}" only taught facts that are no longer true; put it in "remove"` });
+      }
+      // D-36: a change is taught as the new truth: the rewrite cites what is now true instead.
+      const nowTrue = new Set(replacements.map((f) => f.id));
+      if (nowTrue.size && out.steps.length && !out.steps.some((st) => st.teaches_fact_ids.some((id) => nowTrue.has(id)))) {
+        zctx.addIssue({ code: "custom", message: `teach what is now true: cite at least one of these fact ids in a rewritten step: ${[...nowTrue].slice(0, 6).join(", ")}` });
       }
       // Validating the patched course also proves no stale fact is still cited by an untouched target.
       const r = applyCoursePatches(course.spec, stepRefreshPatches(course.spec, out.steps, out.remove), allApproved);
@@ -128,8 +162,9 @@ async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, 
       course: course.spec,
       rewrite_step_ids: stepIds,
       must_remove: orphaned,
-      facts: factsForPack(pack, data.facts).map((f) => ({ id: f.id, category: f.category, text: f.text })),
+      facts: [...new Map([...replacements, ...factsForPack(pack, data.facts)].map((f) => [f.id, f])).values()].map((f) => ({ id: f.id, category: f.category, text: f.text })),
       no_longer_true: data.staleFacts.map((f) => f.text),
+      now_true_instead: replacements.map((f) => f.text),
     }),
     schema,
     offline: () => offlineStepRefresh(course.spec, stepIds, byId),

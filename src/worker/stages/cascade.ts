@@ -58,6 +58,10 @@ export const cascadeStage: StageDefinition = {
         }
       }
     }
+    // D-36: rewrite the affected course steps now (marked "New"); the manager decides when the
+    // hire's world gets them ("Update courses").
+    const { queued } = await ctx.convex.mutation(api.courses.refreshAfterDrift, { spaceId });
+    if (queued) await ctx.event("info", `${queued} course${queued === 1 ? "" : "s"} taught facts that changed: refreshing those steps for your review`);
     return { done: true, summary: `${c.processed} changes applied: ${c.refreshed + c.restored} facts refreshed, ${c.stillStale} still stale for review` };
   },
 };
