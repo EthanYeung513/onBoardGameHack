@@ -14,7 +14,7 @@ import type { StageContext } from "@/worker/types";
 type Call = { fn: string; args: Record<string, unknown> };
 
 /** A StageContext whose Convex calls are recorded and answered by `answers[fnName]`. */
-function fakeCtx(opts: { cursor?: unknown; findings?: unknown; llm?: Llm; answers?: Record<string, unknown>; remaining?: () => number }) {
+function fakeCtx(opts: { cursor?: unknown; findings?: unknown; changes?: unknown; brandProfileId?: string; llm?: Llm; answers?: Record<string, unknown>; remaining?: () => number }) {
   const calls: Call[] = [];
   const events: string[] = [];
   const data: (Record<string, unknown> | undefined)[] = [];
@@ -26,8 +26,8 @@ function fakeCtx(opts: { cursor?: unknown; findings?: unknown; llm?: Llm; answer
   };
   const ctx = {
     job: { _id: "j1", cursor: opts.cursor ?? {} },
-    space: { _id: "s1", name: "Acme", host: "acme.com" },
-    scan: { _id: "scan1", url: "https://acme.com", findings: opts.findings },
+    space: { _id: "s1", name: "Acme", host: "acme.com", brandProfileId: opts.brandProfileId },
+    scan: { _id: "scan1", url: "https://acme.com", findings: opts.findings, changes: opts.changes },
     connector: null,
     convex: { query: async (fn: unknown, args: Record<string, unknown>) => answer(fn, args), mutation: async (fn: unknown, args: Record<string, unknown>) => answer(fn, args) },
     llm: opts.llm ?? createLlm(),
@@ -247,3 +247,32 @@ describe("scan system prompts", () => {
     expect({ scan_brand: BRAND_NORMALISE_SYSTEM_PROMPT, scan_analyse: SCAN_ANALYSE_SYSTEM_PROMPT }).toMatchSnapshot();
   });
 });
+
+describe("cheap re-scans (only what changed goes back through the models)", () => {
+  const same = { added: 0, changed: 0, unchanged: 12, removed: 0, home: "unchanged" };
+
+  it("analyse reuses the previous scan's findings when no page changed — no model call", async () => {
+    const llm = { live: true, json: vi.fn() } as unknown as Llm;
+    const prev = { companyName: "Acme", category: "a payments company", mode: "live" };
+    const { ctx, calls, events } = fakeCtx({ changes: same, llm, answers: { "scanWorker:previousScan": { scanId: "scan0", findings: prev } } });
+    expect(await analyseStage.run(ctx)).toMatchObject({ done: true, summary: expect.stringContaining("reused") });
+    expect(llm.json).not.toHaveBeenCalled();
+    expect(calls.find((c) => c.fn === "scanWorker:saveFindings")?.args.findings).toMatchObject({ ...prev, reusedFrom: "scan0" });
+    expect(events[0]).toMatch(/^No page changed since the last scan/);
+  });
+
+  it("extract_design keeps the current brand when the homepage is unchanged", async () => {
+    const deps = { dembrandtAvailable: vi.fn(() => true), runDembrandt: vi.fn(), htmlCssEvidence: vi.fn(), loadImage: vi.fn(), storeBytes: vi.fn() };
+    const { ctx, events } = fakeCtx({ changes: same, brandProfileId: "bp1" });
+    expect(await createExtractDesignStage(deps as never).run(ctx)).toMatchObject({ done: true, summary: expect.stringContaining("kept") });
+    expect(deps.runDembrandt).not.toHaveBeenCalled();
+    expect(events[0]).toMatch(/^Homepage unchanged/);
+  });
+
+  it("a changed page means the analysis runs again", async () => {
+    const llm = { live: false, json: vi.fn(async () => { throw new Error("model called"); }) } as unknown as Llm;
+    const { ctx } = fakeCtx({ changes: { ...same, changed: 1 }, llm, answers: { "scanWorker:listCrawlPages": [] } });
+    await expect(analyseStage.run(ctx)).rejects.toThrow(/No pages were read/); // proceeded past the reuse check
+  });
+});
+

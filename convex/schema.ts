@@ -168,6 +168,11 @@ export default defineSchema({
     error: v.optional(v.string()),
     /** Analyse output: validated findings citing crawled URLs (F6). */
     findings: v.optional(v.any()),
+    /** What this crawl changed vs the stored pages (content hashes). Re-scans with nothing new
+     * reuse the previous analysis/brand instead of calling the model again. */
+    changes: v.optional(
+      v.object({ added: v.number(), changed: v.number(), unchanged: v.number(), removed: v.number(), home: v.optional(v.string()) }),
+    ),
   }).index("by_space", ["spaceId"]),
 
   crawl_pages: defineTable({

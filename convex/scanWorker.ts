@@ -61,11 +61,16 @@ export const setPageScreenshot = workerMutation({
 
 /** Recount the scan's pages (idempotent) and close the website connector's sync. */
 export const finishCrawl = workerMutation({
-  args: { scanId: v.id("scans"), connectorId: v.id("connectors"), removed: v.number() },
-  handler: async (ctx, { scanId, connectorId, removed }) => {
+  args: {
+    scanId: v.id("scans"),
+    connectorId: v.id("connectors"),
+    removed: v.number(),
+    changes: v.optional(v.object({ added: v.number(), changed: v.number(), unchanged: v.number(), home: v.optional(v.string()) })),
+  },
+  handler: async (ctx, { scanId, connectorId, removed, changes }) => {
     const scan = await scanOr404(ctx, scanId);
     const pages = await ctx.db.query("crawl_pages").withIndex("by_scan", (q) => q.eq("scanId", scanId)).collect();
-    await ctx.db.patch(scanId, { pageCount: pages.length });
+    await ctx.db.patch(scanId, { pageCount: pages.length, ...(changes ? { changes: { ...changes, removed } } : {}) });
     await ctx.db.patch(connectorId, { status: "ready", lastSyncedAt: Date.now(), error: undefined, label: new URL(scan.url).host });
     await audit(ctx, scan.spaceId, ACTOR, "scan.crawled", { scanId, pages: pages.length, removed });
     return pages.length;
@@ -161,3 +166,14 @@ export const saveFindings = workerMutation({
     await audit(ctx, scan.spaceId, ACTOR, "scan.analysed", { scanId, mode: (findings as { mode?: string })?.mode });
   },
 });
+
+/** The space's most recent earlier scan that has findings — reused when nothing changed. */
+export const previousScan = workerQuery({
+  args: { spaceId: v.id("spaces"), scanId: v.id("scans") },
+  handler: async (ctx, { spaceId, scanId }) => {
+    const recent = await ctx.db.query("scans").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).order("desc").take(10);
+    const prev = recent.find((s) => s._id !== scanId && s.findings);
+    return prev ? { scanId: prev._id, findings: prev.findings } : null;
+  },
+});
+

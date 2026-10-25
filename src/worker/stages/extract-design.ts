@@ -98,6 +98,12 @@ export function createExtractDesignStage(deps: DesignDeps): StageDefinition {
       if (!scan) throw new Error("extract_design needs a scan");
       const existing = await ctx.convex.query(api.scanWorker.brandProfileForScan, { scanId: scan._id });
       if (existing) return { done: true, summary: "brand already extracted for this scan" };
+      // Cheap re-scan: the homepage (where the brand evidence lives) is unchanged and the space
+      // already has a brand → keep it (and the manager's Design-tab choices) without re-extracting.
+      if (scan.changes?.home === "unchanged" && ctx.space.brandProfileId) {
+        await ctx.event("info", "Homepage unchanged since the last scan — kept your current brand (no re-extraction)", { step: "brand", reused: true });
+        return { done: true, summary: "brand unchanged — kept current tokens" };
+      }
 
       await ctx.event("info", "Extracting brand identity (logo, colors, typography)", { step: "brand" });
       let dembrandt: Record<string, unknown> | null = null;
