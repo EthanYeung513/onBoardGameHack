@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { OrthogonalMark } from "@/components/brand/OrthogonalMark";
 
 /** Shared pieces of the Orthogonal UI. Static styling is Tailwind; colours that come from data are inline styles. */
 
@@ -9,7 +10,7 @@ export function Diamond({ size, color = "var(--color-marigold)", className = "" 
 export function Logo({ size = 18, trail }: { size?: number; trail?: ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-2.5 font-bold" style={{ fontSize: size }}>
-      <Diamond size={Math.round(size * 0.78)} />
+      <OrthogonalMark size={Math.round(size * 1.1)} />
       Orthogonal
       {trail && <span className="font-normal whitespace-nowrap text-white/45">{trail}</span>}
     </div>
