@@ -229,7 +229,7 @@ Actionable checklist — each row becomes an env-var group and a `check:env` ent
 
 ## Subsystem: landing page
 
-`/` serves the mockup's `index.html` + `assets/` from `main` verbatim
+`/` serves the mockup's `index.html` + `assets/` (tag `archive/main-mockup`, the original `main`) verbatim
 (`public/`), with its nav (How it works / Features / About, Get in touch, Log in),
 mobile burger and animations. The only change is "Log in" → `/login`. No extra
 CTAs and no public demo surface: the pipeline runs behind login → create space →

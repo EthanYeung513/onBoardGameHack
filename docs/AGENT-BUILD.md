@@ -17,7 +17,7 @@ Structure, copied almost 1:1:
 | `skills/` (22 folders, one `SKILL.md` each) | `skills/` | Reusable procedures, one folder per skill |
 | `docs/MCP.md` — one MCP server only | `docs/BUILD-CONTRACT.md` §seams | Agents reach data through the app's API surfaces, not ad-hoc DB access |
 | `Property Management/NNN` case corpus + `ANSWERS/` | `cases/` | A corpus of real inputs + expected outputs; an eval runner writes results per case, propadm.in's "Reality Test" style |
-| `design.md` + `propadmin-design-system/` | Mockup pages on `main` + `brand_profiles` tokens | Design rules live in a doc; visual spec is extracted, not vibes |
+| `design.md` + `propadmin-design-system/` | Mockup pages (tag `archive/main-mockup`) + `brand_profiles` tokens | Design rules live in a doc; visual spec is extracted, not vibes |
 | `DECISIONS.md` convention | `DECISIONS.md` (exists) | Every non-obvious choice logged: Task / Time / Context / Options / Chosen / Why / Reversibility / Revisit |
 | `TODO.md` + numbered PRs | Backlog table below + PR conventions | Ordered, dependency-tracked work items agents can claim |
 
