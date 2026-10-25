@@ -116,7 +116,8 @@ const mubitFeedback: Probe = {
 
 function convexUrl(env: ProbeCtx["env"]): { url: string; mode: string } | null {
   const selfHosted = pick(env, "CONVEX_SELF_HOSTED_URL");
-  const pub = pick(env, "NEXT_PUBLIC_CONVEX_URL");
+  // CONVEX_URL: the deployment the worker polls (production: the cloud deployment).
+  const pub = pick(env, "CONVEX_URL") ?? pick(env, "NEXT_PUBLIC_CONVEX_URL");
   const deployment = pick(env, "CONVEX_DEPLOYMENT");
   const url = pub ?? selfHosted ?? (deployment ? `https://${deployment.replace(/^[a-z]+:/, "").split("|")[0]}.convex.cloud` : undefined);
   if (!url) return null;
@@ -126,7 +127,7 @@ function convexUrl(env: ProbeCtx["env"]): { url: string; mode: string } | null {
 
 const convex: Probe = {
   name: "Convex",
-  env: ["NEXT_PUBLIC_CONVEX_URL", "CONVEX_SELF_HOSTED_URL", "CONVEX_DEPLOYMENT"],
+  env: ["CONVEX_URL", "NEXT_PUBLIC_CONVEX_URL", "CONVEX_SELF_HOSTED_URL", "CONVEX_DEPLOYMENT"],
   async run(ctx) {
     const c = convexUrl(ctx.env);
     if (!c) throw new Skip("no Convex URL — `npm run dev` boots the local backend and writes .env.local");
