@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Orthogonal — Course</title>
+<link rel="stylesheet" href="styles.css?v=6">
+<style>
+body{--aiw:min(400px,92vw);padding-right:0;transition:padding-right .2s}
+body.ai-open{padding-right:var(--aiw)}
+.cw{max-width:760px;margin:0 auto;padding:44px 24px 120px}
+.back{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;margin-bottom:28px}
+.back:hover{color:var(--ink)}
+.title-line{display:flex;align-items:center;gap:14px;margin:6px 0 8px}
+.title-line h1{font-size:34px;margin:0;flex:1;min-width:0}
+.nav-arrows{display:flex;align-items:center;gap:8px}
+.nav-arrows .cnt{font-size:12px;color:var(--muted);min-width:56px;text-align:center;font-variant-numeric:tabular-nums}
+.arrow-btn{width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.arrow-btn:hover{background:#f5f5f5}
+.arrow-btn:disabled{opacity:.35;cursor:default}
+.panel-btn{width:34px;height:34px;border:1px solid var(--line);border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-left:6px}
+.panel-btn:hover{background:#f5f5f5}
+.panel-btn.on{background:var(--ink);color:#fff}
+.cw .kind{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.cw .sub{color:var(--muted);font-size:14px;margin-bottom:30px}
+.cw h2{font-size:15px;margin:28px 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.outcomes li,.plan li{margin-bottom:10px;font-size:14px;line-height:1.5}
+.outcomes,.plan{padding-left:20px}
+.plan .n{display:inline-block;min-width:26px;color:var(--muted)}
+.meta-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.meta-row .pill{text-transform:none;letter-spacing:0}
+.lesson-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:34px 36px;margin-top:26px}
+.lesson-card .lno{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.lesson-card h3{font-size:24px;margin:0 0 16px}
+.lesson-card ul{padding-left:18px}
+.lesson-card li{margin-bottom:10px;font-size:14px;line-height:1.6}
+.lesson-card .check{background:#f6f7f8;border-radius:8px;padding:14px 16px;font-size:13px;margin-top:18px}
+.lesson-card .check b{display:block;margin-bottom:4px}
+/* right assistant panel */
+#ai-side{position:fixed;top:0;right:0;width:var(--aiw);height:100vh;background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s;z-index:50}
+body.ai-open #ai-side{transform:none}
+#ai-side .hd{padding:14px 16px;display:flex;align-items:center;gap:10px}
+#ai-side .hd .t{font-weight:700;font-size:14px;flex:1}
+#ai-side .hd button{border:none;background:none;cursor:pointer;color:var(--muted);padding:4px}
+.agent-wrap{position:relative}
+.prov-menu{position:absolute;bottom:38px;left:0;min-width:230px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14);padding:6px;z-index:20}
+.prov-menu .cap{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:6px 10px 2px}
+.prov-item{position:relative;display:flex;align-items:center;gap:10px;padding:9px 10px;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer}
+.prov-item:hover{background:#f5f5f5}
+.prov-item.off{color:var(--muted);opacity:.6}
+.prov-item .arrow{margin-left:auto;color:var(--muted)}
+.pmodels{position:absolute;top:-6px;right:calc(100% + 8px);width:230px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14);padding:6px;display:none;z-index:21}
+.prov-item:hover .pmodels{display:block}
+.pmodels .ph{padding:8px 10px;font-size:13px;font-weight:700}
+.pmodels .psub{padding:0 10px 8px;font-size:11px;color:var(--muted)}
+.pmodels button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:9px 10px;border:none;background:none;cursor:pointer;font-size:13px;border-radius:8px}
+.pmodels button:hover{background:#f5f5f5}
+.pmodels button .ck{margin-left:auto;opacity:0}
+.pmodels button.sel .ck{opacity:1}
+.pmodels .connect{padding:10px;font-size:12px;color:var(--muted)}
+#ai-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:88%;font-size:13px;line-height:1.55;padding:10px 12px;border-radius:10px}
+.msg.agent{background:#f2f3f5;align-self:flex-start;border:1px solid var(--line)}
+.msg.you{background:var(--ink);color:#fff;align-self:flex-end}
+#ai-in{padding:14px 16px 14px}
+#ai-in .box{border:1px solid var(--line);border-radius:18px;padding:14px 14px 10px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+#ai-in textarea{width:100%;border:none;outline:none;font-size:13px;background:none;resize:none;min-height:96px;line-height:1.5;font-family:inherit;color:var(--ink)}
+#ai-in .row{display:flex;align-items:center;gap:10px}
+#ai-in .icon-btn{width:30px;height:30px;border:none;background:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;border-radius:8px}
+#ai-in .icon-btn:hover{background:#f0f0f1;color:var(--ink)}
+#ai-in .agent-mini{display:flex;align-items:center;gap:6px;border:none;background:none;padding:4px 6px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+#ai-in .agent-mini:hover{color:var(--brand)}
+#ai-in .send{margin-left:auto;width:34px;height:34px;border-radius:50%;border:none;background:var(--brand);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+#ai-in .send:hover{opacity:.9}
+@media(max-width:900px){body.ai-open{padding-right:var(--aiw)}}
+</style>
+</head>
+<body>
+<div class="cw">
+  <a class="back" href="dashboard.html?tab=courses"><i class="svgic" data-ic="back"></i> Back to courses</a>
+  <div class="kind" id="k-label"></div>
+  <div class="title-line">
+    <h1 id="c-title"></h1>
+    <div class="nav-arrows">
+      <button class="arrow-btn" id="prev" onclick="go(-1)" title="Previous"><i class="svgic" data-ic="left"></i></button>
+      <span class="cnt" id="cnt"></span>
+      <button class="arrow-btn" id="next" onclick="go(1)" title="Next"><i class="svgic" data-ic="right"></i></button>
+      <button class="panel-btn" id="ai-toggle" onclick="toggleAI()" title="AI assistant"><i class="svgic" data-ic="sidepanel"></i></button>
+    </div>
+  </div>
+  <div class="sub" id="c-sub"></div>
+  <div id="slide"></div>
+</div>
+
+<div id="ai-side">
+  <div class="hd"><span class="t">Assistant</span>
+    <button onclick="toggleAI()" title="Close"><i class="svgic" data-ic="x"></i></button>
+  </div>
+  <div id="ai-msgs"></div>
+  <div id="ai-in">
+    <div class="box">
+      <textarea id="ai-input" placeholder="Ask to change this course…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();askAI()}"></textarea>
+      <div class="row">
+        <button class="icon-btn" title="Attach"><i class="svgic" data-ic="plus"></i></button>
+        <button class="icon-btn" title="Tools"><i class="svgic" data-ic="sliders"></i></button>
+        <div class="agent-wrap">
+          <button class="agent-mini" onclick="toggleProviders(event)"><span id="agent-mini-name">GPT-5</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+          <div class="prov-menu" id="prov-menu" hidden></div>
+        </div>
+        <span style="flex:1"></span>
+        <button class="icon-btn" title="Voice"><i class="svgic" data-ic="mic"></i></button>
+        <button class="icon-btn" title="Audio"><i class="svgic" data-ic="wave"></i></button>
+        <button class="send" onclick="askAI()"><i class="svgic" data-ic="up"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="state.js?v=3"></script>
+<script>
+const S=OB.get();
+const B=S.brand||{primary:'#2b5cff',company:'Orthogonal',host:'acme.com'};
+document.documentElement.style.setProperty('--brand',B.primary);
+document.documentElement.style.setProperty('--accent',B.accent||'#2b5cff');
+const id=new URLSearchParams(location.search).get('id');
+const course=OB.COURSES.find(c=>c.id===id)||OB.COURSES[0];
+
+const PROVIDERS=[
+  {name:'OpenAI',connected:true,models:['GPT-5','GPT-5 mini','GPT-4o']},
+  {name:'Anthropic',connected:true,models:['Claude Sonnet 4.5','Claude Opus 4.1','Claude Haiku 4.5']},
+  {name:'Meta',connected:false,models:['Llama 4 Maverick','Llama 4 Scout','Llama 3.3 70B']},
+  {name:'Google',connected:false,models:['Gemini 2.5 Pro','Gemini 2.5 Flash']},
+];
+let model='GPT-5';
+let slide=0; // 0 = overview, 1..n = lesson
+const OUTCOMES=[
+  'Understand the core concepts covered in this course',
+  'Apply what you learn inside the game world',
+  'Recall key people, tools and terms on the job',
+];
+function esc(s){return String(s).replace(/</g,'&lt;');}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);}
+
+function lessonBody(l,i){
+  return `<ul>
+    <li><b>What it is:</b> the essentials of ${esc(l.toLowerCase())}, explained in plain terms.</li>
+    <li><b>Why it matters:</b> where this shows up day-to-day at ${esc(B.company)}.</li>
+    <li><b>Key details:</b> the specifics drawn from the company brain and connected tools.</li>
+    <li><b>Examples:</b> real situations and edge cases pulled from team data.</li>
+  </ul>
+  <div class="check"><b>Check</b>${esc(l)} — short quiz + one scenario in the game world.</div>`;
+}
+function render(){
+  document.getElementById('c-title').textContent=course.title;
+  document.getElementById('k-label').textContent='COURSE · '+course.game.toUpperCase()+' GAME';
+  document.getElementById('c-sub').textContent=course.desc||'';
+  const n=course.lessons.length, el=document.getElementById('slide');
+  if(slide===0){
+    el.innerHTML=`
+      <div class="meta-row">
+        <span class="pill">${esc(course.building)}</span>
+        <span class="pill">${n} lessons</span>
+        <span class="pill live">Published</span>
+      </div>
+      <h2>Learning outcomes</h2>
+      <ul class="outcomes">${OUTCOMES.map(o=>`<li>${o}</li>`).join('')}</ul>
+      <h2>Course plan</h2>
+      <ul class="plan" style="list-style:none;padding-left:0">${course.lessons.map((l,i)=>`<li><span class="n">${i+1}.</span>${esc(l)}</li>`).join('')}</ul>`;
+    document.getElementById('cnt').textContent='Overview';
+  } else {
+    const l=course.lessons[slide-1];
+    el.innerHTML=`<div class="lesson-card"><div class="lno">LESSON ${slide} OF ${n}</div><h3>${esc(l)}</h3>${lessonBody(l,slide)}</div>`;
+    document.getElementById('cnt').textContent=slide+' / '+n;
+  }
+  document.getElementById('prev').disabled=slide===0;
+  document.getElementById('next').disabled=slide===n;
+}
+function go(d){
+  const n=course.lessons.length;
+  slide=Math.min(n,Math.max(0,slide+d));
+  render();
+}
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  if(e.key==='ArrowLeft')go(-1);
+  if(e.key==='ArrowRight')go(1);
+});
+
+/* ---- assistant ---- */
+function saveEdit(){
+  // capture first: OB.get() re-applies stored courseEdits and would wipe the new change
+  const lessons=course.lessons.slice(), title=course.title;
+  const s=OB.get();
+  course.lessons=lessons.slice(); course.title=title;
+  s.courseEdits=s.courseEdits||{};
+  s.courseEdits[course.id]={lessons,title};
+  if(String(course.id).startsWith('cx')){
+    s.customCourses=(s.customCourses||[]).map(c=>c.id===course.id?course:c);
+  }
+  OB.save(s);
+}
+function aiMsg(html,who){
+  const d=document.createElement('div');
+  d.className='msg '+(who==='You'?'you':'agent');
+  d.innerHTML=html;
+  const m=document.getElementById('ai-msgs');
+  m.appendChild(d);m.scrollTop=m.scrollHeight;
+}
+function toggleAI(){
+  document.body.classList.toggle('ai-open');
+  document.getElementById('ai-toggle').classList.toggle('on',document.body.classList.contains('ai-open'));
+}
+function toggleProviders(e){
+  if(e)e.stopPropagation();
+  const m=document.getElementById('prov-menu');
+  if(m.hidden){
+    m.innerHTML='<div class="cap">Providers</div>'+PROVIDERS.map(p=>`
+      <div class="prov-item ${p.connected?'':'off'}">${p.name}<span class="arrow">›</span>
+        <div class="pmodels">
+          <div class="ph">${p.name}</div>
+          ${p.connected
+            ? '<div class="psub">Subscription connected</div>'+p.models.map(mm=>`<button class="${mm===model?'sel':''}" onclick="pickModel('${mm}')">${mm}<span class="ck">✓</span></button>`).join('')
+            : '<div class="connect">Not connected — link this provider\'s subscription in <b>Tools → Integrations</b> to unlock its models.</div>'}
+        </div>
+      </div>`).join('');
+  }
+  m.hidden=!m.hidden;
+}
+document.addEventListener('click',e=>{
+  const m=document.getElementById('prov-menu');
+  if(m&&!m.hidden&&!e.target.closest('.agent-wrap'))m.hidden=true;
+});
+function pickModel(m){
+  model=m;
+  document.getElementById('agent-mini-name').textContent=m;
+  document.getElementById('prov-menu').hidden=true;
+  aiMsg('Switched to <b>'+esc(m)+'</b>.','Agent');
+}
+function askAI(){
+  const inp=document.getElementById('ai-input');
+  const q=inp.value.trim(); if(!q)return;
+  inp.value='';
+  aiMsg(esc(q),'You');
+  const rem=/^(remove|delete|drop|take out)\b/i.test(q);
+  const ren=/^(rename|retitle|call it)\b/i.test(q);
+  if(ren){
+    const t=q.replace(/^(rename|retitle|call it)\s*(the course|it|this course)?\s*(to|as)?\s*/i,'');
+    if(t){course.title=t;saveEdit();render();aiMsg('Renamed the course to <b>'+esc(t)+'</b>.','Agent');}
+    else aiMsg('What should I rename it to?','Agent');
+  } else if(rem){
+    const kw=q.replace(/^(remove|delete|drop|take out)\s*(the\s*)?(lesson\s*)?(on\s*)?/i,'').toLowerCase();
+    const idx=course.lessons.findIndex(l=>l.toLowerCase().includes(kw));
+    if(idx>-1){const gone=course.lessons.splice(idx,1)[0];if(slide>course.lessons.length)slide=course.lessons.length;saveEdit();render();aiMsg('Removed "'+esc(gone)+'".','Agent');}
+    else aiMsg('I could not find a lesson matching that — try quoting its name.','Agent');
+  } else {
+    const lesson=q.replace(/^(add|add a|add an|include|cover|put in|insert|a lesson on|lesson on|teach)\s*/i,'').replace(/^on\s+/i,'');
+    course.lessons.push(lesson.charAt(0).toUpperCase()+lesson.slice(1));
+    saveEdit();render();
+    aiMsg('Added "'+esc(lesson)+'" to the course plan — it\'s lesson '+course.lessons.length+' now.','Agent');
+  }
+  inp.value='';
+}
+render();
+document.querySelectorAll('.svgic').forEach(e=>e.outerHTML=OB.icon(e.dataset.ic));
+</script>
+</body>
+</html>
