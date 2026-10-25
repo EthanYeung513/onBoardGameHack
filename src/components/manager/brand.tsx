@@ -42,11 +42,11 @@ export function brandClass(brand: BrandProfile | null | undefined): string {
 }
 
 /** The space's logo (a mark or wordmark copied at scan time) and the chip it needs on the sidebar. */
-export function brandLogo(brand: BrandProfile | null | undefined): { url: string; chip: "light" | "dark" | null } | null {
+export function brandLogo(brand: BrandProfile | null | undefined): { url: string; chip: "light" | "dark" | null; wordmark: boolean } | null {
   const logo = brand?.logoRefs.find((l) => l.kind !== "favicon");
   if (!logo) return null;
   // The sidebar is dark (--ink), except under the frosted-glass theme where it is near-white.
-  return { url: logo.url, chip: logoChip(brand!.themeStyle === "glass" ? "#f5f5f7" : "#101014", logo.tone) };
+  return { url: logo.url, chip: logoChip(brand!.themeStyle === "glass" ? "#f5f5f7" : "#101014", logo.tone), wordmark: logo.kind === "wordmark" };
 }
 
 /** Two-letter initials for the space badge (mockup `B.initials`). */

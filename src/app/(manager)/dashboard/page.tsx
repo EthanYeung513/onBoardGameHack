@@ -78,7 +78,8 @@ function DashboardView({ space, managerName }: { space: Space; managerName: stri
                 {B.initials}
               </span>
             )}
-            <span id="brand-name">{B.company}</span>
+            {/* A wordmark already spells the name. */}
+            {!logo?.wordmark && <span id="brand-name">{B.company}</span>}
           </div>
           <div className="spacename" id="space-sub">
             Space · {B.host}

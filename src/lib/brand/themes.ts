@@ -109,7 +109,12 @@ const NAMED: Record<string, string> = { white: "#ffffff", black: "#000000" };
  * a contrasting chip only where it would vanish (a white mark on a dark sidebar is fine bare).
  */
 export function svgLogoTone(svg: string): "light" | "dark" | null {
-  const values = [...svg.matchAll(/(?:fill|stroke)\s*[:=]\s*["']?\s*(#[0-9a-f]{3,8}|white|black|rgba?\([^)]*\))/gi)].map((m) => m[1].toLowerCase());
+  const COLOR = String.raw`#[0-9a-f]{3,8}|white|black|rgba?\([^)]*\)`;
+  // `currentColor` paints with the SVG's own `color` (inline style or attribute); black if unset.
+  const own = svg.match(new RegExp(String.raw`(?:^|[\s;"'])color\s*[:=]\s*["']?\s*(${COLOR})`, "i"))?.[1] ?? "black";
+  const values = [...svg.matchAll(new RegExp(String.raw`(?:fill|stroke)\s*[:=]\s*["']?\s*(${COLOR}|currentColor)`, "gi"))].map((m) =>
+    (m[1].toLowerCase() === "currentcolor" ? own : m[1]).toLowerCase(),
+  );
   const hexes = values
     .map((c) => {
       if (NAMED[c]) return NAMED[c];
