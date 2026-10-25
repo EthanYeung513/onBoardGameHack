@@ -7,11 +7,6 @@ import type { TabProps } from "./shared";
 
 const COIN_SCALE = 500; // the mockup's bar scale: 500 coins = full height
 
-function gapText(count: number) {
-  if (count === 0) return "no approved facts yet — courses can't teach this topic.";
-  return `only ${count} approved fact${count === 1 ? "" : "s"} — courses on this topic will be thin.`;
-}
-
 export function AnalyticsTab({ space }: TabProps) {
   const data = useQuery(api.dashboard.analytics, { spaceId: space._id });
   const courses = data?.courses ?? [];
@@ -21,7 +16,7 @@ export function AnalyticsTab({ space }: TabProps) {
       <div className="top">
         <div>
           <h1>Analytics</h1>
-          <p>Progress, scores and knowledge gaps from the game world.</p>
+          <p>Progress and scores from the game world.</p>
         </div>
       </div>
       <div className="grid2">
@@ -82,19 +77,6 @@ export function AnalyticsTab({ space }: TabProps) {
             ))}
           </tbody>
         </table>
-      </div>
-      <div className="panel">
-        <h3>Knowledge gaps — flagged by agents</h3>
-        <div id="gaps">
-          {data?.gaps.map((g) => (
-            <div className="fact" key={g.category}>
-              <span className="cat">gap</span>
-              <span>
-                <b>{g.category}</b> — {gapText(g.count)}
-              </span>
-            </div>
-          ))}
-        </div>
       </div>
     </>
   );
