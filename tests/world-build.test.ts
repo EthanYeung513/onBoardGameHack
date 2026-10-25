@@ -72,9 +72,9 @@ describe("world analytics stay their own stream", () => {
     const w = buildWorld(input([]));
     const page = "<html><head><title>W</title></head></html>";
     expect(worldHtml(page, w, "/world/", null)).not.toContain("OB_POSTHOG");
-    const ph = posthogFromEnv({ NEXT_PUBLIC_POSTHOG_KEY: "phc_test" } as NodeJS.ProcessEnv);
+    const ph = posthogFromEnv({ NEXT_PUBLIC_POSTHOG_KEY: "phc_test" } as unknown as NodeJS.ProcessEnv);
     expect(ph).toEqual({ key: "phc_test", host: "https://eu.i.posthog.com" });
     expect(worldHtml(page, w, "/world/", ph)).toContain('window.OB_POSTHOG={"key":"phc_test","host":"https://eu.i.posthog.com"}');
-    expect(posthogFromEnv({} as NodeJS.ProcessEnv)).toBeNull();
+    expect(posthogFromEnv({} as unknown as NodeJS.ProcessEnv)).toBeNull();
   });
 });
