@@ -44,6 +44,9 @@ describe("logo tone and chip", () => {
     expect(svgLogoTone('<svg><path d="M0"/></svg>')).toBe("dark"); // undeclared fill is black
     expect(svgLogoTone('<svg><path fill="rgb(29, 29, 31)" d="M0"/></svg>')).toBe("dark");
     expect(svgLogoTone("<svg></svg>")).toBeNull();
+    // Linear's inline logo: currentColor painted with the SVG's own colour.
+    expect(svgLogoTone('<svg fill="currentColor" color="currentColor" style="color: rgb(247, 248, 248);"><path d="M0"/></svg>')).toBe("light");
+    expect(svgLogoTone('<svg fill="currentColor"><path d="M0"/></svg>')).toBe("dark");
     expect(logoChip("#101014", "dark")).toBe("light");
     expect(logoChip("#101014", "light")).toBeNull();
     expect(logoChip("#ffffff", "light")).toBe("dark");

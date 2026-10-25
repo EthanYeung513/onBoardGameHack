@@ -4,7 +4,7 @@
 .ob #ai-pop { position: fixed; right: 26px; bottom: 94px; width: min(380px, calc(100vw - 40px)); background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.22); z-index: 40; animation: pop .18s ease; }
 @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .ob #ai-pop ul { list-style: none; max-height: 280px; overflow-y: auto; }
-@media (max-width: 900px) { .ob .side .logo #brand-name { display: none; } }
+@media (max-width: 900px) { .ob .side .logo #brand-name { display: none; } .ob .side .logo .logo-img { max-width: 38px; object-position: left center; } }
 
 /* The app's Tailwind preflight resets what the mockup relies on browser defaults for:
    svg is display:block (mockup icons sit inline in text) and headings inherit their weight. */
