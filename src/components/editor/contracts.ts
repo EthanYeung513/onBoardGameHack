@@ -1,14 +1,7 @@
-import { makeFunctionReference } from "convex/server";
 import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
 
-// INTEGRATION POINT (D-28). The editor's writes belong to two parallel agents' Convex modules:
-//   - convex/courses.ts (course generation, D-26): applyPatch, regenerateSteps — wired to `api.courses`
-//   - convex/brand.ts   (brand learning,   D-27): options, decide — typed references until it merges
-// These typed references are the agreed contracts (docs/BUILD-CONTRACT.md "Course contract",
-// brand addendum). Once both modules are on the base branch, replace each reference with
-// `api.courses.*` / `api.brand.*` from `@convex/_generated/api` — call sites don't change.
-// Until then calls fail honestly (a toast, or the Design tab without recommendations), never faked.
+// The editor's writes go through the owners' Convex modules (D-28): `api.courses` (D-26) and
+// `api.brand` (D-27).
 
 export type CoursePatch = { op: "set" | "add" | "remove"; path: string; value?: unknown };
 
