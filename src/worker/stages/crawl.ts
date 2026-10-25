@@ -18,6 +18,8 @@ export const MAX_SCREENSHOTS = 5;
 const SCREENSHOT_TYPES = ["home", "product", "features", "pricing", "docs", "about"];
 /** Leave room for the slowest single fetch (+ browser fallback) before the slice budget ends. */
 const PAGE_RESERVE_MS = 12_000;
+/** Pages fetched + ingested at once. Bounded: polite to the site, and Mubit embeds in parallel. */
+export const FETCH_CONCURRENCY = 6;
 
 export interface CrawlCursor {
   phase: "discover" | "fetch" | "screens" | "finish";
@@ -28,6 +30,8 @@ export interface CrawlCursor {
   failed: { url: string; error: string; gone: boolean }[];
   browserUsed: number;
   shots: string[];
+  /** Re-scan diff (content hashes): what ingest saw this crawl. */
+  changes?: { added: number; changed: number; unchanged: number };
 }
 
 export interface CrawlDeps {
@@ -43,10 +47,14 @@ export const browserKeyed = () => process.env.OFFLINE !== "1" && Boolean(process
 
 const pathOf = (url: string) => new URL(url).pathname || "/";
 
-async function savePage(ctx: StageContext, deps: CrawlDeps, c: CrawlCursor, url: string, page: FetchedPage, pageType: string) {
+/** What ingest found for a page: re-scans only send `added`/`changed` pages back through the brain. */
+export type PageChange = "added" | "changed" | "unchanged" | "empty";
+
+async function savePage(ctx: StageContext, deps: CrawlDeps, c: CrawlCursor, url: string, page: FetchedPage, pageType: string): Promise<PageChange> {
   await ctx.convex.mutation(api.scanWorker.upsertCrawlPage, { scanId: ctx.scan!._id, url, title: page.title || undefined, text: page.markdown, contentHash: page.contentHash });
+  let change: PageChange = "empty";
   if (page.markdown.trim()) {
-    await deps.ingestDocument(ctx, {
+    const res = await deps.ingestDocument(ctx, {
       connectorId: c.connectorId,
       kind: "page",
       externalId: url,
@@ -55,8 +63,9 @@ async function savePage(ctx: StageContext, deps: CrawlDeps, c: CrawlCursor, url:
       text: page.markdown,
       meta: { pageType, fetchMethod: page.fetchMethod, scanId: ctx.scan!._id },
     });
+    change = res.status ?? "added";
   }
-  if (page.fetchMethod === "browser") c.browserUsed++;
+  return change;
 }
 
 async function discoverPhase(ctx: StageContext, deps: CrawlDeps): Promise<SliceResult> {
@@ -81,7 +90,10 @@ async function discoverPhase(ctx: StageContext, deps: CrawlDeps): Promise<SliceR
   };
   const root = c.urls[0]?.url ?? scan.url;
   if (!c.urls.length) c.urls.push({ url: root, pageType: "home" });
-  await savePage(ctx, deps, c, root, home, c.urls[0].pageType);
+  const homeChange = await savePage(ctx, deps, c, root, home, c.urls[0].pageType);
+  if (home.fetchMethod === "browser") c.browserUsed++;
+  c.changes = { added: 0, changed: 0, unchanged: 0 };
+  if (homeChange !== "empty") c.changes[homeChange]++;
   c.done.push(root);
 
   const types = [...new Set(c.urls.map((u) => u.pageType).filter((t) => t !== "home" && t !== "other"))].slice(0, 4);
@@ -93,20 +105,42 @@ async function fetchPhase(ctx: StageContext, deps: CrawlDeps, c: CrawlCursor): P
   const finished = new Set([...c.done, ...c.failed.map((f) => f.url)]);
   const todo = c.urls.filter((u) => !finished.has(u.url));
   const progress = () => 0.1 + 0.7 * ((c.done.length + c.failed.length) / Math.max(1, c.urls.length));
-  for (const { url, pageType } of todo) {
-    if (ctx.lost()) return { done: false, cursor: { ...c }, progress: progress() };
-    if (ctx.remainingMs() < PAGE_RESERVE_MS) return { done: false, cursor: { ...c }, progress: progress() };
-    try {
-      const page = await deps.fetchPage(url, { allowBrowser: deps.browserKeyed() && c.browserUsed < MAX_BROWSER_FETCHES });
-      await savePage(ctx, deps, c, url, page, pageType);
-      c.done.push(url);
-      await ctx.event("info", `Read ${pathOf(url)} (${page.words} words${page.fetchMethod === "browser" ? ", rendered in a browser" : ""})`, { url, method: page.fetchMethod, pageType });
-    } catch (err) {
-      const error = (err as Error).message.slice(0, 300);
-      c.failed.push({ url, error, gone: /HTTP (404|410)\b/.test(error) });
-      await ctx.event("warn", `Couldn't read ${pathOf(url)}: ${error}`, { url });
+  c.changes ??= { added: 0, changed: 0, unchanged: 0 };
+  let next = 0;
+  let stop = false;
+  // A bounded pool: each lane takes the next URL until the list (or the slice budget) runs out.
+  // Every page still reports its own "Read …" line, so the feed moves page by page.
+  const lane = async () => {
+    while (!stop && next < todo.length) {
+      if (ctx.lost() || ctx.remainingMs() < PAGE_RESERVE_MS) {
+        stop = true;
+        return;
+      }
+      const { url, pageType } = todo[next++];
+      const allowBrowser = deps.browserKeyed() && c.browserUsed < MAX_BROWSER_FETCHES;
+      if (allowBrowser) c.browserUsed++; // reserve the slot before the await so lanes can't overshoot
+      try {
+        const page = await deps.fetchPage(url, { allowBrowser });
+        if (allowBrowser && page.fetchMethod !== "browser") c.browserUsed--;
+        const change = await savePage(ctx, deps, c, url, page, pageType);
+        c.done.push(url);
+        if (change !== "empty") c.changes![change]++;
+        const note = change === "unchanged" ? ", unchanged — skipped re-learning" : change === "changed" ? ", changed — re-learning" : "";
+        await ctx.event("info", `Read ${pathOf(url)} (${page.words} words${page.fetchMethod === "browser" ? ", rendered in a browser" : ""}${note})`, { url, method: page.fetchMethod, pageType, change });
+      } catch (err) {
+        if (allowBrowser) c.browserUsed--;
+        const error = (err as Error).message.slice(0, 300);
+        c.failed.push({ url, error, gone: /HTTP (404|410)\b/.test(error) });
+        await ctx.event("warn", `Couldn't read ${pathOf(url)}: ${error}`, { url });
+      }
+      await ctx.progress(progress(), { ...c });
     }
-    await ctx.progress(progress(), { ...c });
+  };
+  await Promise.all(Array.from({ length: Math.min(FETCH_CONCURRENCY, todo.length) }, lane));
+  if (next < todo.length || c.done.length + c.failed.length < c.urls.length) return { done: false, cursor: { ...c }, progress: progress() };
+  const { added, changed, unchanged } = c.changes;
+  if (changed || unchanged) {
+    await ctx.event("info", `Since the last scan: ${added} new, ${changed} changed, ${unchanged} unchanged — only new and changed pages go back through the brain`, { step: "diff", ...c.changes });
   }
   return { done: false, cursor: { ...c, phase: "screens" }, progress: 0.8 };
 }

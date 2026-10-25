@@ -7,7 +7,7 @@ import { BRAND_NORMALISE_SYSTEM_PROMPT, SCAN_ANALYSE_SYSTEM_PROMPT } from "@/lib
 import { createEmbedder } from "@/worker/providers/embed";
 import { createLlm, type Llm } from "@/worker/providers/llm";
 import { analyseStage, OFFLINE_FINDINGS_LABEL } from "@/worker/stages/analyse";
-import { createCrawlStage, type CrawlCursor, type CrawlDeps } from "@/worker/stages/crawl";
+import { createCrawlStage, FETCH_CONCURRENCY, type CrawlCursor, type CrawlDeps } from "@/worker/stages/crawl";
 import { createExtractDesignStage, OFFLINE_VOICE } from "@/worker/stages/extract-design";
 import type { StageContext } from "@/worker/types";
 
@@ -113,6 +113,30 @@ describe("crawl stage", () => {
     await createCrawlStage(crawlDeps()).run(f.ctx);
     expect(f.calls.some((c) => c.fn === "ingest:sweepRemoved")).toBe(false);
     expect(f.calls.find((c) => c.fn === "scanWorker:finishCrawl")?.args.removed).toBe(0);
+  });
+
+  it("fetches pages in a bounded parallel pool and reports the re-scan diff (only changed pages re-learn)", async () => {
+    const many = Array.from({ length: 14 }, (_, i) => `https://acme.com/p${i}`);
+    let inFlight = 0;
+    let peak = 0;
+    const deps = crawlDeps();
+    deps.fetchPage = vi.fn(async (url: string) => {
+      inFlight++;
+      peak = Math.max(peak, inFlight);
+      await new Promise((r) => setTimeout(r, 5));
+      inFlight--;
+      return page(url);
+    }) as never;
+    const statuses = ["unchanged", "changed", "added"] as const;
+    deps.ingestDocument = vi.fn(async (_ctx: unknown, doc: { externalId: string }) => ({ status: statuses[Number(doc.externalId.slice(-1)) % 3] })) as never;
+    const { ctx, events } = fakeCtx({ cursor: { ...cursor([]), urls: many.map((url) => ({ url, pageType: "other" })) } });
+    const r = await createCrawlStage(deps).run(ctx);
+    expect(peak).toBeGreaterThan(1);
+    expect(peak).toBeLessThanOrEqual(FETCH_CONCURRENCY);
+    expect(r).toMatchObject({ done: false, cursor: { phase: "screens" } });
+    expect(events.filter((e) => e.startsWith("Read /p"))).toHaveLength(14);
+    expect(events.some((e) => e.includes("unchanged — skipped re-learning"))).toBe(true);
+    expect(events.at(-1)).toMatch(/^Since the last scan: \d+ new, \d+ changed, \d+ unchanged/);
   });
 
   it("narrates discovery with real numbers in the mockup's scan-line shape", async () => {

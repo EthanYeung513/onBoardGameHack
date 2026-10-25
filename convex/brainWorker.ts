@@ -45,10 +45,13 @@ export const pendingChunks = workerQuery({
 });
 
 /** How many chunks are left (progress) — capped so the count stays cheap. */
+/** Chunks read to count pending work. Each carries a ~12 KB embedding: keep well under the 16 MB read limit (#28). */
+export const PENDING_COUNT_CAP = 300;
+
 export const pendingCount = workerQuery({
   args: { spaceId: v.id("spaces") },
   handler: async (ctx, { spaceId }) =>
-    (await ctx.db.query("doc_chunks").withIndex("by_space_extracted", (q) => q.eq("spaceId", spaceId).eq("extractedAt", undefined)).take(1000)).length,
+    (await ctx.db.query("doc_chunks").withIndex("by_space_extracted", (q) => q.eq("spaceId", spaceId).eq("extractedAt", undefined)).take(PENDING_COUNT_CAP)).length,
 });
 
 /** Previously rejected facts: negative examples for the extraction prompt (F16). */
