@@ -291,6 +291,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (thresholds are constants in `src/worker/brain/resolve.ts`; `dedupeKey` is optional)
 - **Revisit?:** secondary hard keys scan one type per space (fine to ~thousands of entities); restored facts don't yet clear `staleStepIds` (regeneration does)
 
+### D-27: Learned brand recommendations — decisions as evidence, Mubit `brand.recommend`, pairwise ranker fallback
+- **Task:** S19 / F37 (brand learning backend + Mubit loop)
+- **Time:** 2026-10-25T03:00Z
+- **Context:** the Design tab should recommend the right brand option first time, learning from every manager pick across companies, routed through Mubit. The Mubit memory surface answers `unknown_route` for our key; there's no confirmed feedback endpoint; Convex vector search is action-only
+- **Options:** (a) store only final tokens vs every pick with candidates + features; (b) Mubit-only vs Mubit over a local learned ranker; (c) vector-index precedent search vs cosine in the worker over recent decisions
+- **Chosen:** every `brand.decide` writes a `brand_decisions` row (candidates, per-candidate features, recommended vs chosen, company profile, profile embedding, Mubit request id). Scan time: Mubit embeddings for the profile → nearest precedents + a pairwise-logistic ranker (starts at the heuristic weights, L2 back to them; same host = direct precedent) → `brand.recommend` through the Mubit adapter with candidates, ranker scores, precedents and (when enabled) memory recall; the model may only pick listed candidates (validation errors go back to it). Offline/failed call → `learned`, no history → `heuristic`. The recommendation is stored on `brand_profiles.recommendation` so `brand.options` is a plain query. `decide` bumps `tokensVersion`, marks courses stale, audits and schedules `brandLoop.send` (Node action): feedback approve/correct by request id when `MUBIT_FEEDBACK_URL` is set, else recorded as `distil` (the row is retrieved as a precedent into future calls); memory remember + recordOutcome only with `MEMORY_PROVIDER=mubit`, otherwise recorded `skipped`. Request ids prefer the gateway's `x-middleware-request-id` (`mreq_…`)
+- **Why:** the evidence survives any provider change and drives both the offline ranker and the Mubit prompt; nothing blocks the UI; every skipped/failed Mubit step is visible in `audit_events`
+- **Reversibility:** easy (`FEATURE_VERSION` gates stored features; ranker hyper-parameters are `RANKER_DEFAULTS`)
+- **Revisit?:** replay on 14 real sites (`npm run eval:brand`): new company 59% → 63% first-time-right, returning company 100%; the hyper-parameters were picked on that same replay (small N). Switch feedback to Mubit's real endpoint once confirmed
+
 ## Blockers
 
 None yet.

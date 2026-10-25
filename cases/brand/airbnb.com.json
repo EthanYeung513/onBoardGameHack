@@ -1,0 +1,313 @@
+{
+  "host": "airbnb.com",
+  "url": "https://www.airbnb.com",
+  "name": "Airbnb: Vacation Rentals, Cabins, Beach Houses, Unique Homes & Experiences",
+  "category": "travel",
+  "recordedAt": "2026-10-25T01:04:07.710Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#ffffff",
+        "usage": 215,
+        "where": [
+          "context:body",
+          "role:link",
+          "css-var:--palette-bg-primary",
+          "css-var:--dls-button_background",
+          "css-var:--palette-always-white",
+          "css-var:--app-bg",
+          "css-var:--search-input_background_expanded",
+          "css-var:--dls-button_background_focus",
+          "css-var:--palette-text-primary-inverse",
+          "css-var:--overlay-border-color"
+        ]
+      },
+      {
+        "value": "#ff385c",
+        "usage": 55,
+        "where": [
+          "css-var:--palette-rausch600",
+          "css-var:--palette-bg-primary-core",
+          "css-var:--palette-logo-brand",
+          "css-var:--amplify-colors-brand-primary-60",
+          "css-var:--amplify-colors-primary-60",
+          "css-var:--amplify-colors-primary-80",
+          "css-var:--amplify-components-button-primary-background-color",
+          "css-var:--header_brand-color",
+          "css-var:--dls19-brand-gradient-accent"
+        ]
+      },
+      {
+        "value": "#222222",
+        "usage": 111,
+        "where": [
+          "context:body",
+          "role:link",
+          "css-var:--palette-grey1000",
+          "css-var:--palette-text-primary",
+          "css-var:--palette-border-primary",
+          "css-var:--dls-button_color",
+          "css-var:--dls-icon-button_color",
+          "css-var:--palette-bg-interactive-selected",
+          "css-var:--unified-where-icon-color",
+          "css-var:--dls-button_color_focus"
+        ]
+      },
+      {
+        "value": "#6c6c6c",
+        "usage": 95,
+        "where": [
+          "css-var:--palette-grey700",
+          "css-var:--palette-text-secondary",
+          "css-var:--dls-text-link_color",
+          "css-var:--dls-comboelement-label-color",
+          "role:link",
+          "css-var:--parsed-html-color",
+          "css-var:--Typography-Foggy",
+          "context:heading",
+          "css-var:--review-subtitle-color",
+          "css-var:--palette-icon-secondary"
+        ]
+      },
+      {
+        "value": "#dddddd",
+        "usage": 64,
+        "where": [
+          "css-var:--palette-grey400",
+          "css-var:--palette-border-tertiary",
+          "css-var:--palette-border-secondary",
+          "css-var:--palette-border-secondary-disabled",
+          "css-var:--palette-border-primary-disabled",
+          "css-var:--editIcon-border",
+          "css-var:--palette-text-secondary-disabled",
+          "css-var:--dls-slider_background-direction",
+          "css-var:--progress-bar_segment-bg",
+          "css-var:--dls-slider_thumb-border"
+        ]
+      },
+      {
+        "value": "#000000",
+        "usage": 44,
+        "where": [
+          "css-var:--palette-text-primary-hover",
+          "css-var:--palette-shadow50",
+          "css-var:--palette-grey1100",
+          "css-var:--dls-modal-primary-scrim_background",
+          "css-var:--dls-modal-secondary-scrim_background",
+          "css-var:--palette-always-black",
+          "css-var:--palette-icon-primary-hover",
+          "css-var:--palette-shadow600",
+          "css-var:--palette-shadow100",
+          "css-var:--tl-color"
+        ]
+      },
+      {
+        "value": "#f2f2f2",
+        "usage": 41,
+        "where": [
+          "css-var:--palette-bg-primary",
+          "css-var:--dls-icon-button_background",
+          "css-var:--dls-icon-button_pseudo-background_disabled",
+          "css-var:--dls-icon-button_background_disabled",
+          "css-var:--palette-grey200",
+          "css-var:--AtomicCalendarDay-rangeOutside-backgroundColor",
+          "css-var:--AtomicCalendarDay-isInRange-backgroundColor",
+          "css-var:--palette-bg-quaternary",
+          "css-var:--dls-slider_background-direction",
+          "css-var:--palette-grey0"
+        ]
+      },
+      {
+        "value": "#ebebeb",
+        "usage": 41,
+        "where": [
+          "css-var:--dls-icon-button_pseudo-background_active",
+          "css-var:--palette-grey300",
+          "css-var:--dls-button_background_active",
+          "css-var:--dls-icon-button_pseudo-background_hover",
+          "css-var:--dls-button_background_hover",
+          "css-var:--dls-shimmer-animation-end-color",
+          "css-var:--color-text-disabled",
+          "css-var:--palette-bg-tertiary-disabled",
+          "css-var:--palette-bg-tertiary",
+          "css-var:--palette-bg-divider"
+        ]
+      },
+      {
+        "value": "#f7f7f7",
+        "usage": 37,
+        "where": [
+          "css-var:--palette-grey100",
+          "css-var:--palette-bg-secondary",
+          "css-var:--palette-bg-primary-hover",
+          "css-var:--dls-shimmer-animation-start-color",
+          "css-var:--palette-bg-primary-selected",
+          "css-var:--palette-beige800",
+          "css-var:--palette-icon-info",
+          "css-var:--palette-grey0",
+          "css-var:--palette-bg-primary",
+          "css-var:--palette-bg-secondary-disabled"
+        ]
+      },
+      {
+        "value": "#c13515",
+        "usage": 12,
+        "where": [
+          "css-var:--palette-icon-error",
+          "css-var:--palette-border-tertiary-error",
+          "css-var:--palette-text-primary-error",
+          "css-var:--color-input-error-message",
+          "css-var:--palette-arches",
+          "css-var:--palette-text-secondary-error",
+          "css-var:--palette-border-secondary-error",
+          "css-var:--palette-bg-primary-inverse-error",
+          "css-var:--palette-icon-primary-error"
+        ]
+      },
+      {
+        "value": "#da1249",
+        "usage": 11,
+        "where": [
+          "css-var:--palette-rausch700",
+          "css-var:--palette-text-brand-selected",
+          "css-var:--palette-text-brand",
+          "css-var:--mini-calendar-day-text-color",
+          "css-var:--outer-border-width",
+          "css-var:--palette-border-brand",
+          "css-var:--palette-border-brand-secondary",
+          "css-var:--palette-status-brand",
+          "css-var:--amplify-colors-brand-primary-80"
+        ]
+      },
+      {
+        "value": "#c1c1c1",
+        "usage": 28,
+        "where": [
+          "css-var:--dls-icon-button_pseudo-border-color_disabled",
+          "css-var:--palette-text-primary-disabled",
+          "css-var:--dls-icon-button_color_disabled",
+          "css-var:--palette-text-link-disabled",
+          "css-var:--palette-grey500",
+          "css-var:--dls-textarea-placeholder-color",
+          "css-var:--palette-icon-tertiary-disabled",
+          "css-var:--palette-icon-primary-disabled",
+          "css-var:--palette-text-fill-disabled",
+          "css-var:--palette-icon-disabled"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "12px",
+        "usage": 36,
+        "where": [
+          "css-var:--map-card-large-container_border-radius",
+          "css-var:--badge_border-radius",
+          "css-var:--card-container_border-radius",
+          "css-var:--icon-border-radius",
+          "css-var:--nav-item-image-border-radius"
+        ]
+      },
+      {
+        "value": "8px",
+        "usage": 36,
+        "where": [
+          "css-var:--dls-button_border-radius",
+          "css-var:--radio-row-group-radius",
+          "css-var:--dls_base-tile_border-radius",
+          "css-var:--front-page-border-radius",
+          "css-var:--back-page-border-radius",
+          "css-var:--front-content-border-radius"
+        ]
+      },
+      {
+        "value": "999px",
+        "usage": 29,
+        "where": [
+          "css-var:--dls-icon-button_pseudo-border-radius",
+          "css-var:--border-profile-photo-border-radius",
+          "css-var:--border-radio-button-border-radius",
+          "css-var:--bar-radius",
+          "role:button",
+          "css-var:--avatar_border-radius",
+          "css-var:--border-button-round-border-radius"
+        ]
+      },
+      {
+        "value": "16px",
+        "usage": 20,
+        "where": [
+          "css-var:--card_container-border_radius",
+          "css-var:--offerings-modal-border-radius",
+          "css-var:--dls-list-select_border-radius",
+          "css-var:--offering-modal-border-radius"
+        ]
+      },
+      {
+        "value": "24px",
+        "usage": 17,
+        "where": [
+          "css-var:--border-header-button-border-radius",
+          "css-var:--media-container_border-radius",
+          "css-var:--modal-content-border-radius",
+          "css-var:--modal-content-background-border-radius"
+        ]
+      },
+      {
+        "value": "4px",
+        "usage": 16,
+        "where": [
+          "css-var:--border-button-border-radius",
+          "css-var:--border-form-element-border-radius",
+          "role:link",
+          "css-var:--image-border-radius",
+          "css-var:--media-window_internal-border-radius"
+        ]
+      },
+      {
+        "value": "32px",
+        "usage": 16,
+        "where": [
+          "css-var:--dls-modal-container_border-radius",
+          "css-var:--border-switch-border-radius",
+          "css-var:--dls-base-video-border-radius",
+          "css-var:--megaphone_border-bottom-radius",
+          "css-var:--header-panel-menu--border-radius",
+          "css-var:--map-card-container_border-radius",
+          "css-var:--map-side-sheet_corner-radius",
+          "css-var:--dls-liteimage-border-radius"
+        ]
+      },
+      {
+        "value": "20px",
+        "usage": 9,
+        "where": [
+          "css-var:--AirImage-border-radius",
+          "css-var:--media-window_internal-border-radius"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "value": "Airbnb Cereal VF",
+        "usage": 2,
+        "where": [
+          "context:body",
+          "css-var:--typography-font-family-cereal-font-family"
+        ]
+      },
+      {
+        "value": "-apple-system-body",
+        "usage": 2,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#ff385c",
+    "accent": "#222222",
+    "radius": "12px",
+    "headline": "Airbnb Cereal VF"
+  }
+}

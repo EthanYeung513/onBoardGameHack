@@ -1,0 +1,269 @@
+{
+  "host": "wise.com",
+  "url": "https://wise.com",
+  "name": "Wise: The international account",
+  "category": "fintech",
+  "recordedAt": "2026-10-25T01:03:57.006Z",
+  "source": "css-evidence",
+  "candidates": {
+    "colors": [
+      {
+        "value": "#37517e",
+        "usage": 135,
+        "where": [
+          "css-var:--color-content-primary",
+          "context:heading",
+          "role:link",
+          "role:button",
+          "role:logo",
+          "css-var:--Button-color",
+          "css-var:--Button-color-hover",
+          "css-var:--Button-color-active",
+          "css-var:--nudge-title-color"
+        ]
+      },
+      {
+        "value": "#163300",
+        "usage": 93,
+        "where": [
+          "css-var:--color-interactive-primary",
+          "role:link",
+          "css-var:--color-content-link",
+          "css-var:--color-forest-green",
+          "role:button",
+          "css-var:--color-interactive-control",
+          "role:logo",
+          "css-var:--Card-indicator-icon-color",
+          "css-var:--Card-check-color",
+          "css-var:--Card-check-background-color"
+        ]
+      },
+      {
+        "value": "#ffffff",
+        "usage": 211,
+        "where": [
+          "context:body",
+          "css-var:--color-background-screen",
+          "css-var:--color-background-elevated",
+          "context:heading",
+          "role:link",
+          "role:button",
+          "css-var:--color-contrast",
+          "role:logo",
+          "css-var:--progress-bar-border-width",
+          "css-var:--color-contrast-overlay"
+        ]
+      },
+      {
+        "value": "#00a2dd",
+        "usage": 54,
+        "where": [
+          "role:button",
+          "css-var:--color-interactive-accent",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#cb272f",
+        "usage": 52,
+        "where": [
+          "role:link",
+          "css-var:--color-sentiment-content-primary",
+          "css-var:--color-sentiment-negative",
+          "role:button",
+          "context:heading",
+          "css-var:--color-sentiment-interactive-primary",
+          "css-var:--color-sentiment-negative-primary",
+          "css-var:--Button-secondary-color",
+          "css-var:--Button-secondary-neutral-color",
+          "css-var:--Button-primary-negative-background"
+        ]
+      },
+      {
+        "value": "#768e9c",
+        "usage": 35,
+        "where": [
+          "css-var:--color-content-tertiary",
+          "context:heading",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#0097c7",
+        "usage": 35,
+        "where": [
+          "css-var:--color-content-accent",
+          "role:button",
+          "role:link",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "#008fc9",
+        "usage": 31,
+        "where": [
+          "role:button",
+          "css-var:--color-interactive-accent-hover",
+          "role:link"
+        ]
+      },
+      {
+        "value": "#0084b3",
+        "usage": 30,
+        "where": [
+          "role:link",
+          "css-var:--color-content-accent-hover",
+          "role:button"
+        ]
+      },
+      {
+        "value": "#0081ba",
+        "usage": 29,
+        "where": [
+          "role:button",
+          "css-var:--color-interactive-accent-active"
+        ]
+      },
+      {
+        "value": "#e74848",
+        "usage": 28,
+        "where": [
+          "css-var:--color-interactive-negative",
+          "role:button"
+        ]
+      },
+      {
+        "value": "#5d7079",
+        "usage": 63,
+        "where": [
+          "context:body",
+          "css-var:--color-content-secondary",
+          "role:link",
+          "role:button",
+          "context:heading"
+        ]
+      }
+    ],
+    "radii": [
+      {
+        "value": "999px",
+        "usage": 56,
+        "where": [
+          "role:button",
+          "css-var:--radius-full",
+          "css-var:--Button-border-radius",
+          "css-var:--size-128"
+        ]
+      },
+      {
+        "value": "10px",
+        "usage": 46,
+        "where": [
+          "css-var:--radius-small",
+          "role:button",
+          "role:link",
+          "css-var:--size-10"
+        ]
+      },
+      {
+        "value": "3px",
+        "usage": 26,
+        "where": [
+          "role:button",
+          "css-var:--btn-radius-base",
+          "css-var:--btn-lg-radius-base",
+          "role:link"
+        ]
+      },
+      {
+        "value": "16px",
+        "usage": 23,
+        "where": [
+          "css-var:--radius-medium",
+          "role:button",
+          "css-var:--size-16",
+          "css-var:--nudge-border-radius",
+          "css-var:--Prompt-border-radius"
+        ]
+      },
+      {
+        "value": "0px",
+        "usage": 18,
+        "where": [
+          "role:button"
+        ]
+      },
+      {
+        "value": "2px",
+        "usage": 11,
+        "where": [
+          "role:button",
+          "css-var:--btn-sm-radius-base",
+          "role:link"
+        ]
+      },
+      {
+        "value": "32px",
+        "usage": 9,
+        "where": [
+          "css-var:--size-32",
+          "css-var:--Card-border-radius",
+          "css-var:--radius-xlarge",
+          "css-var:--radius-xl"
+        ]
+      },
+      {
+        "value": "24px",
+        "usage": 7,
+        "where": [
+          "role:button",
+          "css-var:--radius-large",
+          "css-var:--size-24"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "value": "Inter",
+        "usage": 6,
+        "where": [
+          "css-var:--font-family-regular",
+          "context:body",
+          "context:heading"
+        ]
+      },
+      {
+        "value": "Wise Sans",
+        "usage": 2,
+        "where": [
+          "context:heading",
+          "css-var:--font-family-display",
+          "role:logo"
+        ]
+      },
+      {
+        "value": "Segoe UI",
+        "usage": 1,
+        "where": [
+          "context:body"
+        ]
+      },
+      {
+        "value": "SFMono-Regular",
+        "usage": 1,
+        "where": []
+      },
+      {
+        "value": "Arial",
+        "usage": 1,
+        "where": []
+      }
+    ]
+  },
+  "decisions": {
+    "primary": "#163300",
+    "accent": "#00a2dd",
+    "radius": "999px",
+    "headline": "Wise Sans"
+  }
+}

@@ -17,6 +17,8 @@
     "db:seed:legacy": "tsx scripts/seed.ts",
     "demo:reset": "tsx scripts/demo-reset.ts",
     "eval": "tsx scripts/eval.ts",
+    "eval:brand": "node scripts/run-ts.mjs scripts/eval-brand.ts",
+    "eval:brand:record": "node scripts/run-ts.mjs scripts/brand-record.ts",
     "personas": "tsx scripts/personas.ts",
     "smoke": "tsx scripts/smoke.ts",
     "bulk-grade": "tsx scripts/bulk-grade.ts",

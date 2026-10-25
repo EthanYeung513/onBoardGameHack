@@ -63,7 +63,9 @@ export interface MubitConfig {
 export const DEFAULT_MUBIT_MODEL = "gpt-5.4-mini";
 
 function requestIdOf(headers: Headers, fallback?: string | null): string | null {
-  return headers.get("x-mubit-request-id") ?? headers.get("x-request-id") ?? fallback ?? null;
+  // The gateway sends its own id as x-middleware-request-id (mreq_…, what Mubit errors and feedback
+  // refer to); x-request-id is the upstream provider's.
+  return headers.get("x-mubit-request-id") ?? headers.get("x-middleware-request-id") ?? headers.get("x-request-id") ?? fallback ?? null;
 }
 
 /** Every LLM call goes through Mubit's OpenAI-compatible endpoint: the one-line base URL change. */
