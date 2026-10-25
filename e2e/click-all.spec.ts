@@ -4,16 +4,15 @@ import { signIn, watchErrors } from "./helpers";
 // Visits every page reachable from the studio and clicks every safe button, failing on console
 // errors, failed requests, broken links or controls that do nothing.
 
-test("the landing page and the classic export are public", async ({ page }) => {
-  const errors = watchErrors(page);
+test("the landing page is the mockup and its links resolve", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "Make onboarding fun!" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Build my onboarding" }).first()).toHaveAttribute("href", "/login?next=/space/new");
+  await expect(page).toHaveTitle(/Orthogonal/);
+  await expect(page.locator("a[href='/login']").first()).toBeAttached();
+  await expect(page.getByText("Build my onboarding")).toHaveCount(0);
+  await expect(page.getByText("Try the demo scan")).toHaveCount(0);
   for (const href of await page.locator("a[href^='/']").evaluateAll((as) => as.map((a) => a.getAttribute("href")!))) {
     expect((await page.request.get(href)).status(), href).toBeLessThan(400);
   }
-  expect((await page.request.get("/classic")).status()).toBe(200);
-  expect(errors).toEqual([]);
 });
 
 test("signed out visitors are sent to sign in", async ({ page }) => {

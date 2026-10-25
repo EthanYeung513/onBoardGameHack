@@ -220,6 +220,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (set `CONVEX_DEPLOYMENT` to go cloud; the index width is one constant, `EMBEDDING_DIMS`)
 - **Revisit?:** yes — delete the Supabase gate and `src/lib/supabase` once the studio is migrated or retired
 
+### D-18: The mockup is the spec — landing served verbatim, no demo surface (supersedes D-16)
+- **Task:** S2 fix-up (Nicole review of PR #4)
+- **Time:** 2026-10-25T00:45Z
+- **Context:** PR #4 rebuilt the landing in React, invented "Build my onboarding"/"Try the demo scan" CTAs, dropped the mobile burger and animations, and moved the constructor to a public `/try`; the login page lost its animated hero. Nicole: the mockup pages on `main` are the exact visual and behavioural spec; the backend belongs behind login → create space → scan, not a demo button
+- **Options:** A) keep fixing the React rebuild until it matches / B) serve `main`'s `index.html` + `assets/` verbatim at `/` (only `login.html` → `/login` rewired) and port the app pages (login, space, dashboard…) markup-for-markup with their own CSS
+- **Chosen:** B. `/` rewrites to `public/index.html`; `/classic`, `/try` and the React landing are removed; `/login` is login.html ported (hero video, tiles, Auth0-style overlay steps) on Convex Auth with its own stylesheet; `/space/new` uses space.html's video hero. Providers without keys (Google, Apple, work SSO) open the mockup overlay with an honest "not set up" message instead of a simulated picker. The email step asks `authInfo.hasAccount` (the mockup's email-first flow; accepted account-enumeration trade-off for v1)
+- **Why:** pixel and behaviour parity by construction; PRD's mockup→real table allows keeping the landing static
+- **Reversibility:** easy
+- **Revisit?:** when the landing needs dynamic content, or before public launch (enumeration, the export's inline-jQuery console errors that the mockup also has)
+
 ## Blockers
 
 None yet.

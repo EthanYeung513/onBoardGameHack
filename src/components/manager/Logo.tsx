@@ -13,16 +13,16 @@ export function Logo({ size = 26, light = false }: { size?: number; light?: bool
   );
 }
 
-/** The dark left half of the mockup's split auth pages. */
+/** The left half of space.html's split pages: logo over the looping hero video. */
 export function SplitHero() {
   return (
     <div className="left">
-      <div className="logo" style={{ position: "absolute", top: 40, left: 40, zIndex: 2 }}>
+      <div className="logo">
         <Logo light />
       </div>
-      <div className="auth-hero-copy">
-        <p>Your company&apos;s knowledge, turned into onboarding your team actually plays.</p>
-      </div>
+      <video autoPlay loop muted playsInline>
+        <source src="/assets/web-hero.mp4" type="video/mp4" />
+      </video>
     </div>
   );
 }

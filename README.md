@@ -19,11 +19,9 @@ npm run db:seed      # local Postgres (PGlite) in .data/, seeded with Acme Pay
 npm run dev          # http://localhost:3000
 ```
 
-- **Landing page:** <http://localhost:3000/>. Public, no keys needed. The original Webflow export is kept at
-  <http://localhost:3000/classic>.
-- **Orthogonal constructor:** <http://localhost:3000/try>. Paste a site URL to scan it, answer two questions, and the
-  onboarding is built in the workbench (see [Orthogonal frontend](#orthogonal-frontend)). The GymQuest landing page
-  moved to <http://localhost:3000/gymquest>.
+- **Landing page:** <http://localhost:3000/>. The mockup landing (`public/index.html` + `public/assets/`, copied
+  verbatim from `main`). "Log in" → <http://localhost:3000/login> → create your space → scan. The GymQuest landing
+  page moved to <http://localhost:3000/gymquest>.
 - **Play:** <http://localhost:3000/play>. Company code `ACME`. Walk with the arrow keys/WASD (a d-pad appears on
   phones). Walk into a door to battle; the long grass has wild phishing emails; Your Desk opens the skills passport.
 - **Manager console:** <http://localhost:3000/admin>. Review queue, learning timeline, readiness, content.
@@ -59,8 +57,9 @@ returned `log` arrays; the `pace` prop on `<Constructor>` (`fast` / `realistic` 
 
 | Path | What |
 |---|---|
-| `src/app/(site)/` + `src/components/site/` | Landing page at `/` (server-rendered; original Webflow export at `/classic` from `public/classic/`) |
-| `src/app/(orthogonal)/` | Constructor page at `/try` and its layout (fonts, dark canvas) |
+| `public/index.html` + `public/assets/` | Landing page at `/` — the mockup from `main`, served verbatim (D-18) |
+| `src/app/(auth)/login/` | Sign-in (login.html ported, Convex Auth) |
+| `src/app/(orthogonal)/` | Constructor layout (no public page; its components are reused inside the signed-in flow) |
 | `src/components/orthogonal/` | `Constructor` (flow state + API calls) and one component per stage |
 | `src/components/orthogonal/workbench/` | Editor: `Workbench`, `StepPreview`, `Inspector`, step kinds |
 | `src/lib/orthogonal/` | API contract, client, URL and theme helpers (shared by UI and server) |
