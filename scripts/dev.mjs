@@ -94,7 +94,16 @@ async function ensureBackend() {
   const cport = Number(process.env.CONVEX_LOCAL_PORT ?? 3210);
   const project = cport === 3210 ? "convex-local" : `convex-${cport}`;
   const backendUrl = `http://127.0.0.1:${cport}`;
-  const composeEnv = { ...process.env, PORT: String(cport), SITE_PROXY_PORT: String(cport + 1), DASHBOARD_PORT: cport === 3210 ? "6791" : String(cport + 2) };
+  const composeEnv = {
+    ...process.env,
+    PORT: String(cport),
+    SITE_PROXY_PORT: String(cport + 1),
+    DASHBOARD_PORT: cport === 3210 ? "6791" : String(cport + 2),
+    // Convex Auth validates tokens by fetching JWKS from its own site origin *inside* the
+    // container, where the HTTP-actions proxy always listens on 3211 — a host port would hang
+    // sign-in on any non-default CONVEX_LOCAL_PORT.
+    CONVEX_SITE_ORIGIN: "http://127.0.0.1:3211",
+  };
   const dc = (...args) => ["compose", "-p", project, "-f", compose, ...args];
   execFileSync("docker", dc("up", "-d"), { stdio: "inherit", env: composeEnv });
   if (!(await waitFor(`${backendUrl}/version`))) {
