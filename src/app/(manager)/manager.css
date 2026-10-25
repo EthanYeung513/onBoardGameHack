@@ -11,6 +11,7 @@
 .ob, .ob * { box-sizing: border-box; margin: 0; padding: 0; }
 .ob { scroll-behavior: smooth; }
 .ob {
+  line-height: normal;
   font-family: "Helvetica Neue", Inter, -apple-system, "Segoe UI", Arial, sans-serif;
   color: var(--ink);
   background: var(--paper);
@@ -334,14 +335,7 @@
   .ob .nav .links { display: none; }
 }
 
-/* ---------- auth pages (login.html details) ---------- */
-.ob .split .left .auth-hero-copy { position: absolute; left: 40px; right: 40px; bottom: 60px; font-size: 28px; line-height: 1.2; letter-spacing: -0.02em; max-width: 22ch; }
-.ob .auth-sub { color: var(--muted); font-size: 15px; margin: -14px 0 32px; }
-.ob .auth-gap { margin-top: 10px; }
-.ob .auth-swap { margin-top: 16px; font-size: 14px; color: var(--muted); text-align: center; }
-.ob .auth-swap a { color: var(--brand); cursor: pointer; font-weight: 500; }
-.ob .auth-back { background: none; border: 0; color: var(--muted); font-size: 13px; margin-bottom: 20px; }
-.ob .auth-err { margin: 4px 0 12px; padding: 10px 12px; border-radius: 8px; background: #fef2f2; color: #b91c1c; font-size: 13px; }
-.ob .auth-step { animation: ob-fade .25s ease; }
-@keyframes ob-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-@media (max-width: 767px) { .ob .split { grid-template-columns: 1fr; } .ob .split .left { display: none; } }
+/* space.html page-level overrides: the left half is the looping hero video. */
+.ob .split .left { padding: 0; }
+.ob .split .left video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ob .split .left .logo { position: absolute; top: 40px; left: 40px; z-index: 2; }

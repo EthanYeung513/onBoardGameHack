@@ -106,7 +106,7 @@ the full journey instead of the demo.
 
 | ID | Requirement | Priority |
 | --- | --- | --- |
-| F1 | Public landing page served by this app (replace the static Webflow export): hero, how-it-works, CTA to sign up, no Webflow JS runtime | P0 |
+| F1 | Public landing page served by this app: the mockup `index.html` exactly (nav, burger, animations); Log in → real auth; no invented CTAs or demo surface | P0 |
 | F2 | Manager sign-up and login: email+password and magic link via Convex Auth; Google OAuth; redirect new users to space creation, returning users to their dashboard | P0 |
 | F3 | Space model: `space` = one company. Owner + manager roles; hires join via invite link or company-email domain match | P0 |
 | F4 | Website scan as the existing stage pipeline: robots.txt, sitemap(s), llms.txt, URL ranking, HTTP fetch ≤30 pages, Cloudflare Browser fallback for thin pages, ≤5 screenshots | P0 |
@@ -213,7 +213,7 @@ Actionable checklist — each row becomes an env-var group and a `check:env` ent
 
 | Mockup element | Simulated today | Real procedure |
 | --- | --- | --- |
-| `index.html` | Webflow export | Rebuilt in-app (or kept static behind `/` redirect); CTAs → real auth |
+| `index.html` | Webflow export | Served verbatim at `/`; Log in → real auth (D-18) |
 | `login.html` | localStorage users, fake Google/Apple pickers | Convex Auth flows; work-email SSO path hidden until SAML |
 | `space.html` scan | `SCAN_STEPS` timer, `brandFromWebsite()` hash → palette | Live pipeline stages streaming `job_events`; brand from dembrandt + LLM |
 | `editor.html` | Hard-coded `STEPS`, static assets list, color inputs | CourseSpec from brain; Assets tab lists real scraped assets with source URLs; Design tab edits `brand_profiles` tokens |
@@ -226,10 +226,11 @@ Actionable checklist — each row becomes an env-var group and a `check:env` ent
 
 ## Subsystem: landing page
 
-`src/app/(site)/` — server-rendered marketing page. Sections mirror the Webflow
-page's content (hero, value props, how it works, CTA) but built with the app's
-own tokens and no Webflow JS. CTA: "Build my onboarding" → `/login?next=/space/new`.
-Keep `index.html` served at `/classic` for reference until F1 ships.
+`/` serves the mockup's `index.html` + `assets/` from `main` verbatim
+(`public/`), with its nav (How it works / Features / About, Get in touch, Log in),
+mobile burger and animations. The only change is "Log in" → `/login`. No extra
+CTAs and no public demo surface: the pipeline runs behind login → create space →
+scan (Nicole 2026-10-25, D-18).
 
 ## Subsystem: auth and spaces
 

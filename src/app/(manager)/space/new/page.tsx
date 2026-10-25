@@ -18,7 +18,6 @@ export default function NewSpacePage() {
   const [step, setStep] = useState<"welcome" | "info">("welcome");
   const [nameInput, setName] = useState<string | null>(null);
   const name = nameInput ?? viewer?.name ?? "";
-  const [company, setCompany] = useState("");
   const [site, setSite] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -30,7 +29,10 @@ export default function NewSpacePage() {
     setBusy(true);
     try {
       await updateProfile({ name });
-      const companyName = company.trim() || site.trim().replace(/^https?:\/\//, "").replace(/^www\./, "").split(/[./]/)[0];
+      // space.html asks only for the manager's name and the website; the company name starts as the
+      // site's name and is refined by the scan/Settings.
+      const host = site.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+      const companyName = host.split(/[./]/)[0].replace(/^./, (c) => c.toUpperCase());
       const { spaceId } = await createSpace({ name: companyName, website: site });
       // S5 replaces this with the live scan screen (`/space/:id/scan`).
       router.push(`/dashboard?space=${spaceId}`);
@@ -49,7 +51,7 @@ export default function NewSpacePage() {
         </button>
         <div className="card">
           {step === "welcome" ? (
-            <div className="auth-step">
+            <div>
               <h1>
                 Welcome to
                 <br />
@@ -63,7 +65,7 @@ export default function NewSpacePage() {
               </div>
             </div>
           ) : (
-            <form className="auth-step" onSubmit={submit} noValidate>
+            <form onSubmit={submit} noValidate>
               <h1>
                 Create Orthogonal
                 <br />
@@ -77,13 +79,9 @@ export default function NewSpacePage() {
                 <label htmlFor="mgr-site">Company website *</label>
                 <input id="mgr-site" value={site} onChange={(e) => setSite(e.target.value)} placeholder="e.g. mubit.ai" />
               </div>
-              <div className="field">
-                <label htmlFor="mgr-company">Company name</label>
-                <input id="mgr-company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Defaults to the website name" />
-              </div>
-              {error && <p className="auth-err" role="alert">{error}</p>}
+              {error && <div className="form-err" role="alert" style={{ display: "block" }}>{error}</div>}
               <button className="btn btn-primary btn-block btn-big" type="submit" disabled={busy}>
-                {busy ? "Creating…" : "Scan my company →"}
+                Scan my company →
               </button>
               <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 14 }}>
                 Our agents will read your public site to learn your brand and seed your company brain.

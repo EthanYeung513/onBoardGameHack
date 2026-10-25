@@ -22,9 +22,6 @@ export function Header({ email, crumbs = [] }: { email?: string | null; crumbs?:
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-3 text-sm">
-          <Link href="/try" className="hover:underline">
-            Constructor
-          </Link>
           <Link href="/status" className="hover:underline">
             Service status
           </Link>

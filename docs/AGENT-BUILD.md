@@ -59,8 +59,8 @@ Same shape as PLAN.md §11 (which this supersedes for the site work):
 | ID | Task | Depends | Acceptance | Owner | Mode |
 | --- | --- | --- | --- | --- | --- |
 | S1 | Doc set merged (this PR) | — | PRD + AGENTS + contracts on `feature/onboarding-generator` | Nicole | human |
-| S2 | Landing page in-app | S1 | `/` served by Next.js, `/classic` fallback, CTA → login | — | auto |
-| S3 | Auth + spaces + roles | S1 | Signup/login/Google; create-space row; `requireRole` checks | — | auto |
+| S2 | Landing page in-app | S1 | `/` serves the mockup landing verbatim (burger, animations); Log in → `/login` (D-18) | done (#4, fix-up) | auto |
+| S3 | Auth + spaces + roles | S1 | Signup/login/Google; create-space row; `requireRole` checks | done (#5) | auto |
 | S4 | Scan → brand_profiles + draft brain | S3 | Real scan of a public site fills `crawl_pages`, `brand_profiles`, draft `facts` | — | auto |
 | S5 | Scan UI live | S4 | `job_events` stream into the scan screen; retry/stall states | — | auto |
 | S6 | File-upload connector | S3 | Dropped PDF/MD lands as `source_items` + `doc_chunks` | — | auto |

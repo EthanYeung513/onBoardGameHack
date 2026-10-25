@@ -8,8 +8,10 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/**/*": ["./drizzle/**/*", "./content/**/*"],
   },
-  // The original Webflow export of the landing page, kept for reference (see DECISIONS.md D-16).
-  rewrites: async () => [{ source: "/classic", destination: "/classic/index.html" }],
+  // `/` is the mockup's landing page served verbatim from public/ (index.html + assets/, copied from
+  // `main`) so its layout, burger menu and animations match exactly (DECISIONS.md D-18).
+  rewrites: async () => ({ beforeFiles: [{ source: "/", destination: "/index.html" }], afterFiles: [], fallback: [] }),
+  redirects: async () => [{ source: "/login.html", destination: "/login", permanent: false }],
 };
 
 export default nextConfig;

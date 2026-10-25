@@ -7,7 +7,12 @@ import { convexAuth } from "@convex-dev/auth/server";
 // only when their provider keys are set in the Convex deployment env — never a fake button.
 
 const providers = [
-  Password,
+  Password({
+    profile: (params) => ({
+      email: String(params.email).trim().toLowerCase(),
+      ...(typeof params.name === "string" && params.name.trim() ? { name: params.name.trim().slice(0, 80) } : {}),
+    }),
+  }),
   ...(process.env.AUTH_RESEND_KEY
     ? [Resend({ apiKey: process.env.AUTH_RESEND_KEY, from: process.env.FROM_EMAIL ?? "Orthogonal <onboarding@resend.dev>" })]
     : []),
