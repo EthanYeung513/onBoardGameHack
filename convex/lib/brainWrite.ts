@@ -114,7 +114,19 @@ export function entityKeys(e: Doc<"entities">): string[] {
 }
 
 /** Hard-key resolution (F15 step 1): the same-type entity sharing any hard key with the candidate. */
-export async function findByHardKeys(ctx: QueryCtx | MutationCtx, spaceId: Id<"spaces">, type: Doc<"entities">["type"], cand: KeyedEntity) {
+/** Entities scanned per (space, type) for secondary keys. Each entity carries a 1536-d embedding
+ * (~12 KB), so an unbounded scan breaks Convex's 16 MB per-function read limit on real sites. */
+const SECONDARY_SCAN_LIMIT = 100;
+
+export type HardKeyCache = Map<string, { entity: Doc<"entities">; keys: string[] }[]>;
+
+export async function findByHardKeys(
+  ctx: QueryCtx | MutationCtx,
+  spaceId: Id<"spaces">,
+  type: Doc<"entities">["type"],
+  cand: KeyedEntity,
+  cache: HardKeyCache = new Map(),
+) {
   const keys = hardKeys(cand);
   if (!keys.length) return null;
   // Fast path: the strongest stored key is indexed.
@@ -125,12 +137,22 @@ export async function findByHardKeys(ctx: QueryCtx | MutationCtx, spaceId: Id<"s
       .first();
     if (hit && !hit.mergedInto) return { entity: hit, key: k };
   }
-  // Secondary keys (aliases, extra emails/logins) live in `fields.keys`: scan this type in the space.
+  // Secondary keys (aliases, extra emails/logins) live in `fields.keys`: scan this type's most
+  // recent entities once per call (bounded; a dedicated key index is the follow-up).
+  let scanned = cache.get(type);
+  if (!scanned) {
+    const recent = await ctx.db
+      .query("entities")
+      .withIndex("by_space_key", (q) => q.eq("spaceId", spaceId).eq("type", type))
+      .order("desc")
+      .take(SECONDARY_SCAN_LIMIT);
+    scanned = recent.filter((e) => !e.mergedInto).map((entity) => ({ entity, keys: entityKeys(entity) }));
+    cache.set(type, scanned);
+  }
   const wanted = new Set(keys);
-  for await (const e of ctx.db.query("entities").withIndex("by_space_key", (q) => q.eq("spaceId", spaceId).eq("type", type))) {
-    if (e.mergedInto) continue;
-    const k = entityKeys(e).find((x) => wanted.has(x));
-    if (k) return { entity: e, key: k };
+  for (const { entity, keys: ks } of scanned) {
+    const k = ks.find((x) => wanted.has(x));
+    if (k) return { entity, key: k };
   }
   return null;
 }
