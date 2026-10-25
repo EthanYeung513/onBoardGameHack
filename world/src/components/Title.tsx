@@ -34,11 +34,6 @@ export default function Title({ onPlay }: { onPlay: () => void }) {
   return (
     <div className="title-screen">
       <Logo name={COMPANY.name} />
-      {COMPANY.logoUrl && (
-        <div className="sd-panel title-card">
-          <img src={COMPANY.logoUrl} alt={`${COMPANY.name} logo`} onError={e => { (e.currentTarget.parentElement as HTMLElement).hidden = true; }} />
-        </div>
-      )}
       <div className="title-tag">{COMPANY.tagline}</div>
       <button className="sd-btn title-play" onClick={onPlay} autoFocus>
         ▶&nbsp; Play

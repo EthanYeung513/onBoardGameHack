@@ -280,8 +280,6 @@ body {
 .sd-field:focus { border-color: var(--brand); box-shadow: inset 0 2px 4px rgba(90,52,16,.25), 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
 .hud-name { border-left: 8px solid var(--brand); }
 
-.title-card { margin-top: 10px; padding: 8px 14px; display: flex; align-items: center; justify-content: center; }
-.title-card img { display: block; height: clamp(28px, 6vh, 56px); width: auto; max-width: min(240px, 60vw); object-fit: contain; }
 .hint { white-space: nowrap; max-width: calc(100vw - 24px); overflow: hidden; text-overflow: ellipsis; }
 
 .world-meta {
