@@ -388,9 +388,9 @@
   filter: drop-shadow(6px 8px 0 rgba(0, 0, 0, 0.35));
 }
 .bubbleText {
-  font-family: Impact, Haettenschweiler, "Arial Black", system-ui, sans-serif;
+  font-family: var(--font-impact), Impact, Haettenschweiler, "Arial Black", system-ui, sans-serif;
   font-style: italic;
-  font-weight: 900;
+  font-weight: 400;
   font-size: 68px;
   letter-spacing: 1px;
 }
@@ -478,7 +478,7 @@
 .bannerTitle {
   display: block;
   margin-top: 6px;
-  font-family: Impact, "Arial Black", system-ui, sans-serif;
+  font-family: var(--font-impact), Impact, "Arial Black", system-ui, sans-serif;
   font-style: italic;
   font-size: clamp(24px, 5.4vw, 50px);
   color: #ffa53b;
@@ -503,7 +503,7 @@
 }
 .letter {
   display: inline-block;
-  font-family: Impact, "Arial Black", system-ui, sans-serif;
+  font-family: var(--font-impact), Impact, "Arial Black", system-ui, sans-serif;
   font-size: clamp(38px, 10vw, 104px);
   color: #fff;
   -webkit-text-stroke: 3px #1b1b24;
@@ -565,7 +565,7 @@
     radial-gradient(circle at 50% 45%, #2f5fe0, #10236e 60%, #060b26);
 }
 .titleLogo {
-  font-family: Impact, "Arial Black", system-ui, sans-serif;
+  font-family: var(--font-impact), Impact, "Arial Black", system-ui, sans-serif;
   font-style: italic;
   font-size: clamp(30px, 7cqw, 70px);
   line-height: 1;
@@ -602,8 +602,9 @@
   border: 0;
   background: rgba(10, 16, 48, 0.6);
   border-radius: 6px;
-  padding: 2px 6px;
-  font-size: 15px;
+  padding: 4px 6px;
+  color: #fff;
+  font-size: 16px;
   cursor: pointer;
 }
 

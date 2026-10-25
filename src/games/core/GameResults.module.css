@@ -1,0 +1,376 @@
+/* The shared end screen, skinned per game so it reads as the same game's own results page. */
+
+/* Fills whatever the shell gives the game; the card inside keeps a readable measure. */
+.screen {
+  width: 100%;
+  padding: clamp(12px, 3vw, 32px) clamp(10px, 3vw, 24px);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 1.75rem);
+  border: 4px solid var(--color-ink);
+  border-radius: 16px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 16px;
+  line-height: 1.4;
+  box-shadow: 0 20px 40px rgb(0 0 0 / 25%);
+}
+
+.header {
+  text-align: center;
+}
+.kicker {
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.headline {
+  margin-top: 0.35rem;
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.course {
+  margin-top: 0.25rem;
+  opacity: 0.75;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+}
+.stat {
+  padding: 0.75rem 0.25rem;
+  border-radius: 10px;
+  background: #fff;
+}
+.statLabel {
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.statValue {
+  font-size: clamp(1.4rem, 5vw, 1.75rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.statMax {
+  font-size: max(14px, 0.6em);
+  font-weight: 400;
+  opacity: 0.65;
+}
+
+.reviewTitle {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+.mistakes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.mistake {
+  padding: 0.75rem;
+  border: 2px solid rgb(27 30 43 / 10%);
+  border-radius: 10px;
+  background: #fff;
+}
+.prompt {
+  font-weight: 700;
+}
+.chosen {
+  color: #9b1c1c;
+}
+.expected {
+  color: #065f46;
+}
+.explanation {
+  margin-top: 0.25rem;
+  opacity: 0.85;
+}
+.source {
+  margin-top: 0.25rem;
+  font-size: 14px;
+  opacity: 0.75;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+.primary,
+.secondary {
+  min-width: 9rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.primary {
+  border: 2px solid var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+.secondary {
+  border: 2px solid currentColor;
+  background: transparent;
+  color: inherit;
+}
+
+/* ── Battle: the Gen 4/5 text box and HP-box panels ───────────────────── */
+.battle .card {
+  border: 4px solid #4870a0;
+  outline: 3px solid #f8f8f8;
+  box-shadow: 0 0 0 6px #283850, 0 20px 40px rgb(0 0 0 / 40%);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fcfcfc, #e8ecf0);
+  color: #484850;
+  font-family: var(--font-pokemon), var(--font-game-text), monospace;
+  font-size: 18px;
+  font-weight: 500;
+}
+.battle .kicker {
+  color: #4870a0;
+  font-weight: 600;
+  opacity: 1;
+}
+.battle .headline {
+  font-family: inherit;
+  font-size: clamp(1.6rem, 6vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #f8d030;
+  text-shadow: 0 3px 0 #3050a8, 0 5px 0 rgb(0 0 0 / 25%);
+}
+.battle .stat,
+.battle .mistake {
+  border: 3px solid #202028;
+  border-radius: 10px 4px 10px 4px;
+  background: #f8f8e8;
+  box-shadow: 4px 4px 0 rgb(32 32 40 / 30%);
+  text-shadow: 0.07em 0 0 #d8d8c8, 0 0.07em 0 #d8d8c8;
+}
+.battle .statLabel {
+  color: #404048;
+  font-weight: 600;
+  opacity: 1;
+}
+.battle .chosen {
+  color: #c03028;
+}
+.battle .expected {
+  color: #287838;
+}
+.battle .primary {
+  border: 3px solid #101014;
+  background: #f8d030;
+  color: #101014;
+  box-shadow: 0 4px 0 #101014;
+}
+.battle .secondary {
+  border: 3px solid #101014;
+  background: #fff;
+  color: #101014;
+  box-shadow: 0 4px 0 #101014;
+}
+
+/* ── Dilemma: Ace Attorney's navy dialogue box and court-record panels ─ */
+.dilemma .card {
+  border: 3px solid #fff;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgb(20 32 78 / 96%), rgb(8 14 42 / 96%));
+  box-shadow: 0 0 0 3px #0a1030, inset 0 0 24px rgb(80 120 255 / 25%), 0 20px 40px rgb(0 0 0 / 45%);
+  color: #fff;
+  font-family: var(--font-courtroom), system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  text-shadow: 0.06em 0.06em 0 rgb(0 0 0 / 60%);
+}
+.dilemma .kicker {
+  color: #ffd23e;
+  font-weight: 800;
+  opacity: 1;
+}
+.dilemma .headline {
+  font-family: var(--font-impact), Impact, "Arial Black", system-ui, sans-serif;
+  font-style: italic;
+  font-size: clamp(2rem, 8vw, 3rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  color: #fff;
+  -webkit-text-stroke: 2px #1b1b24;
+  text-shadow: 4px 4px 0 #000;
+}
+.dilemma.lost .headline {
+  color: #ff5f56;
+}
+.dilemma .stat,
+.dilemma .mistake {
+  border: 2px solid rgb(255 255 255 / 35%);
+  border-radius: 8px;
+  background: rgb(5 9 30 / 70%);
+}
+.dilemma .statLabel {
+  color: #9fb4ff;
+  font-weight: 800;
+  opacity: 1;
+}
+.dilemma .reviewTitle {
+  color: #ffd23e;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.dilemma .mistake {
+  border-left: 6px solid #ffd23e;
+}
+.dilemma .chosen {
+  color: #ff8a80;
+}
+.dilemma .expected {
+  color: #8ff0a4;
+}
+.dilemma .explanation,
+.dilemma .source {
+  font-weight: 500;
+}
+.dilemma .primary {
+  border: 3px solid #fff;
+  background: linear-gradient(180deg, #4878e0, #1f3f9c);
+  color: #fff;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 0 #0a1030;
+}
+.dilemma .secondary {
+  border: 3px solid #fff;
+  background: rgb(10 15 36 / 80%);
+  color: #fff;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 0 #0a1030;
+}
+
+/* ── Word Match: a neon arcade high-score screen ──────────────────────── */
+.word-match .card {
+  border: 3px solid #6ff5ff;
+  border-radius: 18px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgb(0 0 0 / 16%) 3px 4px),
+    linear-gradient(180deg, #2a1650, #120a26);
+  box-shadow: 0 0 24px rgb(110 245 255 / 45%), inset 0 0 30px rgb(140 60 240 / 35%);
+  color: #f8f4ff;
+  font-family: var(--font-game-text), monospace;
+  /* VT323 runs small: 22px reads like 16px elsewhere. */
+  font-size: 22px;
+  line-height: 1.2;
+}
+.word-match .kicker {
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  letter-spacing: 0.15em;
+  color: #ff9ae9;
+  text-shadow: 0 0 10px rgb(255 79 216 / 70%);
+  opacity: 1;
+}
+.word-match .headline {
+  margin-top: 0.6rem;
+  font-size: clamp(18px, 5vw, 30px);
+  line-height: 1.5;
+  color: #fff;
+  text-shadow: 0 0 14px #ff4fd8, 4px 4px 0 #000;
+}
+.word-match .course {
+  color: #6ff5ff;
+  opacity: 1;
+}
+.word-match .stat,
+.word-match .mistake {
+  border: 2px solid rgb(255 255 255 / 25%);
+  border-radius: 14px;
+  background: rgb(10 7 22 / 65%);
+}
+.word-match .statLabel {
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  color: #ff9ae9;
+  opacity: 1;
+}
+.word-match .statValue {
+  margin-top: 0.35rem;
+  font-family: var(--font-pixel);
+  font-size: clamp(16px, 4vw, 24px);
+  font-weight: 400;
+  color: #fff36b;
+  text-shadow: 0 0 10px rgb(255 243 107 / 55%);
+}
+/* The pixel face can't go small enough for "/2500" to fit a phone tile, so the max uses the terminal face. */
+.word-match .statMax {
+  font-family: var(--font-game-text), monospace;
+  font-size: max(18px, 0.8em);
+}
+.word-match .reviewTitle {
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  font-weight: 400;
+  color: #6ff5ff;
+  text-shadow: 0 0 10px rgb(110 245 255 / 60%);
+}
+.word-match .mistake {
+  border-left: 6px solid #7b4dff;
+}
+.word-match .prompt {
+  color: #c9b6ff;
+}
+.word-match .chosen {
+  color: #ff7a9a;
+}
+.word-match .expected {
+  color: #6ff5ff;
+}
+.word-match .source {
+  font-size: 18px;
+}
+.word-match .primary,
+.word-match .secondary {
+  padding: 0.9rem 1.4rem;
+  border: 3px solid #fff;
+  border-radius: 12px;
+  font-family: var(--font-pixel);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #fff;
+  text-shadow: 0.15em 0.15em 0 #4a0a41;
+}
+.word-match .primary {
+  background: linear-gradient(180deg, #ff4fd8, #b0179a);
+  box-shadow: 0 0 22px rgb(255 79 216 / 80%), 0 5px 0 #4a0a41;
+}
+.word-match .secondary {
+  background: linear-gradient(180deg, #10b6c9, #0b7891);
+  box-shadow: 0 0 18px rgb(16 182 201 / 70%), 0 5px 0 #063c48;
+  text-shadow: 0.15em 0.15em 0 #063c48;
+}
+
+/* Phones: "ACCURACY" in the pixel face is wider than a third of the screen, so labels use the terminal face. */
+@media (max-width: 480px) {
+  .word-match .statLabel {
+    font-family: inherit;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+  }
+}

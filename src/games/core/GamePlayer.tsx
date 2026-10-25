@@ -32,6 +32,7 @@ export function GamePlayer({
   if (result) {
     return (
       <GameResults
+        game={game}
         title={title}
         result={result}
         onReplay={() => {

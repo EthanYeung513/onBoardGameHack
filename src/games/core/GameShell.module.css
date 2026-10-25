@@ -92,6 +92,18 @@
   text-align: right;
   align-self: center;
 }
+/* Phones: the save line drops under its label instead of squeezing into a ragged column beside it. */
+@media (max-width: 600px) {
+  .option {
+    flex-wrap: wrap;
+  }
+  .optionNote {
+    flex-basis: 100%;
+    margin-left: 0;
+    padding-left: 1.6em;
+    text-align: left;
+  }
+}
 
 /* Play fills the whole viewport, like the real game in a building. */
 .play {
@@ -169,6 +181,10 @@
   color: #fff;
   text-shadow: 0 0 8px rgb(110 245 255 / 55%);
 }
+/* VT323 runs small for its size: the save line needs more than the shared 0.7em. */
+.word-match .optionNote {
+  font-size: 0.85em;
+}
 
 /* ── Dilemma: an Ace Attorney title card over the office art ──────────── */
 .dilemma {
@@ -177,7 +193,7 @@
   background: #0a0f24;
 }
 .dilemma .courseTitle {
-  font-family: Impact, "Arial Black", system-ui, sans-serif;
+  font-family: var(--font-impact), Impact, "Arial Black", system-ui, sans-serif;
   font-size: clamp(1.6rem, 6vw, 3.4rem);
   letter-spacing: 0.03em;
   color: #fff;

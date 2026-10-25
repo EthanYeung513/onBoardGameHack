@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { blip, sweep, thud } from "../core/sound";
 import type { GameProps } from "../core/types";
+import { SoundIcon } from "../core/SoundIcon";
 import { createWordMatch, maxScore, MAX_MULTIPLIER, nextBoard, select, timeUp, type Side, type WordMatchState } from "./logic";
 import type { WordMatchSpec } from "./spec";
 import styles from "./wordmatch.module.css";
@@ -207,7 +208,7 @@ export function WordMatchGame({ spec, onComplete, instant = false }: GameProps<W
   return (
     <div ref={arena} className={styles.arena} data-testid="word-match">
       <button className={styles.soundToggle} onClick={() => setSound((s) => !s)} aria-label={sound ? "Mute" : "Unmute"}>
-        {sound ? "🔊" : "🔇"}
+        <SoundIcon on={sound} />
       </button>
       <div className={styles.hud}>
         <div className={styles.hudLeft}>

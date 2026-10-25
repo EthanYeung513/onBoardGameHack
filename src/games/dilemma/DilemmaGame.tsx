@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { blip, sweep, thud } from "../core/sound";
 import type { GameProps } from "../core/types";
 import { useTypewriter } from "../core/useTypewriter";
+import { SoundIcon } from "../core/SoundIcon";
 import { Backdrop, Desk, Portrait, ShoutBubble } from "./art";
 import { choose, createDilemma, displayedOptions, isThought, maxScore, parseRich, resolveLook, sliceRich, type DilemmaState } from "./logic";
 import type { CastMember, DilemmaSpec, Line, Mood } from "./spec";
@@ -421,7 +422,7 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
         }}
         aria-label={sound ? "Mute" : "Unmute"}
       >
-        {sound ? "🔊" : "🔇"}
+        <SoundIcon on={sound} />
       </button>
     </div>
   );

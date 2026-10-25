@@ -333,32 +333,55 @@
 
 /* HP boxes ---------------------------------------------------------------------------------------- */
 
+/* The slanted tail is drawn by two clipped layers rather than clip-path on the box itself, which would
+   cut the border and shadow off along the diagonal: ::before is the ink border, ::after the cream fill
+   inset by the border width, and the shadow is a drop-shadow so it follows the clipped silhouette. */
 .hpBox {
+  --border: 3px;
   position: absolute;
   z-index: 6;
   min-width: 42%;
   padding: 1.4% 2.6% 1.6% 3%;
-  background: var(--box);
-  border: 3px solid var(--ink);
-  border-radius: 10px 4px 10px 4px;
-  box-shadow: 4px 4px 0 rgba(32, 32, 40, 0.35);
+  border: var(--border) solid transparent;
+  filter: drop-shadow(4px 4px 0 rgba(32, 32, 40, 0.35));
   color: #404048;
   font-size: max(14px, 3.3cqw);
   font-weight: 600;
   line-height: 1.1;
   text-shadow: 0.07em 0 0 #c8c8b8, 0 0.07em 0 #c8c8b8, 0.07em 0.07em 0 #c8c8b8;
 }
+.hpBox::before,
+.hpBox::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+}
+.hpBox::before {
+  inset: calc(-1 * var(--border));
+  background: var(--ink);
+  border-radius: 10px 4px 10px 4px;
+  clip-path: var(--shape);
+}
+.hpBox::after {
+  inset: 0;
+  background: var(--box);
+  border-radius: 7px 1px 7px 1px;
+  /* Same slant pulled in a touch further so the diagonal border is as thick as the straight ones. */
+  clip-path: var(--inner-shape);
+}
 .foeBox {
   left: 4%;
   top: 6%;
-  clip-path: polygon(0 0, 100% 0, 94% 100%, 0 100%);
   padding-right: 6%;
+  --shape: polygon(0 0, 100% 0, 94% 100%, 0 100%);
+  --inner-shape: polygon(0 0, calc(100% - 0.6px) 0, calc(94% - 0.6px) 100%, 0 100%);
 }
 .playerBox {
   right: 3%;
   bottom: 33%;
-  clip-path: polygon(6% 0, 100% 0, 100% 100%, 0 100%);
   padding-left: 7%;
+  --shape: polygon(6% 0, 100% 0, 100% 100%, 0 100%);
+  --inner-shape: polygon(calc(6% + 0.6px) 0, 100% 0, 100% 100%, calc(0% + 0.6px) 100%);
 }
 .hpTop {
   display: flex;
@@ -448,7 +471,7 @@
   right: 0.6em;
   bottom: 0.35em;
   color: #e83838;
-  font-size: 0.7em;
+  font-size: max(14px, 0.7em);
   text-shadow: none;
   animation: arrow 0.6s ease-in-out infinite alternate;
 }

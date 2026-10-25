@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { blip, playClip, sweep, thud } from "../core/sound";
 import type { GameProps } from "../core/types";
 import { useTypewriter } from "../core/useTypewriter";
+import { SoundIcon } from "../core/SoundIcon";
 import { answer, CRIT_WINDOW_MS, createBattle, displayedChoices, MAX_HP, maxScore, type BattleState } from "./logic";
 import type { BattleSpec } from "./spec";
 import styles from "./battle.module.css";
@@ -328,7 +329,7 @@ export function BattleGame({ spec, onComplete, instant = false }: GameProps<Batt
           ))}
         </span>
         <button className={styles.iconButton} onClick={() => setSound((s) => !s)} aria-label={sound ? "Mute" : "Unmute"}>
-          {sound ? "🔊" : "🔇"}
+          <SoundIcon on={sound} />
         </button>
       </div>
 
