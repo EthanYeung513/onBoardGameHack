@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Doc } from "@convex/_generated/dataModel";
+import { logoChip, luminance } from "@/lib/brand/themes";
 
 // Product surfaces resolve colours through the space's brand tokens (AGENTS.md "Design"), the
 // real version of the mockup's `setProperty('--brand', B.primary)` / `('--accent', B.accent)`.
@@ -19,11 +20,33 @@ export function brandVars(brand: BrandProfile | null | undefined): CSSProperties
   return {
     "--brand": pick(brand, "primary") ?? DEFAULTS.brand,
     "--accent": pick(brand, "accent") ?? DEFAULTS.accent,
-    "--ink": pick(brand, "text") ?? DEFAULTS.ink,
+    // --ink is also the dark UI colour (sidebar, ghost buttons, modals): a theme with light page
+    // text (Dark, Bold) keeps it dark and gets `theme-dark` from brandClass instead.
+    "--ink": lightText(brand) ? DEFAULTS.ink : (pick(brand, "text") ?? DEFAULTS.ink),
     "--paper": pick(brand, "surface") ?? DEFAULTS.paper,
     "--font-heading": font(brand.typography.heading),
     "--font-body": font(brand.typography.body),
+    ...(brand.radius ? { "--radius": brand.radius } : {}),
   } as CSSProperties;
+}
+
+const lightText = (brand: BrandProfile) => {
+  const text = pick(brand, "text");
+  return !!text && luminance(text) > 0.5;
+};
+
+/** Classes for the picked theme's style (D-34): `theme-glass`, `theme-bold`, `theme-dark` (light text). */
+export function brandClass(brand: BrandProfile | null | undefined): string {
+  if (!brand) return "";
+  return [brand.themeStyle && brand.themeStyle !== "flat" ? `theme-${brand.themeStyle}` : "", lightText(brand) ? "theme-dark" : ""].filter(Boolean).join(" ");
+}
+
+/** The space's logo (a mark or wordmark copied at scan time) and the chip it needs on the sidebar. */
+export function brandLogo(brand: BrandProfile | null | undefined): { url: string; chip: "light" | "dark" | null } | null {
+  const logo = brand?.logoRefs.find((l) => l.kind !== "favicon");
+  if (!logo) return null;
+  // The sidebar is dark (--ink), except under the frosted-glass theme where it is near-white.
+  return { url: logo.url, chip: logoChip(brand!.themeStyle === "glass" ? "#f5f5f7" : "#101014", logo.tone) };
 }
 
 /** Two-letter initials for the space badge (mockup `B.initials`). */

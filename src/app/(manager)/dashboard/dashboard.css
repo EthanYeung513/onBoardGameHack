@@ -16,3 +16,27 @@
 .ob .next-step .btn { margin-left: auto; padding: 8px 14px; }
 .ob .next-step .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--brand); }
 .ob .next-step .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--brand); animation: rot 0.8s linear infinite; }
+/* The company logo copied at scan time; a contrasting chip only where it would vanish (logoChip). */
+.ob .side .logo .logo-img { height: 30px; max-width: 120px; object-fit: contain; flex: none; }
+.ob .side .logo .logo-img.chip-light, .ob .side .logo .logo-img.chip-dark { border-radius: 8px; padding: 4px 6px; }
+.ob .side .logo .logo-img.chip-light { background: #fff; }
+.ob .side .logo .logo-img.chip-dark { background: #101014; }
+/* Theme styles picked after the scan (D-34); colours always come from the brand variables. */
+.ob .theme-glass .dash { background: radial-gradient(60% 50% at 10% 0%, color-mix(in srgb, var(--brand) 22%, transparent), transparent), radial-gradient(50% 50% at 100% 30%, color-mix(in srgb, var(--accent) 18%, transparent), transparent), var(--paper, #f5f5f7); background-attachment: fixed; }
+.ob .theme-glass .side { background: rgba(255,255,255,.55); color: var(--ink); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-right: 1px solid rgba(255,255,255,.7); }
+.ob .theme-glass .side a:hover { background: rgba(0,0,0,.05); }
+.ob .theme-glass .side a.on { background: rgba(0,0,0,.08); }
+.ob .theme-glass .side .who { border-top-color: rgba(0,0,0,.08); }
+.ob .theme-glass .kpi, .ob .theme-glass .panel, .ob .theme-glass .next-step { background: rgba(255,255,255,.6); border-color: rgba(255,255,255,.75); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 8px 30px rgba(0,0,0,.06); }
+.ob .theme-bold .dash { background: var(--paper); }
+/* Light page text (Dark, and Bold on a strong brand colour, which also gets theme-dark); --ink stays
+   dark for buttons, modals and the sidebar, which sit on their own backgrounds. */
+.ob .theme-dark .dash { color: #f4f4f7; --muted: rgba(255,255,255,.68); --line: rgba(255,255,255,.16); }
+.ob .theme-dark .dash .modal { color: #101014; --muted: #6b6b76; --line: rgba(16,16,20,.12); }
+.ob .theme-dark .dash { background: var(--paper); }
+.ob .theme-dark .kpi, .ob .theme-dark .panel, .ob .theme-dark .next-step { background: color-mix(in srgb, var(--paper) 86%, #fff); border-color: rgba(255,255,255,.12); color: #f2f2f5; }
+.ob .theme-dark .side { background: color-mix(in srgb, var(--paper) 92%, #000); }
+.ob .theme-bold .side { background: color-mix(in srgb, var(--paper) 70%, #000); color: #fff; }
+.ob .theme-bold .kpi, .ob .theme-bold .panel, .ob .theme-bold .next-step { background: color-mix(in srgb, #fff 12%, var(--paper)); border-color: rgba(255,255,255,.16); }
+.ob .theme-bold #ai-fab { background: var(--accent); }
+.ob .theme-gradient .dash { background: linear-gradient(140deg, color-mix(in srgb, var(--brand) 12%, var(--paper, #f6f6f8)), var(--paper, #f6f6f8) 55%, color-mix(in srgb, var(--accent) 10%, var(--paper, #f6f6f8))); background-attachment: fixed; }

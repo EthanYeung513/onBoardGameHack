@@ -252,7 +252,9 @@ scan (Nicole 2026-10-25, D-18).
 
 Reuse `src/lib/pipeline` verbatim. Stage order for a space scan:
 
-`crawl → extract_design → analyse → seed_brain → generate_courses → ready`
+`extract_design → ready` (the brand pass the manager waits on: logo, colours, fonts and style
+cues → 3–4 theme cards to pick from, in seconds), with
+`crawl → analyse → seed_brain → generate_courses` running alongside in the background (D-34).
 
 - `crawl` (exists): URL discovery, ranking, fetch, screenshots → `crawl_pages`.
 - `extract_design` (exists): dembrandt → raw evidence → LLM-normalized

@@ -17,13 +17,18 @@ export const STAGE_LABELS: Record<StageName, string> = {
   ready: "Calibrating dashboard to your brand",
 };
 
-/** A space scan runs these in order (PRD "Subsystem: scan pipeline"). */
-export const SCAN_CHAIN: StageName[] = ["crawl", "extract_design", "analyse", "seed_brain", "generate_courses", "ready"];
+/** The scan the manager waits on: brand identity only → theme options (D-34, seconds not minutes). */
+export const SCAN_CHAIN: StageName[] = ["extract_design", "ready"];
+/** Started alongside the scan, never blocking it: reading the site, the brain and course drafts.
+ * These jobs carry `sourceScanId` (not `scanId`), so their failures never fail the scan. */
+export const ENRICH_CHAIN: StageName[] = ["crawl", "analyse", "seed_brain", "generate_courses"];
 
-export function nextInScan(stage: StageName): StageName | null {
-  const i = SCAN_CHAIN.indexOf(stage);
-  return i >= 0 && i < SCAN_CHAIN.length - 1 ? SCAN_CHAIN[i + 1] : null;
+function nextIn(chain: StageName[], stage: StageName): StageName | null {
+  const i = chain.indexOf(stage);
+  return i >= 0 && i < chain.length - 1 ? chain[i + 1] : null;
 }
+export const nextInScan = (stage: StageName) => nextIn(SCAN_CHAIN, stage);
+export const nextInEnrich = (stage: StageName) => nextIn(ENRICH_CHAIN, stage);
 
 /** A running job with no heartbeat for this long is marked stalled (PRD success metrics). */
 export const STALL_MS = 60_000;

@@ -197,7 +197,7 @@ describe("extract_design stage", () => {
       loadImage: vi.fn(async () => ({ bytes: new Uint8Array([1]), contentType: "image/svg+xml", format: "svg" })),
       storeBytes: vi.fn(async () => ({ storageId: "st1" as never, url: "http://convex/st1" })),
     };
-    const { ctx, calls, events } = fakeCtx({ answers: { "scanWorker:saveBrandProfile": { tokensVersion: 1 } } });
+    const { ctx, calls, events } = fakeCtx({ answers: { "scanWorker:saveBrandProfile": { tokensVersion: 1 }, "brand:saveThemes": { themes: 3, styles: ["flat", "flat", "bold"] } } });
     const r = await createExtractDesignStage(deps).run(ctx);
     expect(r).toMatchObject({ done: true });
     const saved = calls.find((c) => c.fn === "scanWorker:saveBrandProfile")!.args;
@@ -206,6 +206,9 @@ describe("extract_design stage", () => {
     expect(saved.logoRefs).toContainEqual({ kind: "wordmark", url: "http://convex/st1", format: "svg" });
     expect((saved.candidates as { palette: unknown[]; labelledBy: string }).labelledBy).toBe("offline-stand-in");
     expect(events[0]).toBe("Extracting brand identity (logo, colors, typography)");
+    // The scan ends in theme options built from what was just saved (D-34).
+    expect(calls.map((c) => c.fn).indexOf("brand:saveThemes")).toBeGreaterThan(calls.map((c) => c.fn).indexOf("scanWorker:saveBrandProfile"));
+    expect(events).toContain("3 theme options ready");
   });
 });
 

@@ -207,6 +207,8 @@ export default defineSchema({
         kind: v.union(v.literal("mark"), v.literal("wordmark"), v.literal("favicon")),
         url: v.string(),
         format: v.string(),
+        /** Ink of the logo (src/lib/brand/themes.ts svgLogoTone); decides whether it needs a chip. */
+        tone: v.optional(v.union(v.literal("light"), v.literal("dark"))),
       }),
     ),
     voice: v.string(),
@@ -218,6 +220,11 @@ export default defineSchema({
     candidates: v.optional(v.any()),
     /** Scan-time learned recommendation (src/lib/brand/types.ts StoredRecommendation, D-27). */
     recommendation: v.optional(v.any()),
+    /** Theme options built from the extracted identity (src/lib/brand/themes.ts Theme[], D-34). */
+    themes: v.optional(v.any()),
+    /** The theme the manager picked; its palette/radius/style are applied to the tokens above. */
+    themeId: v.optional(v.string()),
+    themeStyle: v.optional(v.union(v.literal("flat"), v.literal("glass"), v.literal("bold"), v.literal("gradient"))),
   })
     .index("by_space", ["spaceId"])
     .index("by_scan", ["scanId"]),
@@ -262,6 +269,8 @@ export default defineSchema({
     /** The scan or connector this job belongs to. */
     scanId: v.optional(v.id("scans")),
     connectorId: v.optional(v.id("connectors")),
+    /** Background enrichment of a scan (ENRICH_CHAIN): the stage reads this scan, the scan never waits on it. */
+    sourceScanId: v.optional(v.id("scans")),
     stage: stageName,
     status: jobStatus,
     progress: v.number(),

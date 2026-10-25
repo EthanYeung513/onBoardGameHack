@@ -2,6 +2,7 @@ import { z } from "zod";
 import { api } from "@convex/_generated/api";
 import { applyModelHints, buildCandidates, type BrandCandidates, type HtmlEvidence } from "@/lib/brand/candidates";
 import { pickBrandTokens, type PickedTokens } from "@/lib/brand/pick";
+import { svgLogoTone } from "@/lib/brand/themes";
 import { recommendBrandTokens } from "@/lib/brand/recommend";
 import { dembrandtAvailable, htmlCssEvidence, runDembrandt } from "@/lib/design/evidence";
 import { BRAND_NORMALISE_SYSTEM_PROMPT } from "@/lib/prompts";
@@ -61,14 +62,15 @@ function labelsSchema(c: BrandCandidates) {
 }
 
 async function storeLogos(ctx: StageContext, deps: DesignDeps, c: BrandCandidates) {
-  const refs: { kind: "mark" | "wordmark" | "favicon"; url: string; format: string }[] = [];
+  const refs: { kind: "mark" | "wordmark" | "favicon"; url: string; format: string; tone?: "light" | "dark" }[] = [];
   for (const kind of ["logo", "favicon"] as const) {
     const options = c.logos.filter((l) => (kind === "favicon" ? l.kind === "favicon" : l.kind !== "favicon"));
     for (const l of options.slice(0, 2)) {
       try {
         const img = await deps.loadImage(l.src);
         const { url } = await deps.storeBytes(ctx, img.bytes, img.contentType);
-        refs.push({ kind: l.kind, url, format: img.format });
+        const tone = img.format === "svg" ? svgLogoTone(new TextDecoder().decode(img.bytes)) : null;
+        refs.push({ kind: l.kind, url, format: img.format, ...(tone ? { tone } : {}) });
         break;
       } catch (err) {
         await ctx.event("warn", `Couldn't copy the ${kind} (${l.evidence}): ${(err as Error).message.slice(0, 120)}`);
@@ -97,7 +99,11 @@ export function createExtractDesignStage(deps: DesignDeps): StageDefinition {
       const scan = ctx.scan;
       if (!scan) throw new Error("extract_design needs a scan");
       const existing = await ctx.convex.query(api.scanWorker.brandProfileForScan, { scanId: scan._id });
-      if (existing) return { done: true, summary: "brand already extracted for this scan" };
+      if (existing) {
+        // A retry after the profile was saved: only the theme options may still be missing.
+        if (!existing.themes) await ctx.convex.mutation(api.brand.saveThemes, { spaceId: ctx.space._id, style: (existing.candidates as BrandCandidates | undefined)?.style });
+        return { done: true, summary: "brand already extracted for this scan" };
+      }
       // Cheap re-scan: the homepage (where the brand evidence lives) is unchanged and the space
       // already has a brand → keep it (and the manager's Design-tab choices) without re-extracting.
       if (scan.changes?.home === "unchanged" && ctx.space.brandProfileId) {
@@ -106,18 +112,15 @@ export function createExtractDesignStage(deps: DesignDeps): StageDefinition {
       }
 
       await ctx.event("info", "Extracting brand identity (logo, colors, typography)", { step: "brand" });
-      let dembrandt: Record<string, unknown> | null = null;
-      if (deps.dembrandtAvailable()) {
-        try {
-          dembrandt = await deps.runDembrandt(scan.url);
-        } catch (err) {
-          await ctx.event("warn", `Rendered-page extraction failed, using the HTML and CSS only: ${(err as Error).message.slice(0, 200)}`);
-        }
-      } else {
-        await ctx.event("info", "No local browser for rendered-page extraction — reading brand tokens from the HTML and CSS");
-      }
+      // The rendered page (dembrandt) and the HTML/CSS read run side by side.
+      const rendered = deps.dembrandtAvailable()
+        ? deps.runDembrandt(scan.url).catch(async (err) => {
+            await ctx.event("warn", `Rendered-page extraction failed, using the HTML and CSS only: ${(err as Error).message.slice(0, 200)}`);
+            return null;
+          })
+        : ctx.event("info", "No local browser for rendered-page extraction — reading brand tokens from the HTML and CSS").then(() => null);
+      const [dembrandt, html] = await Promise.all([rendered, deps.htmlCssEvidence(scan.url) as Promise<HtmlEvidence>]);
       await ctx.progress(0.4);
-      const html = (await deps.htmlCssEvidence(scan.url)) as HtmlEvidence;
       const candidates = buildCandidates(html, dembrandt);
       if (!candidates.palette.length) throw new Error(`No colours found on ${scan.url}`);
 
@@ -160,6 +163,9 @@ export function createExtractDesignStage(deps: DesignDeps): StageDefinition {
       } catch (err) {
         await ctx.event("warn", `Brand recommendation unavailable, keeping the extracted tokens: ${err instanceof Error ? err.message : String(err)}`);
       }
+      // D-34: the scan's output is a handful of theme options built from this identity.
+      const themes = await ctx.convex.mutation(api.brand.saveThemes, { spaceId: ctx.space._id, style: candidates.style });
+      await ctx.event("info", `${themes.themes} theme options ready${candidates.style?.glass ? " (frosted glass detected on the site)" : ""}`, { step: "themes", ...themes });
       return { done: true, summary: `primary ${primary.value}, ${picked.headline.value} headlines, ${quality}` };
     },
   };
@@ -167,7 +173,8 @@ export function createExtractDesignStage(deps: DesignDeps): StageDefinition {
 
 export const extractDesignStage = createExtractDesignStage({
   dembrandtAvailable,
-  runDembrandt: (url) => runDembrandt(url, 75_000),
+  // Bounded: the manager waits on this pass; past it, the HTML/CSS evidence alone is used.
+  runDembrandt: (url) => runDembrandt(url, 35_000),
   htmlCssEvidence,
   loadImage,
   storeBytes,

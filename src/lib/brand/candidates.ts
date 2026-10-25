@@ -42,6 +42,16 @@ export interface BrandCandidates {
   companyName: Candidate[];
   logos: LogoCandidate[];
   description: string | null;
+  /** Visual style cues from the site's CSS (glassmorphism, gradients, roundness, depth). */
+  style?: StyleCues;
+}
+
+export interface StyleCues {
+  glass: number;
+  translucent: number;
+  gradients: number;
+  shadows: number;
+  roundRadius: number | null;
 }
 
 /** The parts of `htmlCssEvidence` (src/lib/design/evidence.ts) used here. */
@@ -56,6 +66,7 @@ export interface HtmlEvidence {
   radii?: { value: string; count: number }[];
   logoCandidates?: { src: string; alt: string; evidence?: string }[];
   icons?: string[];
+  styleCues?: StyleCues;
 }
 
 const GENERIC = new Set(["serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui", "ui-sans-serif", "ui-serif", "ui-monospace", "-apple-system", "blinkmacsystemfont", "inherit", "initial", "unset", "emoji", "math"]);
@@ -194,6 +205,7 @@ export function buildCandidates(html: HtmlEvidence, dembrandt?: Raw | null): Bra
     body: body.list(8),
     companyName: names.list(5),
     logos: logos.slice(0, 6),
+    ...(html.styleCues ? { style: html.styleCues } : {}),
     description: html.description ?? null,
   };
 }

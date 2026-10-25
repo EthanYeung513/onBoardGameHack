@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
-import { brandVars } from "@/components/manager/brand";
+import { brandClass, brandLogo, brandVars } from "@/components/manager/brand";
 import { AiAssistant } from "@/components/manager/dashboard/AiAssistant";
 import { AnalyticsTab } from "@/components/manager/dashboard/AnalyticsTab";
 import { brandInfo } from "@/components/manager/dashboard/brandInfo";
@@ -55,6 +55,7 @@ function DashboardView({ space, managerName }: { space: Space; managerName: stri
   const [tab, setTab] = useState<Tab>(initial && TABS.includes(initial) ? initial : "overview");
   const { toast, text, show } = useToast();
   const B = brandInfo(space);
+  const logo = brandLogo(space.brand);
   const props = { space, toast };
 
   const go = (t: Tab) => {
@@ -65,13 +66,18 @@ function DashboardView({ space, managerName }: { space: Space; managerName: stri
   };
 
   return (
-    <div style={brandVars(space.brand)}>
+    <div style={brandVars(space.brand)} className={brandClass(space.brand)}>
       <div className="dash">
         <aside className="side">
           <div className="logo">
-            <span className="mk" id="logo-mk" style={{ background: "var(--brand)" }}>
-              {B.initials}
-            </span>
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element -- stored company logo (any host)
+              <img className={`logo-img${logo.chip ? ` chip-${logo.chip}` : ""}`} src={logo.url} alt={`${B.company} logo`} />
+            ) : (
+              <span className="mk" id="logo-mk" style={{ background: "var(--brand)" }}>
+                {B.initials}
+              </span>
+            )}
             <span id="brand-name">{B.company}</span>
           </div>
           <div className="spacename" id="space-sub">

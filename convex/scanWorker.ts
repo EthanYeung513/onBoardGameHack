@@ -95,7 +95,7 @@ const paletteEntry = v.object({
   hex: v.string(),
   role: v.union(v.literal("primary"), v.literal("accent"), v.literal("surface"), v.literal("text")),
 });
-const logoRef = v.object({ kind: v.union(v.literal("mark"), v.literal("wordmark"), v.literal("favicon")), url: v.string(), format: v.string() });
+const logoRef = v.object({ kind: v.union(v.literal("mark"), v.literal("wordmark"), v.literal("favicon")), url: v.string(), format: v.string(), tone: v.optional(v.union(v.literal("light"), v.literal("dark"))) });
 
 /**
  * One brand profile per scan (re-sending is a no-op). A new profile gets the space's next

@@ -21,7 +21,7 @@ describe("pipeline jobs", () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
   });
 
-  it("starts a scan, chains stages in order and marks the space ready at the end", async () => {
+  it("a scan is the brand pass only; reading the site, brain and courses chain in the background", async () => {
     const { t, mgr, spaceId } = await setup();
     const scanId = await mgr.mutation(api.scans.start, { spaceId });
     expect(await mgr.mutation(api.scans.start, { spaceId })).toBe(scanId); // no duplicate scan
@@ -30,13 +30,27 @@ describe("pipeline jobs", () => {
       const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w1", stages: ["crawl", "extract_design", "analyse", "seed_brain", "generate_courses", "ready"] });
       if (!c) break;
       order.push(c.job.stage);
+      // Background stages still read the scan they enrich.
+      expect(c.scan?._id).toBe(scanId);
       await t.mutation(api.pipeline.finish, { secret, workerId: "w1", jobId: c.job._id, outcome: { kind: "done" } });
+      if (c.job.stage === "ready") expect((await mgr.query(api.pipeline.scanStatus, { scanId })).scan.status).toBe("succeeded");
     }
-    expect(order).toEqual(["crawl", "extract_design", "analyse", "seed_brain", "generate_courses", "ready"]);
+    // Scan jobs are claimed first, so the manager's wait is extract_design → ready.
+    expect(order).toEqual(["extract_design", "ready", "crawl", "analyse", "seed_brain", "generate_courses"]);
     const status = await mgr.query(api.pipeline.scanStatus, { scanId });
-    expect(status.scan.status).toBe("succeeded");
-    expect(status.events.map((e) => e.message)).toContain("Reading your website finished");
+    expect(status.jobs.map((j) => j.stage).sort()).toEqual(["extract_design", "ready"]);
     expect((await mgr.query(api.spaces.get, { spaceId })).status).toBe("ready");
+  });
+
+  it("a failing background stage never fails the scan", async () => {
+    const { t, mgr, spaceId } = await setup();
+    const scanId = await mgr.mutation(api.scans.start, { spaceId });
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["crawl"] });
+      await t.mutation(api.pipeline.finish, { secret, workerId: "w", jobId: c!.job._id, outcome: { kind: "error", message: "site timed out" } });
+      vi.advanceTimersByTime(10_000);
+    }
+    expect((await mgr.query(api.pipeline.scanStatus, { scanId })).scan.status).toBe("running");
   });
 
   it("only claims registered stages and rejects a wrong secret", async () => {
@@ -50,11 +64,11 @@ describe("pipeline jobs", () => {
     const { t, mgr, spaceId } = await setup();
     const scanId = await mgr.mutation(api.scans.start, { spaceId });
     for (let attempt = 1; attempt <= 3; attempt++) {
-      const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["crawl"] });
+      const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["extract_design"] });
       expect(c, `attempt ${attempt}`).not.toBeNull();
       await t.mutation(api.pipeline.finish, { secret, workerId: "w", jobId: c!.job._id, outcome: { kind: "error", message: "site timed out" } });
       if (attempt < 3) {
-        expect(await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["crawl"] })).toBeNull(); // backoff not elapsed
+        expect(await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["extract_design"] })).toBeNull(); // backoff not elapsed
         vi.advanceTimersByTime(2000 * 2 ** (attempt - 1) + 10);
       }
     }
@@ -63,7 +77,7 @@ describe("pipeline jobs", () => {
     expect(status.jobs[0]).toMatchObject({ status: "failed", attempt: 3 });
     // Manager retry resets attempts and requeues.
     await mgr.mutation(api.pipeline.resume, { jobId: status.jobs[0].id });
-    expect(await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["crawl"] })).not.toBeNull();
+    expect(await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["extract_design"] })).not.toBeNull();
   });
 
   it("continue slices keep the cursor; the watchdog stalls silent jobs and a stale worker loses the job", async () => {
@@ -92,7 +106,7 @@ describe("pipeline jobs", () => {
       await t.mutation(api.pipeline.finish, { secret, workerId: "w", jobId: c!.job._id, outcome: { kind: "done", next } });
     }
     const jobs = await t.run((ctx) => ctx.db.query("jobs").collect());
-    expect(jobs.find((j) => j.stage === "generate_courses")).toMatchObject({ status: "queued", scanId });
+    expect(jobs.find((j) => j.stage === "generate_courses")).toMatchObject({ status: "queued", sourceScanId: scanId });
     const cascade = jobs.find((j) => j.stage === "cascade")!;
     expect(cascade.status).toBe("queued");
     expect(cascade.scanId ?? cascade.connectorId).toBeUndefined();
@@ -102,8 +116,18 @@ describe("pipeline jobs", () => {
     const { t, mgr, spaceId } = await setup();
     await t.run((ctx) => ctx.db.insert("jobs", { spaceId, stage: "seed_brain", status: "queued", progress: 0, attempt: 0, cursor: {}, runAfter: 0 }));
     const scanId = await mgr.mutation(api.scans.start, { spaceId });
-    const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["crawl", "seed_brain"] });
-    expect(c?.job).toMatchObject({ stage: "crawl", scanId });
+    const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["extract_design", "seed_brain"] });
+    expect(c?.job).toMatchObject({ stage: "extract_design", scanId });
+  });
+
+  it("a scan-only lane never takes background work, and finds a fresh scan behind a long backlog", async () => {
+    const { t, mgr, spaceId } = await setup();
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 60; i++) await ctx.db.insert("jobs", { spaceId, stage: "seed_brain", status: "queued", progress: 0, attempt: 0, cursor: { i }, runAfter: i });
+    });
+    expect(await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["seed_brain"], scanOnly: true })).toBeNull();
+    const scanId = await mgr.mutation(api.scans.start, { spaceId });
+    const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["extract_design", "seed_brain"], scanOnly: true });
+    expect(c?.job).toMatchObject({ stage: "extract_design", scanId });
   });
 });
-

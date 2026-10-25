@@ -14,8 +14,9 @@ Chromium (dembrandt), long HTTP crawls and the Mubit SDK. The worker claims a qu
 runs one slice (≤45 s budget), heartbeats every ~3 s, and reports `done | continue | error`.
 Convex owns retry (≤3, backoff 2 s·2ⁿ), stall detection (watchdog cron, >60 s → `stalled`),
 manager resume (`pipeline.resume`, continues from the saved cursor) and chaining
-(`SCAN_CHAIN` in `convex/lib/stages.ts`: crawl → extract_design → analyse → seed_brain →
-generate_courses → ready). The legacy `src/lib/pipeline` (Supabase) serves only the old studio.
+(`convex/lib/stages.ts`, D-34: `SCAN_CHAIN` extract_design → ready is the brand pass the
+manager waits on; `ENRICH_CHAIN` crawl → analyse → seed_brain → generate_courses starts with it
+as background jobs carrying `sourceScanId`, which never fail the scan). The legacy `src/lib/pipeline` (Supabase) serves only the old studio.
 
 ```ts
 // src/worker/types.ts — register in src/worker/registry.ts; existing stages don't change shape
