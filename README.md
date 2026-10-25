@@ -36,11 +36,3 @@ Every LLM and embedding call goes through one adapter, `src/llm/mubit.ts`. It us
 **Self-updating courses.** Connectors (website, files, GitHub, Slack, Jira, Notion, Drive) version every source item. When an item changes, the facts citing it go stale and the exact course steps teaching them are flagged. On the manager's confirm, those steps are regenerated through Mubit.
 
 Without keys, each Mubit task falls back to a labelled offline stand-in.
-
-## Code
-
-The team is consolidating branches. Current locations:
-
-- `feature/onboarding-generator`: the manager app and pipeline (Next.js, Convex, worker, Mubit adapter, connectors). Requirements are in `PRD.md`.
-- `final`: the hire's world (`world/`, Phaser) and the three games (`src/games/`).
-- `main` (this branch): the original static click-through mockup. Run it with `python3 -m http.server 8787`.
