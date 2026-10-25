@@ -34,5 +34,3 @@ Every LLM and embedding call goes through one adapter, `src/llm/mubit.ts`. It us
 **Brand learning.** Each Design-tab choice is stored as a `brand_decisions` row and sent to Mubit as approve or correct feedback, keyed by the `brand.recommend` request id. It is also written to Mubit memory (`remember`, `recordOutcome`), which later recommendations recall, so the next company starts closer to right.
 
 **Self-updating courses.** Connectors (website, files, GitHub, Slack, Jira, Notion, Drive) version every source item. When an item changes, the facts citing it go stale and the exact course steps teaching them are flagged. On the manager's confirm, those steps are regenerated through Mubit.
-
-Without keys, each Mubit task falls back to a labelled offline stand-in.
