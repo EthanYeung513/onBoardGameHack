@@ -360,11 +360,14 @@ export default defineSchema({
     tokens: v.number(),
     embedding: v.optional(v.array(v.float64())),
     extractedAt: v.optional(v.number()),
+    /** Brain triage (`brain_classify`): high extracts first, low after, skip is never extracted. */
+    brainLabel: v.optional(v.union(v.literal("high"), v.literal("low"), v.literal("skip"))),
   })
     .index("by_source", ["sourceItemId"])
     .index("by_source_version", ["sourceItemId", "version", "idx"])
     .index("by_space", ["spaceId"])
     .index("by_space_extracted", ["spaceId", "extractedAt"])
+    .index("by_space_extracted_label", ["spaceId", "extractedAt", "brainLabel"])
     .searchIndex("search_text", { searchField: "text", filterFields: ["spaceId"] })
     .vectorIndex("by_embedding", { vectorField: "embedding", dimensions: EMBEDDING_DIMS, filterFields: ["spaceId"] }),
 

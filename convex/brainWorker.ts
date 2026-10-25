@@ -17,13 +17,35 @@ async function chunkView(ctx: QueryCtx, c: Doc<"doc_chunks">) {
   const item = await ctx.db.get(c.sourceItemId);
   const connector = item?.connectorId ? await ctx.db.get(item.connectorId) : null;
   const obsolete = !item || Boolean(item.removedAt) || item.version !== c.version;
-  return { id: c._id, text: c.text, sourceItemId: c.sourceItemId, title: item?.title ?? "", kind: item?.kind ?? "doc", connectorType: connector?.type ?? "manual", obsolete };
+  return {
+    id: c._id,
+    text: c.text,
+    sourceItemId: c.sourceItemId,
+    title: item?.title ?? "",
+    kind: item?.kind ?? "doc",
+    connectorType: connector?.type ?? "manual",
+    obsolete,
+    label: c.brainLabel ?? null,
+  };
 }
 
-/** Chunks still waiting for extraction — the whole space, or one source item's current version. */
+const brainLabel = v.union(v.literal("high"), v.literal("low"), v.literal("skip"));
+/** Triage filter for pending reads: one label, or "none" for chunks not classified yet. */
+const labelFilter = v.optional(v.union(v.literal("high"), v.literal("low"), v.literal("none")));
+
+function pendingByLabel(ctx: QueryCtx, spaceId: Id<"spaces">, label: "high" | "low" | "none" | undefined) {
+  if (!label) return ctx.db.query("doc_chunks").withIndex("by_space_extracted", (q) => q.eq("spaceId", spaceId).eq("extractedAt", undefined));
+  const want = label === "none" ? undefined : label;
+  return ctx.db.query("doc_chunks").withIndex("by_space_extracted_label", (q) => q.eq("spaceId", spaceId).eq("extractedAt", undefined).eq("brainLabel", want));
+}
+
+/**
+ * Chunks still waiting for extraction — the whole space, or one source item's current version.
+ * `label` narrows the space-wide read to one triage label ("none" = not classified yet), by index.
+ */
 export const pendingChunks = workerQuery({
-  args: { spaceId: v.id("spaces"), sourceItemId: v.optional(v.id("source_items")), limit: v.number() },
-  handler: async (ctx, { spaceId, sourceItemId, limit }) => {
+  args: { spaceId: v.id("spaces"), sourceItemId: v.optional(v.id("source_items")), limit: v.number(), label: labelFilter },
+  handler: async (ctx, { spaceId, sourceItemId, limit, label }) => {
     let chunks: Doc<"doc_chunks">[];
     if (sourceItemId) {
       const item = await ctx.db.get(sourceItemId);
@@ -35,10 +57,7 @@ export const pendingChunks = workerQuery({
           .collect()
       ).filter((c) => !c.extractedAt);
     } else {
-      chunks = await ctx.db
-        .query("doc_chunks")
-        .withIndex("by_space_extracted", (q) => q.eq("spaceId", spaceId).eq("extractedAt", undefined))
-        .take(limit);
+      chunks = await pendingByLabel(ctx, spaceId, label).take(limit);
     }
     return await Promise.all(chunks.slice(0, limit).map((c) => chunkView(ctx, c)));
   },
@@ -49,9 +68,44 @@ export const pendingChunks = workerQuery({
 export const PENDING_COUNT_CAP = 300;
 
 export const pendingCount = workerQuery({
-  args: { spaceId: v.id("spaces") },
-  handler: async (ctx, { spaceId }) =>
-    (await ctx.db.query("doc_chunks").withIndex("by_space_extracted", (q) => q.eq("spaceId", spaceId).eq("extractedAt", undefined)).take(PENDING_COUNT_CAP)).length,
+  args: { spaceId: v.id("spaces"), label: labelFilter },
+  handler: async (ctx, { spaceId, label }) => (await pendingByLabel(ctx, spaceId, label).take(PENDING_COUNT_CAP)).length,
+});
+
+/**
+ * Brain triage results (`brain_classify`). high/low are stored on the chunk (extraction order);
+ * skip marks the chunk processed with no extraction and writes a `brain.skipped` audit row with
+ * the label and reason, so nothing is dropped silently. Idempotent: extracted chunks are left alone.
+ */
+export const labelChunks = workerMutation({
+  args: {
+    spaceId: v.id("spaces"),
+    mode: v.union(v.literal("live"), v.literal("offline")),
+    model: v.string(),
+    items: v.array(v.object({ chunkId: v.id("doc_chunks"), value: brainLabel, reason: v.string() })),
+  },
+  handler: async (ctx, { spaceId, mode, model, items }) => {
+    const counts = { high: 0, low: 0, skip: 0 };
+    const now = Date.now();
+    for (const it of items) {
+      const chunk = await ctx.db.get(it.chunkId);
+      if (!chunk || chunk.spaceId !== spaceId || chunk.extractedAt) continue;
+      counts[it.value]++;
+      if (it.value !== "skip") {
+        await ctx.db.patch(chunk._id, { brainLabel: it.value });
+        continue;
+      }
+      await ctx.db.patch(chunk._id, { brainLabel: "skip", extractedAt: now });
+      const item = await ctx.db.get(chunk.sourceItemId);
+      await ctx.db.insert("audit_events", {
+        spaceId,
+        actor: "agent:seed_brain",
+        kind: "brain.skipped",
+        payload: { chunkId: chunk._id, sourceItemId: chunk.sourceItemId, source: item ? await describeSource(ctx, item) : null, label: "skip", reason: it.reason.slice(0, 120), mode, model },
+      });
+    }
+    return counts;
+  },
 });
 
 /** Previously rejected facts: negative examples for the extraction prompt (F16). */

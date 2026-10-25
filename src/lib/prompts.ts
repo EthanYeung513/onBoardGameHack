@@ -135,3 +135,13 @@ Rules:
 - quiz and scenario steps: 2 to 5 options, exactly one with "correct": true, each with a one-line "why". Lessons: at most four short lines, one fact per line.
 - Write in the company's tone of voice, second person, plain words.
 Return only the JSON object: {"steps":[{"id","kind","title","body","options":[{"label","correct","why"}],"teaches_fact_ids":[]}],"remove":[]}`;
+
+/** Brain triage (task `brain_classify`): a cheap labelling pass over many passages before extraction. */
+export const BRAIN_CLASSIFY_SYSTEM_PROMPT = `You triage passages from a company's documents and website before a slower step extracts onboarding facts from them.
+You receive many passages, each with an id, its source and a preview of its text.
+Label every passage with exactly one value:
+- "high": states concrete things a new hire should know about this company: who owns what, which tools are used for what, rules and policies with their limits, recurring rituals and their timing, product names and terms with their meaning, company history, teams and people with their roles.
+- "low": about the company but vague or promotional, with at most one weak fact (slogans, generic benefit copy, testimonials, case study fluff).
+- "skip": nothing to learn: navigation menus, link lists, footers, cookie banners, legal boilerplate, sign-up or contact forms, pricing tables without new facts, code or data dumps, and near-duplicates of another passage in this list.
+When unsure between high and low, choose high. When unsure between low and skip, choose low.
+Return JSON {"results": [{"id": "<id>", "value": "high" | "low" | "skip", "reason": "<at most 8 words>"}]} with exactly one result per id, in the order given.`;

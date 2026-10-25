@@ -5,33 +5,16 @@ import type { StageContext } from "../types";
 import type { PendingChunk } from "./extract";
 import { dedupeBatch, resolveEntities } from "./resolve";
 
-// Batched brain extraction (perf target: a scan's brain builds in seconds, not minutes).
-//   1. pack passages: ≤ PASSAGES_PER_CALL per Mubit call (and a character budget);
-//   2. the stage runs several packs' calls in parallel (no writes);
-//   3. per pack: entities deduped across all its passages and resolved once (one hard-key query,
+// Batched brain extraction (perf target: facts in the brain within seconds of a scan).
+//   1. the stage's PackPool packs passages: <= PASSAGES_PER_CALL per Mubit call (and a character
+//      budget); output tokens dominate a call's latency, so packs stay small and run in parallel;
+//   2. per pack: entities deduped across all its passages and resolved once (one hard-key query,
 //      one embedding call, parallel vector searches), then the pack commits in ONE mutation.
 
-export const PASSAGES_PER_CALL = 10;
-const CHARS_PER_CALL = 36_000;
+export const PASSAGES_PER_CALL = 6;
+export const CHARS_PER_CALL = 36_000;
 
 type Ctx = Pick<StageContext, "convex" | "llm" | "embed" | "space">;
-
-export function packBatches(chunks: PendingChunk[]): PendingChunk[][] {
-  const out: PendingChunk[][] = [];
-  let cur: PendingChunk[] = [];
-  let chars = 0;
-  for (const c of chunks) {
-    if (cur.length && (cur.length >= PASSAGES_PER_CALL || chars + c.text.length > CHARS_PER_CALL)) {
-      out.push(cur);
-      cur = [];
-      chars = 0;
-    }
-    cur.push(c);
-    chars += c.text.length;
-  }
-  if (cur.length) out.push(cur);
-  return out;
-}
 
 /** Everything that varies goes in the user message (AGENTS.md "Model boundaries"). */
 export function batchUserMessage(chunks: Pick<PendingChunk, "text" | "title" | "kind" | "connectorType">[], rejected: string[], company: string) {
