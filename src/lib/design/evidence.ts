@@ -123,6 +123,8 @@ export async function htmlCssEvidence(url: string): Promise<Record<string, unkno
       .map(([value, count]) => ({ value, count }));
   return {
     title: parsed.title,
+    siteName: parsed.meta["og:site_name"] ?? parsed.meta["application-name"] ?? null,
+    description: parsed.meta["description"] ?? parsed.meta["og:description"] ?? null,
     themeColor: parsed.meta["theme-color"] ?? null,
     ogImage: parsed.meta["og:image"] ?? null,
     colors: top(counts, 20),

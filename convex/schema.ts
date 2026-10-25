@@ -197,7 +197,12 @@ export default defineSchema({
     radius: v.optional(v.string()),
     /** "partial" when dembrandt could not run and the HTML/CSS fallback produced the tokens. */
     quality: v.optional(v.union(v.literal("full"), v.literal("partial"), v.literal("offline"))),
-  }).index("by_space", ["spaceId"]),
+    /** Every candidate value extract_design saw, with where it was found and usage counts
+     * (`BrandCandidates` in src/lib/brand/candidates.ts). The final tokens are picked from these. */
+    candidates: v.optional(v.any()),
+  })
+    .index("by_space", ["spaceId"])
+    .index("by_scan", ["scanId"]),
 
   /** Sliced pipeline work (BUILD-CONTRACT "The pipeline is the unit of long work"). */
   jobs: defineTable({
