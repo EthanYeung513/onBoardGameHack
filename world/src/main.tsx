@@ -7,6 +7,7 @@ import '@fontsource/anton/latin-400.css';
 import './styles.css';
 import { configure, worldConfig, type WorldConfig } from './config';
 import { loadWorldData } from './data';
+import { trackWorldOpened } from './analytics';
 
 /** Company look on the document: brand tokens as CSS vars, tab title and favicon. */
 function applyBrand(cfg: WorldConfig) {
@@ -31,6 +32,7 @@ async function start() {
   configure(cfg);
   // Progress, credits and saves are per hire: they load when the hire signs in (economy.signInHire).
   applyBrand(cfg);
+  trackWorldOpened(cfg);
   // The screens read the configured world at import time, so load them after configure().
   const { default: App } = await import('./App');
   ReactDOM.createRoot(document.getElementById('root')!).render(

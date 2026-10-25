@@ -65,3 +65,16 @@ describe("the world page for one company", () => {
     expect(JSON.parse(inline).company.name).toBe("Acme </script><b>");
   });
 });
+
+describe("world analytics stay their own stream", () => {
+  it("injects the PostHog project only when a key is configured", async () => {
+    const { worldHtml, posthogFromEnv } = await import("@/lib/world/html");
+    const w = buildWorld(input([]));
+    const page = "<html><head><title>W</title></head></html>";
+    expect(worldHtml(page, w, "/world/", null)).not.toContain("OB_POSTHOG");
+    const ph = posthogFromEnv({ NEXT_PUBLIC_POSTHOG_KEY: "phc_test" } as NodeJS.ProcessEnv);
+    expect(ph).toEqual({ key: "phc_test", host: "https://eu.i.posthog.com" });
+    expect(worldHtml(page, w, "/world/", ph)).toContain('window.OB_POSTHOG={"key":"phc_test","host":"https://eu.i.posthog.com"}');
+    expect(posthogFromEnv({} as NodeJS.ProcessEnv)).toBeNull();
+  });
+});
