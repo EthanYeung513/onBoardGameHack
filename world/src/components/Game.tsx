@@ -7,6 +7,7 @@ import {
   awardCompleted, courseReward, getCredits, onCredits, ownedCount, recordResult, redeem, shopItems, soldOut,
   type Icon, type ShopItem,
 } from '../economy';
+import { reportResult } from '../hireSync';
 import Coin from './Coin';
 import CourseGame from './CourseGame';
 import type { Hire } from '../App';
@@ -215,6 +216,8 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
   const [menu, setMenu] = useState<Course | null>(null);
   const [shop, setShop] = useState(false);
   const [playing, setPlaying] = useState<Course | null>(null);
+  // The last building left mid-run: its game stays mounted (paused, hidden) so Continue resumes it.
+  const [parked, setParked] = useState<Course | null>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
   const [credits, setCredits] = useState(getCredits);
   const [popups, setPopups] = useState<{ id: number; delta: number; delay: number }[]>([]);
@@ -266,6 +269,7 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
     if (g?.input.keyboard) { g.input.keyboard.enabled = false; g.input.keyboard.preventDefault = false; }
     g?.loop.sleep();
     setMenu(null);
+    if (parked && parked.id !== course.id) setParked(null);
     setPlaying(course);
   };
   const exitCourse = () => {
@@ -273,6 +277,7 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
     if (g?.input.keyboard) { g.input.keyboard.enabled = true; g.input.keyboard.preventDefault = true; }
     g?.scene.getScene('town')?.input.keyboard?.resetKeys();
     g?.loop.wake();
+    setParked(playing);
     setPlaying(null);
     bus.emit('ui-close');
   };
@@ -330,7 +335,15 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
       {shop && <ShopMenu credits={credits} onClose={closeOverlay} />}
       <Joystick />
       <button className="act-btn" onPointerDown={() => { input.interact = true; }}>A</button>
-      {playing && <CourseGame course={playing} onResult={r => recordResult(playing, r)} onExit={exitCourse} />}
+      {(playing ?? parked) && (
+        <CourseGame
+          key={(playing ?? parked)!.id}
+          course={(playing ?? parked)!}
+          hidden={!playing}
+          onResult={r => { const c = playing ?? parked!; recordResult(c, r); reportResult(c, r); }}
+          onExit={exitCourse}
+        />
+      )}
     </div>
   );
 }

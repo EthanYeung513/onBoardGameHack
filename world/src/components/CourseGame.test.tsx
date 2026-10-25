@@ -34,4 +34,25 @@ describe('CourseGame', () => {
     fireEvent.click(screen.getByRole('button', { name: /Leave the building/ }));
     expect(onExit).toHaveBeenCalledOnce();
   });
+
+  it('pauses with ESC or the Menu button; Leave the building keeps the run so Continue resumes it', () => {
+    const onExit = vi.fn();
+    render(<CourseGame course={course({ id: `pause-${Date.now()}` })} onResult={vi.fn()} onExit={onExit} />);
+    fireEvent.click(screen.getByRole('button', { name: /New game/ }));
+    expect(screen.queryByTestId('game-menu')).toBeNull();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.getByTestId('pause-menu')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Resume/ }));
+    expect(screen.queryByTestId('pause-menu')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
+    fireEvent.click(screen.getByRole('button', { name: /Leave the building/ }));
+    expect(onExit).toHaveBeenCalledOnce();
+    // Back at the game's menu (the town hides it), the paused run is still there to continue.
+    expect(screen.getByTestId('game-play')).not.toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: /Continue/ }));
+    expect(screen.getByTestId('game-play')).toBeVisible();
+    expect(screen.queryByTestId('game-menu')).toBeNull();
+  });
 });

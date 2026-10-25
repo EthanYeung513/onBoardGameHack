@@ -16,6 +16,7 @@ export function GamePlayer({
   onComplete,
   onExit,
   instant,
+  paused,
 }: {
   game: GameId;
   spec: unknown;
@@ -23,6 +24,7 @@ export function GamePlayer({
   onComplete?: (result: GameResult) => void;
   onExit?: () => void;
   instant?: boolean;
+  paused?: boolean;
 }) {
   const [round, setRound] = useState(0);
   const [result, setResult] = useState<GameResult | null>(null);
@@ -48,6 +50,7 @@ export function GamePlayer({
       key={round}
       spec={spec}
       instant={instant}
+      paused={paused}
       onComplete={(r) => {
         setResult(r);
         onComplete?.(r);

@@ -7,7 +7,6 @@ import '@fontsource/anton/latin-400.css';
 import './styles.css';
 import { configure, worldConfig, type WorldConfig } from './config';
 import { loadWorldData } from './data';
-import { applyDevParams, applyProgress } from './economy';
 
 /** Company look on the document: brand tokens as CSS vars, tab title and favicon. */
 function applyBrand(cfg: WorldConfig) {
@@ -30,8 +29,7 @@ async function start() {
   const { data } = await loadWorldData();
   const cfg = worldConfig(data);
   configure(cfg);
-  applyDevParams();
-  applyProgress(cfg.courses); // world-earned progress overlays the fresh course list
+  // Progress, credits and saves are per hire: they load when the hire signs in (economy.signInHire).
   applyBrand(cfg);
   // The screens read the configured world at import time, so load them after configure().
   const { default: App } = await import('./App');

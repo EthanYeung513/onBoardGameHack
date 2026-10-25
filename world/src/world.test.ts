@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { GameResult } from '@/games/core/types';
 import type { WorldData } from '@/lib/world/contract';
 import { configure, worldConfig } from './config';
-import { applyProgress, getCredits, recordResult } from './economy';
+import { applyProgress, getCredits, recordResult, signInHire } from './economy';
+import { apiBase } from './hireSync';
 import { sampleWorld } from './sample-world';
 import { generateWorld } from './worldgen';
 import { instantiateGame } from '@/games/core/instantiate';
@@ -109,6 +110,31 @@ describe('game result -> course progress and credits', () => {
     configure(other);
     expect(applyProgress(other.courses)[0].completion).toBe(0);
     expect(getCredits()).toBe(0);
+  });
+
+  it('gives every email its own progress and credits: switching hire starts fresh, coming back restores', () => {
+    const cfg = worldConfig(world({ courses: [{ id: 'sec', name: 'Security', game: 'battle', spec: {} }] }));
+    configure(cfg);
+    const [course] = cfg.courses;
+
+    signInHire('A@x.com ', cfg.courses);
+    recordResult(course, result());
+    expect([course.completion, getCredits()]).toEqual([100, 50]);
+
+    signInHire('b@x.com', cfg.courses);
+    expect([course.completion, getCredits()]).toEqual([0, 0]);
+    recordResult(course, result({ won: false, correct: 1, total: 4 }));
+
+    signInHire('a@x.com', cfg.courses); // same hire, any casing
+    expect([course.completion, getCredits()]).toEqual([100, 50]);
+    expect(Object.keys(localStorage).filter(k => k.startsWith('ob:acmepay.com:a%40x.com:')).length).toBeGreaterThan(0);
+    expect(Object.keys(localStorage).filter(k => k.startsWith('ob:acmepay.com:b%40x.com:')).length).toBeGreaterThan(0);
+  });
+
+  it('reports to the space API only when served from /o/<slug>', () => {
+    expect(apiBase('/o/acme-pay')).toBe('/o/acme-pay/api');
+    expect(apiBase('/o/acme-pay/index.html')).toBe('/o/acme-pay/api');
+    expect(apiBase('/')).toBeNull();
   });
 
   it('never completes a course without a clear', () => {

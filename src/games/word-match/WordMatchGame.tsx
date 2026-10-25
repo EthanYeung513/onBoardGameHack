@@ -25,7 +25,7 @@ const FX_MS = 1100;
 const SPARK_COLORS = ["#ffe066", "#ff4fd8", "#22e3ff", "#ffffff"];
 const COMBO_GLOW = ["#22e3ff", "#22e3ff", "#7b4dff", "#ff4fd8", "#ff8a3b", "#ffe066"];
 
-export function WordMatchGame({ spec, onComplete, instant = false }: GameProps<WordMatchSpec>) {
+export function WordMatchGame({ spec, onComplete, instant = false, paused = false }: GameProps<WordMatchSpec>) {
   const [game, setGame] = useState<WordMatchState>(() => createWordMatch(spec));
   const [phase, setPhase] = useState<Phase>("title");
   const [count, setCount] = useState(3);
@@ -92,9 +92,23 @@ export function WordMatchGame({ spec, onComplete, instant = false }: GameProps<W
     );
   };
 
+  // Pausing stops the clock: on resume the deadline moves on by however long the pause lasted.
+  const pausedAt = useRef<number | null>(null);
+  useEffect(() => {
+    if (paused) {
+      pausedAt.current = Date.now();
+      return;
+    }
+    if (pausedAt.current === null) return;
+    const held = Date.now() - pausedAt.current;
+    pausedAt.current = null;
+    setDeadline((d) => d + held);
+    setNow(Date.now());
+  }, [paused]);
+
   // Clock: ticks while a board is in play, and ends the board when time runs out.
   useEffect(() => {
-    if (instant || phase !== "play") return;
+    if (instant || paused || phase !== "play") return;
     const id = setInterval(() => {
       const t = Date.now();
       setNow(t);
@@ -105,10 +119,10 @@ export function WordMatchGame({ spec, onComplete, instant = false }: GameProps<W
       }
     }, 200);
     return () => clearInterval(id);
-  }, [instant, phase, deadline, spec, sfx]);
+  }, [instant, paused, phase, deadline, spec, sfx]);
 
   const pick = (side: Side, pair: number) => {
-    if (phase !== "play") return;
+    if (paused || phase !== "play") return;
     const { state: next, event } = select(game, spec, side, pair);
     setGame(next);
     if (event.type === "selected") sfx(() => blip(side === "term" ? 620 : 760, 40));

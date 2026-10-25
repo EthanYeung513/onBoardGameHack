@@ -16,7 +16,8 @@ export default function Login({ onDone }: { onDone: (h: Hire) => void }) {
 
   const submit = (sso?: string) => {
     const n = name.trim();
-    const e = email.trim() || (sso ? `newhire@${COMPANY.host}` : '');
+    // The email is the hire's identity (their progress, saves and dashboard row), so SSO needs it too.
+    const e = email.trim();
     if (!n) return setErr('Tell us your name first.');
     if (!e || !/^\S+@\S+\.\S+$/.test(e)) return setErr('Enter a valid email address.');
     onDone({ name: n, email: e, sso });

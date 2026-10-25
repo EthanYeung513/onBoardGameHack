@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { fetchQuery } from "convex/nextjs";
+import { fetchMutation, fetchQuery } from "convex/nextjs";
+import { ConvexError } from "convex/values";
 import { NextResponse, type NextRequest } from "next/server";
 import { api } from "@convex/_generated/api";
 import { readTemplate, TEMPLATE_FILES } from "@/lib/onboarding/bundle";
@@ -40,4 +41,48 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
   // Next drops trailing slashes, so the world's relative asset URLs resolve through a <base>.
   const body = file === "index.html" ? readTemplate(file).replace("<head>", `<head>\n<base href="/o/${encodeURIComponent(slug)}/">`) : readTemplate(file);
   return new NextResponse(body, { headers: { "content-type": type, "cache-control": file === "index.html" ? "no-store" : "public, max-age=300" } });
+}
+
+// The world's report-back API (world/src/hireSync.ts): POST /o/<slug>/api/hire when a hire signs
+// in, POST /o/<slug>/api/progress when a building's game finishes. Thin wrappers over the public
+// convex/world.ts mutations, which validate everything and are keyed by this slug.
+const MAX_BODY = 4_096;
+const str = (v: unknown) => (typeof v === "string" ? v : "");
+const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string; path?: string[] }> }) {
+  const { slug, path: parts = [] } = await params;
+  const route = parts.join("/");
+  if (route !== "api/hire" && route !== "api/progress") return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const raw = await req.text();
+  if (raw.length > MAX_BODY) return NextResponse.json({ error: "Too large" }, { status: 413 });
+  let body: Record<string, unknown>;
+  try {
+    body = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Expected JSON" }, { status: 400 });
+  }
+  try {
+    const name = str(body.name) || undefined;
+    if (route === "api/hire") {
+      await fetchMutation(api.world.hireJoined, { slug, email: str(body.email), name });
+      return NextResponse.json({ ok: true });
+    }
+    const { completed } = await fetchMutation(api.world.hireProgress, {
+      slug,
+      email: str(body.email),
+      name,
+      course: str(body.course),
+      won: body.won === true,
+      correct: num(body.correct),
+      total: num(body.total),
+    });
+    return NextResponse.json({ ok: true, completed });
+  } catch (err) {
+    if (err instanceof ConvexError) {
+      const { code, message } = err.data as { code?: number; message?: string };
+      return NextResponse.json({ error: message ?? "Rejected" }, { status: code ?? 400 });
+    }
+    return NextResponse.json({ error: "Backend unavailable" }, { status: 503 });
+  }
 }

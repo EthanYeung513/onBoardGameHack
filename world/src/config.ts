@@ -42,7 +42,10 @@ export interface WorldConfig {
   rewards: Reward[];
   offline: boolean;
   generatedAt: string;
-  /** Prefix for every localStorage key, so two companies on one origin never share progress. */
+  /** The company's namespace (`ob:<host>:`): two companies on one origin never share progress. */
+  companyNs: string;
+  /** Prefix for every localStorage key: the company's namespace until a hire signs in, then the
+   * hire's own (`ob:<host>:<email>:`, see economy.ts signInHire), so each email has its own state. */
   storageNs: string;
 }
 
@@ -101,6 +104,7 @@ export function worldConfig(data: WorldData): WorldConfig {
     rewards: (data.rewards ?? []).filter(r => r.name && Number(r.cost) >= 0),
     offline: !!data.offline,
     generatedAt: data.generatedAt,
+    companyNs: `ob:${host}:`,
     storageNs: `ob:${host}:`,
   };
 }

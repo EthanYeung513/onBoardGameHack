@@ -50,7 +50,7 @@ const sceneScript = (spec: DilemmaSpec, scene: number): Beat[] => [
   { kind: "question", line: spec.scenes[scene].question },
 ];
 
-export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<DilemmaSpec>) {
+export function DilemmaGame({ spec, onComplete, instant = false, paused = false }: GameProps<DilemmaSpec>) {
   const [phase, setPhase] = useState<"title" | "play">("title");
   const [game, setGame] = useState<DilemmaState>(() => createDilemma(spec));
   const [beats, setBeats] = useState<Beat[]>([]);
@@ -185,11 +185,11 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
 
   // Banners, shouts and penalties move on by themselves, like the game's set pieces.
   useEffect(() => {
-    if (instant || !beat || !["banner", "shout", "penalty"].includes(beat.kind)) return;
+    if (instant || paused || !beat || !["banner", "shout", "penalty"].includes(beat.kind)) return;
     const ms = beat.kind === "banner" ? BANNER_MS : beat.kind === "shout" ? SHOUT_MS : PENALTY_MS;
     const id = setTimeout(advance, ms);
     return () => clearTimeout(id);
-  }, [instant, beat, advance]);
+  }, [instant, paused, beat, advance]);
 
   const start = () => {
     startedAt.current = Date.now();
@@ -229,12 +229,13 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
     });
 
   // Keyboard: Space/Enter advance, 1-4 answer.
-  const keys = useRef({ advance, pick });
+  const keys = useRef({ advance, pick, paused });
   useEffect(() => {
-    keys.current = { advance, pick };
+    keys.current = { advance, pick, paused };
   });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (keys.current.paused) return;
       if ([" ", "Enter"].includes(e.key)) {
         e.preventDefault();
         keys.current.advance();

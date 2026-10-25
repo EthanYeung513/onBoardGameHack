@@ -6,16 +6,18 @@ import { instantiateGame } from '@/games/core/instantiate';
 import type { GameResult } from '@/games/core/types';
 import { WORLD, type Course } from '../config';
 
-export default function CourseGame({ course, onResult, onExit }: {
+export default function CourseGame({ course, onResult, onExit, hidden = false }: {
   course: Course;
   onResult: (result: GameResult) => void;
   onExit: () => void;
+  /** The hire left mid-run: the game stays mounted (paused) out of sight, so Continue resumes it. */
+  hidden?: boolean;
 }) {
   const checked = useMemo(() => instantiateGame({ game: course.game, spec: course.spec }), [course]);
 
   if (!checked.ok) {
     return (
-      <div className="course-game rebuild" role="dialog" aria-label={course.name}>
+      <div className="course-game rebuild" role="dialog" aria-label={course.name} hidden={hidden}>
         <div className="sd-panel menu-card">
           <h2>This building is being rebuilt</h2>
           <p className="m-sub">{course.name}</p>
@@ -27,11 +29,11 @@ export default function CourseGame({ course, onResult, onExit }: {
   }
 
   return (
-    <div className="course-game" data-game={checked.game}>
+    <div className="course-game" data-game={checked.game} hidden={hidden}>
       <GameShell
         game={checked.game}
         spec={checked.spec}
-        packId={`${WORLD?.storageNs ?? ''}${course.id}`} // saves are per company, like progress
+        packId={`${WORLD?.storageNs ?? ''}${course.id}`} // saves are per hire (company + email), like progress
         packTitle={course.name}
         onComplete={onResult}
         onExit={onExit}

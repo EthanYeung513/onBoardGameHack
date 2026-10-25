@@ -49,6 +49,9 @@ export interface GameProps<S> {
   onComplete?: (result: GameResult) => void;
   /** Skip animations and typewriter effects (tests, reduced motion). */
   instant?: boolean;
+  /** The shell's pause menu is open (or the hire left the building mid-run): timed text, clocks and
+   * keyboard input hold still until it is false again, so Resume picks up exactly where play stopped. */
+  paused?: boolean;
 }
 
 /** Everything the server (and the AI picker) needs to know about a game. No React, so it is safe anywhere. */
