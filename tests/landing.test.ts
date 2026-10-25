@@ -15,6 +15,13 @@ describe("landing page", () => {
     expect(html).not.toMatch(/Build my onboarding|Try the demo scan/);
   });
 
+  it("shows the real Orthogonal mark in the nav brand slot and as the favicon (no mockup UniGo icons)", () => {
+    expect(html).toMatch(/class="brand w-nav-brand[^"]*"[^>]*><img src="assets\/orthogonal-mark\.svg"/);
+    expect(html).toContain(">Orthogonal</span>");
+    expect(html).not.toContain("UniGo_favicon");
+    expect(readFileSync("public/assets/orthogonal-mark.svg", "utf8")).toContain('viewBox="0 0 39 39"');
+  });
+
   it("references only assets that exist", () => {
     const refs = new Set([...html.matchAll(/(?:src|href)="assets\/([^"?#]+)/g)].map((m) => decodeURIComponent(m[1])));
     for (const ref of refs) expect(() => readFileSync(`public/assets/${ref}`), ref).not.toThrow();

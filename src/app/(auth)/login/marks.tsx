@@ -1,4 +1,4 @@
-// SVG marks copied verbatim from login.html on `main`.
+// Tile icons copied verbatim from login.html on `main`; the brand mark is the shared one.
 
 export const TILES: { label: string; path: string }[] = [
   { label: "Fast Setup", path: "M152 224a8 8 0 01-8 8h-32a8 8 0 010-16h32a8 8 0 018 8zm-24-116a12 12 0 100-24 12 12 0 000 24zm91.6 52.1l-12.3 55.4a16 16 0 01-10.3 11.6 16 16 0 01-15.3-2.6L154 198h-52l-27.6 26.4a16 16 0 01-25.6-9l-12.3-55.4a16 16 0 013.3-13.7L69 111.4C73.7 61 107.8 35.4 121.6 24.6a8 8 0 019.6 0c13.8 10.8 47.9 36.4 52.6 86.8l29.2 35a16 16 0 013.3 13.7z" },
@@ -7,13 +7,5 @@ export const TILES: { label: string; path: string }[] = [
   { label: "AI Powered", path: "M197.6 59.4l-20.5 7.2-7.2 20.5a8 8 0 01-15.2 0l-7.2-20.5-20.5-7.2a8 8 0 010-15.2l20.5-7.2 7.2-20.5a8 8 0 0115.2 0l7.2 20.5 20.5 7.2a8 8 0 010 15.2zM146 148l-16.8 6-6 16.8a8 8 0 01-15.2 0l-6-16.8-16.8-6a8 8 0 010-15.2l16.8-6 6-16.8a8 8 0 0115.2 0l6 16.8 16.8 6a8 8 0 010 15.2zm74-20l-12.4 4.4-4.4 12.4a8 8 0 01-15.2 0l-4.4-12.4L171 128a8 8 0 010-15.2l12.6-4.4 4.4-12.6a8 8 0 0115.2 0l4.4 12.6 12.6 4.4a8 8 0 010 15.2z" },
 ];
 
-export function OrthoMark({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 30 30" aria-hidden>
-      <rect x="0" y="0" width="14" height="14" rx="3" fill="#2E98FF" />
-      <rect x="16" y="0" width="14" height="14" rx="3" fill="#FF613F" />
-      <rect x="0" y="16" width="14" height="14" rx="3" fill="#37C978" />
-      <rect x="16" y="16" width="14" height="14" rx="3" fill="#FFC700" />
-    </svg>
-  );
-}
+/** The real Orthogonal mark (replaces the mockup's hand-drawn squares). */
+export { OrthogonalMark as OrthoMark } from "@/components/brand/OrthogonalMark";
