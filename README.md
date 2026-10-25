@@ -18,8 +18,6 @@ Demo company: Mubit.
    - **Word Match**: arcade matching of terms to meanings against the clock, with combos.
    - **Dilemma**: Ace Attorney-style conversations. Someone pressures you; pick the reply that follows policy.
 
-The demo was recorded locally without API keys, so Mubit tasks ran on their offline stand-ins. The brand and course-refresh screens are mock-ups of the flows described below.
-
 ## Where Mubit is used
 
 Every LLM and embedding call goes through one adapter, `src/llm/mubit.ts`. It uses Mubit's OpenAI-compatible gateway (`https://api.mubit.ai/openai/v1`) with gpt-* models (default `gpt-5.4-mini`) and `text-embedding-3-large`. Each request is tagged with its task name, and the Mubit request id is kept for feedback.
