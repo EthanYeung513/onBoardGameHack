@@ -27,7 +27,6 @@
 .lg .btn-dark:hover{background:#111827}
 .lg .btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--border)}
 .lg .btn-ghost:hover{background:#f5f6f8}
-.lg .note{margin-top:10px;font-size:13px;color:var(--muted)}
 .lg .divider{display:flex;align-items:center;gap:12px;margin:22px 0 14px;color:#999;font-size:13px}
 .lg .divider::before, .lg .divider::after{content:"";flex:1;height:1px;background:var(--border)}
 .lg .field{width:100%;height:52px;border:1px solid var(--border);border-radius:8px;padding:0 14px;font-size:15px;margin-top:8px;outline:none;background:#fff;color:var(--ink)}

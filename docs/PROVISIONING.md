@@ -153,3 +153,17 @@ timeout each (Modal 20 s, Cloudflare 45 s and run alone, after the rest, because
 `.env.local` + Convex env get the values → `npm run check:env` proves each
 with one real call → Railway env mirrors `.env.example` for deploys. Say
 "here's the Mubit key" etc. and I'll wire + verify each one live.
+
+## Google sign-in (Convex Auth)
+
+Provisioned 2026-10-25. `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` live in the **Convex
+deployment env** (cloud `rapid-mosquito-655` and the local self-hosted backend on :3210) —
+`convex/auth.ts` enables the provider and `authInfo.providers` lights the login buttons only
+when both are set. Authorised redirect URIs on the Google OAuth client:
+
+- local: `http://127.0.0.1:3211/api/auth/callback/google` (the backend's `CONVEX_SITE_ORIGIN`)
+- cloud: `https://rapid-mosquito-655.convex.site/api/auth/callback/google`
+
+After Google, Convex Auth returns to the deployment's `SITE_URL` (local `http://localhost:3000`;
+set it to the Vercel URL on the cloud deployment when S17 deploys). Apple sign-in is out of scope.
+
