@@ -73,8 +73,12 @@ export const generate = mutation({
       const pack = topicPack(title);
       if (!pack.packType) return fail(422, "Use letters or numbers in the course name");
       const jobId = await requestCourseJob(ctx, spaceId, { packType: pack.packType, topic: pack.title, requestedBy });
-      await audit(ctx, spaceId, requestedBy, "courses.generate_requested", { packs: [pack.packType], topic: pack.title });
-      return { queued: [pack.packType], jobId, title: pack.title };
+      // Nicole: the typed course comes in addition to the brain's own: queue any missing standard ones too.
+      const have = new Set((await ctx.db.query("courses").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).collect()).map((c) => c.packType));
+      const missing = PACK_TYPES.filter((p) => !have.has(p));
+      for (const packType of missing) await requestCourseJob(ctx, spaceId, { packType, requestedBy });
+      await audit(ctx, spaceId, requestedBy, "courses.generate_requested", { packs: [pack.packType, ...missing], topic: pack.title });
+      return { queued: [pack.packType, ...missing], jobId, title: pack.title };
     }
     const existing = new Set((await ctx.db.query("courses").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).collect()).map((c) => c.packType));
     const missing = PACK_TYPES.filter((p) => !existing.has(p));

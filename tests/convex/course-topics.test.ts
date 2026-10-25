@@ -79,7 +79,8 @@ describe("topic courses (F22)", () => {
   it("typing a topic queues a course about it, shown as generating, built only from facts about it", async () => {
     const { t, mgr, spaceId, ids } = await setup([...SECURITY, ...OTHER, { category: "Policy", text: "Security keys are issued on day one.", status: "draft" }]);
     const r = await mgr.mutation(api.courses.generate, { spaceId, topic: "  security " });
-    expect(r).toMatchObject({ queued: ["topic-security"], title: "Security" });
+    // The typed course comes in addition to the brain's standard ones (Nicole).
+    expect(r).toMatchObject({ queued: ["topic-security", "company", "people-culture", "tools-stack", "hard-conversations"], title: "Security" });
     expect(await mgr.query(api.courses.generating, { spaceId })).toEqual([expect.objectContaining({ packType: "topic-security", title: "Security" })]);
     expect(await mgr.query(api.courses.outcome, { jobId: r.jobId!, packType: "topic-security" })).toMatchObject({ status: "queued", built: false });
 
@@ -89,19 +90,23 @@ describe("topic courses (F22)", () => {
     const cited = new Set((course!.spec as CourseSpec).steps.flatMap((s) => s.teaches_fact_ids));
     expect(cited).toEqual(new Set(ids.slice(0, 3))); // the three security facts; never the draft or unrelated ones
     expect(await mgr.query(api.courses.generating, { spaceId })).toEqual([]);
-    expect(await mgr.query(api.courses.outcome, { jobId: r.jobId!, packType: "topic-security" })).toMatchObject({ status: "succeeded", built: true, skipped: [] });
+    const done = await mgr.query(api.courses.outcome, { jobId: r.jobId!, packType: "topic-security" });
+    expect(done).toMatchObject({ status: "succeeded", built: true });
+    expect(done.skipped.find((x) => x.packType === "topic-security")).toBeUndefined();
     // It plays in the world: a security course is a judgment-call game.
     expect(preferredGames({ packType: course!.packType, title: course!.title, spec: course!.spec })[0]).toBe("dilemma");
   });
 
-  it("too few facts about the topic: says so honestly and builds nothing", async () => {
-    const { t, mgr, spaceId } = await setup([SECURITY[0], ...OTHER]);
-    const { jobId } = await mgr.mutation(api.courses.generate, { spaceId, topic: "Security" });
+  it("few facts about the topic: the typed course is still created, from the closest facts, and says so", async () => {
+    const { t, mgr, spaceId, ids } = await setup([SECURITY[0], ...OTHER]);
+    await mgr.mutation(api.courses.generate, { spaceId, topic: "Security" });
     expect(await runCourseJob(t)).toBe("done");
-    expect(await t.run((ctx) => ctx.db.query("courses").collect())).toEqual([]);
-    const out = await mgr.query(api.courses.outcome, { jobId: jobId!, packType: "topic-security" });
-    expect(out).toMatchObject({ status: "succeeded", built: false });
-    expect(out.skipped).toEqual([{ packType: "topic-security", message: "Only 1 fact about security in your brain. Connect a tool or upload a doc that covers it." }]);
+    const course = await t.run((ctx) => ctx.db.query("courses").withIndex("by_space_pack", (q) => q.eq("spaceId", spaceId).eq("packType", "topic-security")).first());
+    expect(course?.title).toBe("Security");
+    const cited = new Set((course!.spec as CourseSpec).steps.flatMap((s) => s.teaches_fact_ids));
+    expect(cited.has(ids[0])).toBe(true); // the one security fact is in it
+    const events = await t.run((ctx) => ctx.db.query("job_events").collect());
+    expect(events.some((e) => /Only 1 fact about security in your brain: built "Security" from the closest facts/.test(e.message))).toBe(true);
   });
 
   it("an empty topic is rejected with the mockup's copy", async () => {
@@ -128,7 +133,7 @@ describe("topic courses (F22)", () => {
       },
     };
     expect(await runCourseJob(t, llm)).toBe("done");
-    expect(peak).toBe(2);
-    expect((await t.run((ctx) => ctx.db.query("courses").collect())).map((c) => c.title).sort()).toEqual(["Pricing", "Security"]);
+    expect(peak).toBeGreaterThanOrEqual(2); // in parallel (the standard courses run alongside)
+    expect((await t.run((ctx) => ctx.db.query("courses").collect())).map((c) => c.title)).toEqual(expect.arrayContaining(["Pricing", "Security"]));
   });
 });

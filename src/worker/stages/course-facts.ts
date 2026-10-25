@@ -80,7 +80,11 @@ export function rankTopicFacts(topic: string, facts: CourseFact[], signals: Topi
 }
 
 /** Retrieval + re-rank for one topic: 2 to 3 short round trips, no LLM call. */
-export async function selectTopicFacts(ctx: StageContext, topic: string, facts: CourseFact[], limit: number): Promise<CourseFact[]> {
+/**
+ * `relaxed`: the manager asked for this course by name, so it is always built. When few facts clear
+ * the relevance bar, take the closest ones the brain has (still only real, approved facts).
+ */
+export async function selectTopicFacts(ctx: StageContext, topic: string, facts: CourseFact[], limit: number, relaxed = false): Promise<CourseFact[]> {
   const terms = topicTerms(topic);
   const byId = new Map(facts.map((f) => [f.id, f]));
   // An embedding outage degrades to keyword + full-text relevance; it never fails the course.
@@ -90,12 +94,15 @@ export async function selectTopicFacts(ctx: StageContext, topic: string, facts: 
     : { lexical: [], semantic: [] };
   const lexical = new Set(found.lexical.filter((id) => byId.has(id)));
   const keyword = facts.filter((f) => keywordScore(f, terms) > 0).map((f) => f.id);
-  const candidates = [...new Set([...keyword, ...lexical, ...found.semantic.map((s) => s.factId).filter((id) => byId.has(id))])].slice(0, MAX_CANDIDATES);
+  const matched = [...new Set([...keyword, ...lexical, ...found.semantic.map((s) => s.factId).filter((id) => byId.has(id))])];
+  // Relaxed with few matches: every approved fact is a candidate, ranked by closeness to the topic.
+  const pool = relaxed && matched.length < limit ? [...new Set([...matched, ...facts.map((f) => f.id)])] : matched;
+  const candidates = pool.slice(0, MAX_CANDIDATES);
   const similarity = new Map<string, number>();
   const vectors = vector && candidates.length ? await ctx.embed.embed(candidates.map((id) => byId.get(id)!.text)).catch(() => null) : null;
   if (vector && vectors) candidates.forEach((id, i) => similarity.set(id, cosine(vector, vectors[i])));
   // Offline (hashed bag-of-words) vectors only reflect shared words: keywords decide there.
-  const minSimilarity = ctx.embed.mode === "live" && vectors ? LIVE_MIN_SIMILARITY : Number.POSITIVE_INFINITY;
+  const minSimilarity = relaxed ? Number.NEGATIVE_INFINITY : ctx.embed.mode === "live" && vectors ? LIVE_MIN_SIMILARITY : Number.POSITIVE_INFINITY;
   return rankTopicFacts(topic, candidates.map((id) => byId.get(id)!), { similarity, lexical, minSimilarity }, limit);
 }
 

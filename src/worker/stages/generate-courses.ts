@@ -7,7 +7,7 @@ import { COURSE_PACKS, MAX_FACTS_PER_COURSE, MIN_FACTS_PER_COURSE, MIN_FACTS_PER
 import { CourseStep, courseSpecSchema, type CourseSpec } from "@/lib/flow/course-spec";
 import { COURSE_STEPS_SYSTEM_PROMPT, COURSE_SYSTEM_PROMPT, COURSE_TOPIC_SYSTEM_PROMPT } from "@/lib/prompts";
 import type { StageContext, StageDefinition } from "../types";
-import { factsForCourse } from "./course-facts";
+import { factsForCourse, selectTopicFacts } from "./course-facts";
 import { offlineCourse, offlineStepRefresh, type CourseFact } from "./course-offline";
 
 // `generate_courses` (scan chain after seed_brain, manager-confirmed regeneration F36, and courses
@@ -58,9 +58,16 @@ export function tooFewTopicFacts(topic: string, n: number): string {
 
 async function buildCourse(ctx: StageContext, data: Context, pack: CoursePack, target: CourseTarget, scan: boolean): Promise<string> {
   const t0 = Date.now();
-  const facts = await factsForCourse(ctx, pack, data.facts, MAX_FACTS_PER_COURSE);
-  const retrievalMs = Date.now() - t0;
+  let facts = await factsForCourse(ctx, pack, data.facts, MAX_FACTS_PER_COURSE);
   const min = pack.topic ? MIN_FACTS_PER_TOPIC : MIN_FACTS_PER_COURSE;
+  // Nicole: a course the manager typed is always created. With few clearly relevant facts it is
+  // built from the closest ones the brain has, and says so.
+  if (pack.topic && facts.length < min) {
+    const strict = facts.length;
+    facts = await selectTopicFacts(ctx, pack.topic, data.facts, MAX_FACTS_PER_COURSE, true);
+    if (facts.length >= min) await ctx.event("info", `${tooFewTopicFacts(pack.topic, strict).split(".")[0]}: built "${pack.title}" from the closest facts your brain has. Connect a tool or upload a doc that covers it for more.`, { packType: pack.packType, relaxed: true });
+  }
+  const retrievalMs = Date.now() - t0;
   if (facts.length < min) {
     const msg = pack.topic
       ? tooFewTopicFacts(pack.topic, facts.length)
