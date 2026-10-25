@@ -80,7 +80,7 @@ test("every link and control in the studio works", async ({ page }) => {
   }
 
   await page.goto("/status");
-  await expect(page.getByTestId("status-row")).toHaveCount(6, { timeout: 90_000 });
+  await expect(page.getByTestId("status-row")).toHaveCount(16, { timeout: 120_000 });
 
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/login/);

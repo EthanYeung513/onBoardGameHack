@@ -1,110 +1,94 @@
-import { complete } from "@/lib/llm/client";
-import { anthropicClient } from "@/lib/llm/client";
-import { env } from "@/lib/env";
-import { renderMarkdown, screenshot } from "@/lib/crawl/cloudflare";
-import { probeMubitMemory } from "@/lib/memory/mubit-provider";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { execFile } from "node:child_process";
+import { DEFAULT_TIMEOUT_MS, redact, secretValues, Skip, Warn, type CheckResult, type CheckStatus, type EnvLike, type ExecFn, type Probe, type RunOptions } from "./core";
+import { PROBE_GROUPS, SERIAL_PROBES } from "./probes";
 
-// One minimal real call per service. Shared by scripts/check-env.ts and the /status page.
+export * from "./core";
 
-export interface CheckResult {
-  name: string;
-  ok: boolean;
-  ms: number;
-  detail: string;
-  /** Optional checks report but do not fail the run. */
-  optional?: boolean;
-}
+// `npm run check:env` and the /status page. Each row makes ONE real, cheap, read-only call to a
+// provisioned service and reports:
+//   pass — the call succeeded
+//   fail — a required service is configured but the call failed (exit code 1)
+//   warn — an optional service is configured but the call failed
+//   skip — not configured, so the app uses its offline stand-in
+// Independent groups run in parallel with a per-check timeout; Cloudflare runs alone afterwards
+// because its free plan is rate limited. Details are scrubbed of every secret value in the env.
+//
+// This reads raw process.env names (not src/lib/env.ts) on purpose: a diagnostic has to report
+// even when the app's Zod config would refuse to load.
 
-async function timed(name: string, fn: () => Promise<string>, optional = false): Promise<CheckResult> {
+const defaultExec: ExecFn = (cmd, args, { env, signal }) =>
+  new Promise((resolve, reject) => {
+    execFile(cmd, args, { env: env as NodeJS.ProcessEnv, signal, maxBuffer: 1 << 20 }, (err, stdout, stderr) => {
+      if (err) {
+        const e = err as NodeJS.ErrnoException;
+        reject(e.code === "ENOENT" ? Object.assign(new Error(`${cmd} not installed`), { code: "ENOENT" }) : new Error(`${String(stderr || err.message).trim().slice(0, 200)}`));
+      } else resolve(String(stdout));
+    });
+  });
+
+async function runProbe(p: Probe, opts: Required<Pick<RunOptions, "env" | "fetch" | "exec" | "timeoutMs">>, shared: Record<string, string>, secrets: string[]): Promise<CheckResult> {
   const t0 = Date.now();
+  const limit = p.timeoutMs ?? opts.timeoutMs;
+  const ctl = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      ctl.abort();
+      reject(new Error(`timed out after ${Math.round(limit / 100) / 10}s`));
+    }, limit);
+  });
+  const base = { name: p.name, optional: p.optional, env: p.env };
   try {
-    const detail = await fn();
-    return { name, ok: true, ms: Date.now() - t0, detail, optional };
+    const detail = await Promise.race([p.run({ env: opts.env, fetch: opts.fetch, exec: opts.exec, signal: ctl.signal, shared }), timeout]);
+    return { ...base, status: "pass", ms: Date.now() - t0, detail: redact(detail, secrets) };
   } catch (err) {
-    return { name, ok: false, ms: Date.now() - t0, detail: err instanceof Error ? err.message.slice(0, 300) : String(err), optional };
+    const msg = err instanceof Error ? err.message : String(err);
+    const status: CheckStatus = err instanceof Skip ? "skip" : err instanceof Warn || p.optional ? "warn" : "fail";
+    return { ...base, status, ms: Date.now() - t0, detail: redact(msg.slice(0, 300), secrets) };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
-export async function checkAnthropicDirect() {
-  return timed(
-    "Anthropic (direct)",
-    async () => {
-      const e = env();
-      if (!e.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not set here; the key is registered in Mubit and calls use the gateway");
-      const r = await anthropicClient("direct").messages.create({
-        model: e.ANTHROPIC_MODEL,
-        max_tokens: 200,
-        output_config: { effort: e.ANTHROPIC_EFFORT },
-        messages: [{ role: "user", content: "Reply with one short sentence." }],
-      });
-      return `${r.model}: ${r.content.find((b) => b.type === "text")?.text ?? ""}`;
-    },
-    true,
+export async function runAllChecks(options: RunOptions = {}): Promise<CheckResult[]> {
+  const opts = {
+    env: options.env ?? (process.env as EnvLike),
+    fetch: options.fetch ?? globalThis.fetch,
+    exec: options.exec ?? defaultExec,
+    timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+  };
+  const groups = options.groups ?? PROBE_GROUPS;
+  const serial = options.serial ?? SERIAL_PROBES;
+  const secrets = secretValues(opts.env);
+  const offline = opts.env.OFFLINE === "1";
+  const run = async (p: Probe, shared: Record<string, string>): Promise<CheckResult> =>
+    offline ? { name: p.name, optional: p.optional, env: p.env, status: "skip", ms: 0, detail: "OFFLINE=1 forces the offline stand-in" } : runProbe(p, opts, shared, secrets);
+
+  const parallel = await Promise.all(
+    groups.map(async (group) => {
+      const shared: Record<string, string> = {};
+      const out: CheckResult[] = [];
+      for (const p of group) out.push(await run(p, shared));
+      return out;
+    }),
   );
+  const tail: CheckResult[] = [];
+  for (const p of serial) tail.push(await run(p, {}));
+  return [...parallel.flat(), ...tail];
 }
 
-export async function checkSupabase() {
-  return timed("Supabase (db + storage)", async () => {
-    const sb = supabaseAdmin();
-    const { data, error } = await sb.from("health").select("id, note").eq("id", 1).single();
-    if (error) throw new Error(`select health: ${error.message}`);
-    const path = `env-check/${Date.now()}.txt`;
-    const up = await sb.storage.from("assets").upload(path, new Blob(["ok"], { type: "text/plain" }), { upsert: true });
-    if (up.error) throw new Error(`upload: ${up.error.message}`);
-    const signed = await sb.storage.from("assets").createSignedUrl(path, 60);
-    if (signed.error || !signed.data) throw new Error(`sign: ${signed.error?.message}`);
-    const body = await (await fetch(signed.data.signedUrl)).text();
-    await sb.storage.from("assets").remove([path]);
-    if (body !== "ok") throw new Error(`signed URL returned ${JSON.stringify(body.slice(0, 60))}`);
-    return `health row ${data.id} (${data.note}); signed URL round trip ok`;
-  });
+/** Exit code for the CLI: only required failures fail the run. */
+export function exitCode(results: CheckResult[]): number {
+  return results.some((r) => r.status === "fail") ? 1 : 0;
 }
 
-export async function checkCloudflare() {
-  return timed("Cloudflare Browser Rendering", async () => {
-    const md = await renderMarkdown("https://example.com");
-    if (!/example domain/i.test(md)) throw new Error("markdown did not contain the expected title");
-    const png = await screenshot("https://example.com", { width: 800, height: 600 });
-    return `markdown ${md.length} chars; screenshot ${png.byteLength} bytes`;
-  });
-}
-
-export async function checkMubitGateway() {
-  return timed("Mubit gateway (Anthropic)", async () => {
-    const r = await complete({ max_tokens: 200, messages: [{ role: "user", content: "Reply with one short sentence." }] }, { projectId: "env-check", task: "env-check" });
-    if (r.route !== "gateway") throw new Error(`call used ${r.route}, gateway unavailable`);
-    return `${r.message.model} with output_config.effort=${env().ANTHROPIC_EFFORT}: ${r.text.slice(0, 80)}`;
-  });
-}
-
-export async function checkMubitMemory() {
-  return timed(
-    "Mubit memory SDK",
-    async () => {
-      const r = await probeMubitMemory();
-      if (!r.ok) throw new Error(`not supported for this key, using the Supabase memory store instead. ${r.error ?? ""}`);
-      return "remember and recall ok";
-    },
-    true,
-  );
-}
-
-export async function checkVercel() {
-  return timed("Vercel", async () => {
-    const token = env().VERCEL_TOKEN;
-    if (!token) throw new Error("VERCEL_TOKEN not set");
-    const res = await fetch("https://api.vercel.com/v9/projects?limit=20", { headers: { Authorization: `Bearer ${token}` } });
-    const json = (await res.json()) as { projects?: Array<{ name: string }>; error?: { message: string } };
-    if (!res.ok) throw new Error(json.error?.message ?? `HTTP ${res.status}`);
-    return `${json.projects?.length ?? 0} projects: ${(json.projects ?? []).map((p) => p.name).join(", ") || "none"}`;
-  });
-}
-
-export async function runAllChecks(): Promise<CheckResult[]> {
-  // Cloudflare is rate limited, so it runs alone; the rest run in parallel.
-  const parallel = await Promise.all([checkAnthropicDirect(), checkSupabase(), checkMubitGateway(), checkMubitMemory(), checkVercel()]);
-  const cf = await checkCloudflare();
-  const [anthropic, supabase, gateway, mem, vercel] = parallel;
-  return [anthropic, supabase, cf, gateway, mem, vercel];
+export function formatTable(results: CheckResult[]): string {
+  const w = Math.max(7, ...results.map((r) => r.name.length));
+  const lines = [`${"Service".padEnd(w)}  Result  Time     Detail`];
+  for (const r of results) {
+    lines.push(`${r.name.padEnd(w)}  ${r.status.toUpperCase().padEnd(6)}  ${`${r.ms}ms`.padEnd(7)}  ${r.detail}`);
+  }
+  const count = (s: CheckStatus) => results.filter((r) => r.status === s).length;
+  lines.push("", `${count("pass")} pass, ${count("fail")} fail, ${count("warn")} warn, ${count("skip")} skip (offline stand-in)`);
+  return lines.join("\n");
 }

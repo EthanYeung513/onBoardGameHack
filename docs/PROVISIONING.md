@@ -121,6 +121,33 @@ callback `https://<app>/api/connectors/github/callback` → `GITHUB_CLIENT_ID` +
 - **Gephi** — optional desktop app for offline graph inspection; the brain
   page is cosmos.gl in-browser, `GET /api/brain/graph.gexf` feeds Gephi.
 
+## Verify with `npm run check:env`
+
+One real, cheap, read-only call per row (`src/lib/status/probes.ts`; also shown on `/status`).
+Results: **PASS**; **FAIL** (configured required service broken → exit 1); **WARN** (optional
+service broken); **SKIP** (not configured → offline stand-in). Checks run in parallel with a 10 s
+timeout each (Modal 20 s, Cloudflare 45 s and run alone, after the rest, because of its rate limit).
+`OFFLINE=1` skips every row. Output never contains secret values.
+
+| Row | Env vars | Probe |
+| --- | --- | --- |
+| Mubit models | `MUBIT_API_KEY`, `MUBIT_BASE_URL`, `MUBIT_MODEL` | `GET /models`; fails if `MUBIT_MODEL` isn't served; unset → picks `gpt-5.4-mini` and says so |
+| Mubit chat (JSON) | `MUBIT_API_KEY`, `MUBIT_MODEL`, `MUBIT_TASK_HEADER` | one `chat.completions` JSON call through `MubitClient` (`src/llm/mubit.ts`), task `env-check`; reports the model used |
+| Mubit embeddings | `MUBIT_API_KEY`, `MUBIT_EMBED_MODEL` | one embedding via the worker embedder, `dimensions: 1536`, asserts the width |
+| Mubit memory (optional) | `MUBIT_API_KEY`, `MUBIT_ENDPOINT` | SDK remember + recall in a scratch session |
+| Mubit feedback endpoint (optional) | `MUBIT_FEEDBACK_URL` | `GET` the endpoint (no feedback posted); SKIP when unset (distil fallback) |
+| Convex | `NEXT_PUBLIC_CONVEX_URL` / `CONVEX_SELF_HOSTED_URL` / `CONVEX_DEPLOYMENT` | `GET /version`; reports self-hosted vs cloud |
+| GitHub connector | `GITHUB_CONNECTOR_PAT` | `GET /user` + rate limit remaining |
+| Nango | `NANGO_SECRET_KEY`, `NANGO_HOST` | `GET /integrations`; lists which of slack, jira, notion, google-drive, github are configured |
+| Resend | `RESEND_API_KEY` | `GET /domains` (a send-only key is accepted as valid); never sends mail |
+| Vercel | `VERCEL_TOKEN` | `GET /v9/projects` |
+| Modal | `MODAL_TOKEN_ID`, `MODAL_TOKEN_SECRET` | `modal token info` (SKIP if the CLI isn't installed) |
+| PostHog | `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST` | `POST /flags?v=2` — authenticates the key without capturing an event |
+| Sentry | `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` | parses the DSN, posts an empty `client_report` envelope (no issue/event created) |
+| Anthropic (optional) | `ANTHROPIC_API_KEY` | `GET /v1/models` (no tokens spent) |
+| Supabase (optional, legacy) | `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | `GET /auth/v1/health` |
+| Cloudflare Browser Rendering | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` | renders `https://example.com` to markdown once (HTTP 429 → WARN: free-plan rate limit) |
+
 ## Once keys exist — the wiring I do
 
 `.env.local` + Convex env get the values → `npm run check:env` proves each
