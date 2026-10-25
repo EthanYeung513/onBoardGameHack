@@ -75,7 +75,7 @@ export async function encodeAll(raw) {
     card(0, DILEMMA_NO_TEXTBOX, 610, 272) +
       card(1, BATTLE_SCENE, 590, 270) +
       card(2, WORDMATCH_NO_HINT, 600, 470) +
-      `color=white:s=1024x1280:d=${LEN}:r=30[bg];` +
+      `color=0xf9f9f9:s=1024x1280:d=${LEN}:r=30[bg];` + // the How-it-works panel grey (the PNG art is transparent on it)
       "[bg][k0]overlay=150:170[o0];[o0][k2]overlay=100:690[o1];[o1][k1]overlay=340:420:shortest=1,scale=800:1000:flags=lanczos",
     ...LOSSLESS, tmp("brain"),
   ]);
@@ -95,7 +95,7 @@ export async function encodeAll(raw) {
         `color=white:s=628x1108,format=gray,geq=lum='if(gt(Y,100),255,${rounded(100)})'[wm];` +
         "[w][wm]alphamerge[wr];" +
         `[b]crop=${Math.round(tip.width)}:${Math.round(tip.height)}:${Math.round(tip.x)}:${Math.round(tip.y)},scale=500:-2:flags=neighbor[tip];` +
-        "color=white:s=1024x1280[bg];[bg][wr]overlay=250:172[o];[o][tip]overlay=128:860",
+        "color=black@0:s=1024x1280,format=rgba[bg];[bg][wr]overlay=250:172[o];[o][tip]overlay=128:860", // transparent like How_03.png
       "-frames:v", "1", "-c:v", "libwebp", "-quality", "86", join(OUT, "explore-world.webp"),
     ]);
     console.log(`explore-world.webp: ${Math.round(statSync(join(OUT, "explore-world.webp")).size / 1024)} KB`);
