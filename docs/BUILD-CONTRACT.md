@@ -7,26 +7,42 @@ on. Keep all source and doc files within 1,000 lines.
 
 ## The pipeline is the unit of long work
 
-All work longer than a request runs through `src/lib/pipeline`: a stage
-registry (`registry.ts`), sliced execution (`jobs` + `job_events`), heartbeat
-every ~3 s, stall detection >60 s, retry ≤3 with backoff, resume by upsert keys
-(URL, version, variant) so no completed work repeats. New stages are registered
-in `registry.ts` and appended to `ORDER`; existing stages do not change shape.
+All work longer than a request runs as sliced jobs (D-19). **State lives in Convex**
+(`convex/pipeline.ts`: `jobs` + `job_events`); **work runs in the Node worker**
+(`src/worker/`, started by `npm run dev`, on Modal in production) because stages need
+Chromium (dembrandt), long HTTP crawls and the Mubit SDK. The worker claims a queued job,
+runs one slice (≤45 s budget), heartbeats every ~3 s, and reports `done | continue | error`.
+Convex owns retry (≤3, backoff 2 s·2ⁿ), stall detection (watchdog cron, >60 s → `stalled`),
+manager resume (`pipeline.resume`, continues from the saved cursor) and chaining
+(`SCAN_CHAIN` in `convex/lib/stages.ts`: crawl → extract_design → analyse → seed_brain →
+generate_courses → ready). The legacy `src/lib/pipeline` (Supabase) serves only the old studio.
 
 ```ts
-type StageDefinition = {
-  name: StageName;          // 'crawl' | 'extract_design' | 'analyse' |
-                            // 'seed_brain' | 'generate_courses' |
-                            // 'sync_connector' | 'ready'
-  label: string;            // shown in scan UI
-  run(ctx: StageContext): Promise<StageOutput>;
-}
+// src/worker/types.ts — register in src/worker/registry.ts; existing stages don't change shape
+type StageDefinition = { name: StageName; maxAttempts?: number; run(ctx: StageContext): Promise<SliceResult> };
+type SliceResult = { done: true; summary?: string; next?: { stage; cursor? }[] }   // next: extra jobs
+                 | { done: false; cursor: Record<string, unknown>; progress: number }; // resume here
+// ctx: job, space, scan, connector, convex (worker functions; secret added for you),
+//      llm.json({task, system, user, schema, offline?}), embed.embed(texts), event(), progress(), remainingMs(), lost()
 ```
 
-Stage writes are upserts keyed on the natural key declared by the stage
-(`crawl_pages.url`, `brand_profiles.tokens_version`, `facts.text+entity`,
-`connectors.type`). A stage's output rows declare what it produced; the next
-stage reads only those keys — no hidden coupling through other tables.
+- Worker-only Convex functions use `workerQuery`/`workerMutation` (`convex/lib/worker.ts`,
+  `WORKER_SECRET`); managers can never call them. Manager functions use `requireRole`.
+- A stage with no registered handler leaves its job `queued` (visible in the scan log) — never faked.
+- LLM: `ctx.llm.json` = Mubit JSON mode + Zod + bounded validation retries; without a key it
+  uses the caller's labelled `offline` stand-in or throws `ProviderOffline` (503, one attempt).
+- Embeddings: 1536-d (`EMBEDDING_DIMS`), offline hashed stand-in of the same width.
+- Stage writes are idempotent upserts keyed on natural keys (URL, item+version+idx, …) so a
+  resumed slice repeats nothing.
+
+## Ingest contract (every source)
+
+Website pages, files, GitHub, Nango tools — all go through `src/worker/ingest.ts`
+`ingestDocument(ctx, {connectorId?, kind, externalId, url?, title, text, meta?})` →
+`convex/ingest.ts` (`upsertItem` → versioned `source_items` + `diff_events`; `addChunks` →
+embedded `doc_chunks`, idempotent per version; `sweepRemoved` after a full sync). A
+`changed`/`removed` item marks citing facts `stale` and courses `needsRefresh` in the same
+transaction (`markItemStale`). The website itself is a `website` connector.
 
 ## Constructor contract (public, unchanged)
 

@@ -230,6 +230,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy
 - **Revisit?:** when the landing needs dynamic content, or before public launch (enumeration, the export's inline-jQuery console errors that the mockup also has)
 
+### D-19: Pipeline state in Convex, stage work in a Node worker
+- **Task:** Wave 2 seam (S4/S6/S7/S8 prerequisite)
+- **Time:** 2026-10-25T01:10Z
+- **Context:** the scaffold's sliced runner is Supabase-bound. Stages need Chromium (dembrandt), long crawls, and Mubit calls; Convex actions can't run Chromium and have time limits. F7 wants live progress, F34 wants scheduled re-syncs
+- **Options:** A) Convex actions for everything / B) Convex owns job state, retries, stalls, chaining, crons; a Node worker (local via `npm run dev`, Modal in prod) claims jobs with a shared `WORKER_SECRET` and runs slices
+- **Chosen:** B. Worker wakes on a live subscription to the queue; every source writes through one ingest path that versions items, emits `diff_events` and runs the stale cascade transactionally
+- **Why:** reuses `src/lib/crawl`/`design` unchanged, one runtime for all heavy work, live job_events for free, F35/F36 marking can't be skipped by a connector
+- **Reversibility:** moderate (stages are plain functions; moving light ones into Convex actions is local)
+- **Revisit?:** if Modal cold starts hurt demos — keep one warm worker
+
 ## Blockers
 
 None yet.
