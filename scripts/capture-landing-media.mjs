@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Regenerates the landing-page gameplay clips in public/assets/media/ (D-34) from OUR game builds.
+// Regenerates the landing-page gameplay clips in public/assets/media/ from OUR game builds.
 //
 // The games are not part of this repo. Check them out and run them first:
 //   git worktree add /tmp/games origin/devin/1792879562-games-mubit-merge   # /games/{battle,dilemma,word-match}
@@ -150,8 +150,14 @@ const state = (page) =>
 async function walkTo(page, target, near = 24, timeout = 8000) {
   const held = new Set();
   const set = async (want) => {
-    for (const k of [...held]) if (!want.has(k)) (await page.keyboard.up(k), held.delete(k));
-    for (const k of want) if (!held.has(k)) (await page.keyboard.down(k), held.add(k));
+    for (const k of [...held]) if (!want.has(k)) {
+      await page.keyboard.up(k);
+      held.delete(k);
+    }
+    for (const k of want) if (!held.has(k)) {
+      await page.keyboard.down(k);
+      held.add(k);
+    }
   };
   const end = Date.now() + timeout;
   let last = null, stuck = 0;

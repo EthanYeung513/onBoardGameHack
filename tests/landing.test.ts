@@ -27,7 +27,7 @@ describe("landing page", () => {
     for (const ref of refs) expect(() => readFileSync(`public/assets/${ref}`), ref).not.toThrow();
   });
 
-  // D-34: the five media slots show footage captured from our own games (scripts/capture-landing-media.mjs).
+  // The five media slots show footage captured from our own games (scripts/capture-landing-media.mjs).
   it("shows our gameplay media in the five slots, every file present", () => {
     const media = new Set([...html.matchAll(/assets\/media\/([^"&,]+)/g)].map((m) => m[1]));
     for (const clip of ["hero-dilemma", "why-world-talk", "brain-games", "agents-dilemma", "agents-battle", "agents-word-match"])
