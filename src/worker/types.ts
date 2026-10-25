@@ -7,12 +7,14 @@ import type { Llm } from "./providers/llm";
 export type Level = "debug" | "info" | "warn" | "error";
 
 /** Convex function references the worker may call: `secret` is filled in by the client. */
-type WorkerFn<T extends "query" | "mutation"> = FunctionReference<T, "public", { secret: string } & Record<string, unknown>>;
-export type WorkerArgs<F extends WorkerFn<"query" | "mutation">> = Omit<FunctionArgs<F>, "secret">;
+type WorkerFn<T extends "query" | "mutation" | "action"> = FunctionReference<T, "public", { secret: string } & Record<string, unknown>>;
+export type WorkerArgs<F extends WorkerFn<"query" | "mutation" | "action">> = Omit<FunctionArgs<F>, "secret">;
 
 export interface WorkerConvex {
   query<F extends WorkerFn<"query">>(fn: F, args: WorkerArgs<F>): Promise<FunctionReturnType<F>>;
   mutation<F extends WorkerFn<"mutation">>(fn: F, args: WorkerArgs<F>): Promise<FunctionReturnType<F>>;
+  /** Worker actions (`workerAction`) — only needed for vector search. Optional so test fakes stay small. */
+  action?<F extends WorkerFn<"action">>(fn: F, args: WorkerArgs<F>): Promise<FunctionReturnType<F>>;
 }
 
 export interface StageContext {

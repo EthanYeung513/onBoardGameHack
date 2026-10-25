@@ -138,10 +138,11 @@ export const finish = workerMutation({
     await ctx.db.patch(jobId, { status: "succeeded", progress: 1, finishedAt: now, heartbeatAt: now, error: undefined });
     await logEvent(ctx, job, "info", `${label} finished${outcome.summary ? `: ${outcome.summary}` : ""}`);
     const target = { spaceId: job.spaceId, scanId: job.scanId, connectorId: job.connectorId };
-    const explicit = outcome.next;
+    // `next` adds jobs alongside the scan chain (BUILD-CONTRACT: "next: extra jobs"). The drift
+    // cascade is per space (one queue, whatever source triggered it), so it is never tied to a scan.
     const chained = job.scanId ? nextInScan(job.stage) : null;
-    const next = explicit ?? (chained ? [{ stage: chained, cursor: {} }] : []);
-    for (const n of next) await enqueue(ctx, target, n.stage, n.cursor ?? {});
+    const next = [...(chained ? [{ stage: chained, cursor: {} }] : []), ...(outcome.next ?? []).filter((n) => n.stage !== chained)];
+    for (const n of next) await enqueue(ctx, n.stage === "cascade" ? { spaceId: job.spaceId } : target, n.stage, n.cursor ?? {});
     if (job.stage === "ready") await setScanOutcome(ctx, job, "succeeded");
     else if (job.scanId) {
       const scan = await ctx.db.get(job.scanId);

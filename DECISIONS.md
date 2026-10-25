@@ -281,6 +281,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (swap the references for `api.courses.*`/`api.brand.*` once merged)
 - **Revisit?:** when both modules are on the base branch — replace the references; course switcher if the dashboard doesn't link `&course=`
 
+### D-25: Brain extraction, resolution and the drift cascade
+- **Task:** S8 + F35/F38 (brain extraction + cascade backend)
+- **Time:** 2026-10-25T02:40Z
+- **Context:** the brain needs facts with citations from every source, resolution that doesn't duplicate people/tools, and a cascade that walks `diff_events` down to course steps. Constraints: `entities.key` is one string; vector search is action-only; facts have no span/original-text field; manual facts must keep "≥1 citation"
+- **Options:** (a) batch several chunks per LLM call vs one chunk per call; (b) manual facts without citations vs a note-backed source; (c) cascade waits for a separate `seed_brain` job vs extracts inline
+- **Chosen:** one chunk per `brain_extract` call (citation = that chunk, span within it; one transaction per chunk, resumable). Resolution: hard keys (`email:` > `login:` > `url:` > `name:`; primary in `entities.key`, all in `fields.keys`) → `brainWorker.similarEntities` (worker action, top-k ≥0.95 = match) → `brain_resolve` LLM adjudication for 0.80–0.95; every decision an `entity.resolved` audit row. New optional `facts.dedupeKey` (+ `by_space_dedupe`) = normalised first-extracted text, kept across manager edits, so dedupe and "rejected never resurfaces" are index lookups. Manual facts cite ≥1 chunk **or** carry a note, which becomes a `Manager note` source item + chunk (no diff_event) — every fact keeps ≥1 citation. Manager edits set `approved`. The cascade extracts the changed item's chunks inline, then settles (restore when the cited passage is unchanged, else `fact.still_stale`); cascade jobs are per space. `next` from a stage now adds to the scan chain. Search takes the query vector from the caller (`/api/brain/search` embeds with the worker embedder) so Convex never bundles provider code; without a vector it reports `vector: false`
+- **Why:** citations and resumability by construction; index lookups instead of scans; offline stand-in (rule-based, confidence 0.55 → always draft, `mode: offline` in audits) never claims live
+- **Reversibility:** easy (thresholds are constants in `src/worker/brain/resolve.ts`; `dedupeKey` is optional)
+- **Revisit?:** secondary hard keys scan one type per space (fine to ~thousands of entities); restored facts don't yet clear `staleStepIds` (regeneration does)
+
 ## Blockers
 
 None yet.

@@ -1,7 +1,7 @@
 import { api } from "@convex/_generated/api";
 import type { Doc, Id } from "@convex/_generated/dataModel";
 import { chunkText, contentHash } from "./chunk";
-import type { StageContext } from "./types";
+import type { SliceResult, StageContext } from "./types";
 
 // Shared by every source (crawl, files, GitHub, Nango tools): normalised text in → versioned
 // `source_items` + embedded `doc_chunks`, with diff_events/stale cascade handled by convex/ingest.
@@ -42,4 +42,12 @@ export async function ingestDocument(ctx: Pick<StageContext, "convex" | "embed" 
     written += r.written;
   }
   return { ...res, chunks: written };
+}
+
+/**
+ * How a source sync stage ends (drift contract, F34/F35): queue the per-space `cascade`, which
+ * extracts the new/changed items and settles their stale facts. `return syncDone("12 items synced")`.
+ */
+export function syncDone(summary?: string): SliceResult {
+  return { done: true, summary, next: [{ stage: "cascade" }] };
 }

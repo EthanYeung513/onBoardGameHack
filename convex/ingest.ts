@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { fail } from "./lib/errors";
 import { workerMutation } from "./lib/worker";
@@ -11,13 +11,24 @@ import { connectorType, sourceKind } from "./schema";
 // `removed`. `changed`/`removed` immediately mark every fact citing the item `stale` and flag
 // courses teaching those facts `needsRefresh`; extraction then picks up the new chunks.
 
-/** F35/F36 cascade for one source item. Returns how many facts went stale. */
+/** How a source reads in audit rows: "slack · #payments" — connector type, kind and title. */
+export async function describeSource(ctx: MutationCtx, item: Doc<"source_items">) {
+  const connector = item.connectorId ? await ctx.db.get(item.connectorId) : null;
+  return { sourceItemId: item._id, connectorType: connector?.type ?? "manual", kind: item.kind, title: item.title, url: item.url };
+}
+
+/**
+ * F35/F36 cascade for one source item, step-level: every fact citing the item goes `stale`, and every
+ * course teaching one of those facts gets `needsRefresh` plus the teaching step ids in `staleStepIds`.
+ * Audit rows read source → fact → course → step. Returns how many facts went stale.
+ */
 export async function markItemStale(ctx: MutationCtx, sourceItemId: Id<"source_items">, reason: "changed" | "removed") {
   const item = await ctx.db.get(sourceItemId);
   if (!item) return 0;
+  const source = await describeSource(ctx, item);
   const citations = await ctx.db.query("fact_citations").withIndex("by_source", (q) => q.eq("sourceItemId", sourceItemId)).collect();
   const factIds = [...new Set(citations.map((c) => c.factId))];
-  const courses = new Set<Id<"courses">>();
+  const courses = new Map<Id<"courses">, { fact: Doc<"facts">; stepId?: string }[]>();
   let stale = 0;
   for (const factId of factIds) {
     const fact = await ctx.db.get(factId);
@@ -27,16 +38,45 @@ export async function markItemStale(ctx: MutationCtx, sourceItemId: Id<"source_i
       spaceId: item.spaceId,
       actor: "system:cascade",
       kind: "fact.stale",
-      payload: { factId, sourceItemId, reason, previousStatus: fact.status },
+      payload: { factId, factText: fact.text, sourceItemId, source, reason, previousStatus: fact.status },
     });
     stale++;
-    for (const cf of await ctx.db.query("course_facts").withIndex("by_fact", (q) => q.eq("factId", factId)).collect()) courses.add(cf.courseId);
+    for (const cf of await ctx.db.query("course_facts").withIndex("by_fact", (q) => q.eq("factId", factId)).collect()) {
+      const list = courses.get(cf.courseId) ?? [];
+      list.push({ fact, stepId: cf.stepId });
+      courses.set(cf.courseId, list);
+    }
   }
-  for (const courseId of courses) {
+  for (const [courseId, taught] of courses) {
     const course = await ctx.db.get(courseId);
-    if (!course || course.needsRefresh) continue;
-    await ctx.db.patch(courseId, { needsRefresh: true });
-    await ctx.db.insert("audit_events", { spaceId: item.spaceId, actor: "system:cascade", kind: "course.needs_refresh", payload: { courseId, sourceItemId } });
+    if (!course) continue;
+    const before = new Set(course.staleStepIds ?? []);
+    const steps = new Set(before);
+    for (const t of taught) if (t.stepId) steps.add(t.stepId);
+    const addedSteps = [...steps].filter((s) => !before.has(s));
+    if (course.needsRefresh && addedSteps.length === 0) continue;
+    await ctx.db.patch(courseId, { needsRefresh: true, ...(steps.size ? { staleStepIds: [...steps] } : {}) });
+    if (!course.needsRefresh) {
+      await ctx.db.insert("audit_events", { spaceId: item.spaceId, actor: "system:cascade", kind: "course.needs_refresh", payload: { courseId, courseTitle: course.title, sourceItemId, source } });
+    }
+    for (const t of taught) {
+      if (!t.stepId || !addedSteps.includes(t.stepId)) continue;
+      await ctx.db.insert("audit_events", {
+        spaceId: item.spaceId,
+        actor: "system:cascade",
+        kind: "course.step_stale",
+        payload: {
+          chain: `${source.connectorType} “${source.title}” → fact “${t.fact.text.slice(0, 80)}” → course “${course.title}” → step ${t.stepId}`,
+          source,
+          factId: t.fact._id,
+          factText: t.fact.text,
+          courseId,
+          courseTitle: course.title,
+          stepId: t.stepId,
+          reason,
+        },
+      });
+    }
   }
   return stale;
 }

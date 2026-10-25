@@ -352,10 +352,14 @@ export default defineSchema({
     status: factStatus,
     createdBy: v.union(v.literal("agent"), v.literal("manager")),
     version: v.number(),
+    /** Normalised text of the fact as first extracted (kept across manager edits): the dedupe key,
+     * and how a rejected fact is recognised so it never resurfaces (F16). */
+    dedupeKey: v.optional(v.string()),
   })
     .index("by_space", ["spaceId"])
     .index("by_space_status", ["spaceId", "status"])
     .index("by_entity", ["entityId"])
+    .index("by_space_dedupe", ["spaceId", "dedupeKey"])
     .searchIndex("search_text", { searchField: "text", filterFields: ["spaceId", "status"] }),
 
   /** Join table so "facts citing chunk X" is an index lookup (drift cascade, F35). */
