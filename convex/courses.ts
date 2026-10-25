@@ -56,6 +56,19 @@ const packOrder = (packType: string) => {
   return i < 0 ? PACK_TYPES.length : i;
 };
 
+/** Dashboard "Generate course": queue every default pack the space doesn't have yet (F20/F25). */
+export const generate = mutation({
+  args: { spaceId: v.id("spaces") },
+  handler: async (ctx, { spaceId }) => {
+    const { userId } = await requireRole(ctx, spaceId, MANAGERS);
+    const existing = new Set((await ctx.db.query("courses").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).collect()).map((c) => c.packType));
+    const missing = PACK_TYPES.filter((p) => !existing.has(p));
+    for (const packType of missing) await requestCourseJob(ctx, spaceId, { packType, requestedBy: `user:${userId}` });
+    if (missing.length) await audit(ctx, spaceId, `user:${userId}`, "courses.generate_requested", { packs: missing });
+    return { queued: missing };
+  },
+});
+
 /** Dashboard Courses tab: the space's courses in the mockup's order. */
 export const list = query({
   args: { spaceId: v.id("spaces") },

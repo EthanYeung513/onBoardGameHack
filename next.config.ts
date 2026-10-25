@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   // connect, and demo reset re-seeds from the handbook.
   outputFileTracingIncludes: {
     "/api/**/*": ["./drizzle/**/*", "./content/**/*"],
+    // The per-company onboarding world template, served by the deploy stand-in at /o/<slug>/.
+    "/o/**/*": ["./templates/onboarding/**/*"],
   },
   // `/` is the mockup's landing page served verbatim from public/ (index.html + assets/, copied from
   // `main`) so its layout, burger menu and animations match exactly (DECISIONS.md D-18).

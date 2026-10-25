@@ -340,6 +340,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (cursor/target shape is internal to the stage; schema additions are optional fields)
 - **Revisit?:** when publish lands (stamp `publishedSpec` there) and when tokens_version bumps start marking courses `stale`
 
+### D-33: Generate → deploy: one Vercel project per company, stand-in served by the app
+- **Task:** deploy pipeline (product owner: "like Lovable — every company gets a unique gamified onboarding process")
+- **Time:** 2026-10-25T01:55Z
+- **Context:** the manager's Generate/Publish button must turn the space's brain + courses into that company's own playable onboarding world with a shareable URL + QR; later Generates update the same deployment. VERCEL_TOKEN_FULL is still being provisioned
+- **Options:** A) per-company Next app build / B) static artifact = the mockup's hire-facing world (play.html + game.js + state.js + styles.css, kept verbatim in `templates/onboarding/`) + one generated `onboarding.js` with the space's real content, deployed via the Vercel API
+- **Chosen:** B. `deploy.deployOnboarding` (manager) queues a `deploy` worker job; the stage packages the world (`src/lib/onboarding/*`) and `POST /v13/deployments` with `name = project = orthogonal-<slug>`, `target: production` (same project every time → one stable `<project>.vercel.app`), then records `spaces.deployUrl`. Without a token, or when Vercel refuses it (401/403), the labelled stand-in is published at `/o/<slug>` (served by this app from the same template + content, banner says so). The dashboard's Courses tab `#pub-btn` triggers it; link + QR (rendered locally with `qrcode`, no external service) in the publish panel. Games are built only from real content (quiz steps, approved/rejected facts, people facts); empty buildings say "opens when your manager generates its course"
+- **Why:** reuses the mockup's game exactly; static → deploys in seconds, no build step on Vercel; stand-in keeps the demo honest without a token
+- **Reversibility:** easy
+- **Revisit?:** custom domains per company; hire progress back to the dashboard (the world stores progress per device today)
+
 ## Blockers
 
 None yet.

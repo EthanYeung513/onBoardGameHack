@@ -4,6 +4,7 @@ import { cascadeStage } from "./stages/cascade";
 import { crawlStage } from "./stages/crawl";
 import { extractDesignStage } from "./stages/extract-design";
 import { generateCoursesStage } from "./stages/generate-courses";
+import { deployStage } from "./stages/deploy";
 import { readyStage } from "./stages/ready";
 import { seedBrainStage } from "./stages/seed-brain";
 import { syncConnectorStage } from "./stages/sync_connector";
@@ -19,6 +20,7 @@ export const registry: Partial<Record<StageName, StageDefinition>> = {
   seed_brain: seedBrainStage,
   cascade: cascadeStage,
   generate_courses: generateCoursesStage,
+  deploy: deployStage,
   ready: readyStage,
   sync_connector: syncConnectorStage,
 };

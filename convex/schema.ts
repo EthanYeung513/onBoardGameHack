@@ -22,6 +22,7 @@ export const stageName = v.union(
   v.literal("generate_courses"),
   v.literal("sync_connector"),
   v.literal("cascade"),
+  v.literal("deploy"),
   v.literal("ready"),
 );
 
@@ -126,6 +127,14 @@ export default defineSchema({
     autoApproveThreshold: v.number(),
     /** "live" when real providers ran, "offline" when stand-ins did — shown as a badge. */
     mode: v.optional(v.union(v.literal("live"), v.literal("offline"))),
+    /** Generate → deploy (per-company onboarding app). `deployUrl` is absolute for a Vercel
+     * deployment, or the app-relative `/o/<slug>` path for the labelled stand-in. */
+    deployUrl: v.optional(v.string()),
+    deployMode: v.optional(v.union(v.literal("vercel"), v.literal("stand-in"))),
+    deployState: v.optional(v.union(v.literal("building"), v.literal("ready"), v.literal("error"))),
+    deployedAt: v.optional(v.number()),
+    deployProjectId: v.optional(v.string()),
+    deployError: v.optional(v.string()),
   })
     .index("by_slug", ["slug"])
     .index("by_owner", ["ownerId"]),

@@ -1,28 +1,49 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@convex/_generated/api";
+import { DeployQr, absoluteUrl } from "@/components/manager/DeployPanel";
 import { Icon } from "@/components/manager/icons";
 import type { TabProps } from "./shared";
 
-// Course generation (S11) and publishing (S14) land in their own PRs: their controls stay exactly
-// as designed, disabled with an honest tooltip, so nothing here pretends to generate or publish.
-export const GEN_PENDING = "Course generation is coming online";
-export const PUBLISH_PENDING = "Publishing is coming online";
+// "Generate course" queues the default packs the space is missing (generate_courses stage, real
+// Mubit). Free-text topics need the assistant (F22, postponed) — the input is kept as designed.
+// Publish = Generate → deploy (D-33): #pub-btn deploys this company's own onboarding world (its own
+// Vercel project, or the labelled stand-in at /o/<slug>).
+export const TOPIC_PENDING = "Custom topics arrive with the course assistant — this generates the standard courses from your brain";
 
 export function CoursesTab({ space, toast }: TabProps) {
   const courses = useQuery(api.dashboard.courses, { spaceId: space._id });
   const router = useRouter();
   const [topic, setTopic] = useState("");
-  // DEPLOY HOOK SLOT: the orchestrator's `api.deploy.deployOnboarding({ spaceId })` will set
-  // `space.deployUrl` (+ QR). Until that lands on base, #pub-btn stays disabled with PUBLISH_PENDING;
-  // wire it by calling the mutation from #pub-btn's onClick and dropping `disabled`.
-  const deployUrl = (space as { deployUrl?: string }).deployUrl;
-  const published = Boolean(space.publishedAt || deployUrl);
-  const joinUrl = typeof window === "undefined" ? `/join/${space.slug}` : `${window.location.origin}/join/${space.slug}`;
-  const playUrl = deployUrl ?? joinUrl;
+  const deploy = useMutation(api.deploy.deployOnboarding);
+  const generate = useMutation(api.courses.generate);
+  const [genStatus, setGenStatus] = useState<string | null>(null);
+  const runGenerate = async () => {
+    setGenStatus(null);
+    try {
+      const { queued } = await generate({ spaceId: space._id });
+      setGenStatus(queued.length ? `Generating ${queued.length} course${queued.length === 1 ? "" : "s"} from your brain…` : "All standard courses exist — open one to regenerate it.");
+    } catch (err) {
+      setGenStatus(err instanceof ConvexError ? (err.data as { message: string }).message : "Couldn't start generation. Please try again.");
+    }
+  };
+  const building = space.deployState === "building";
+  const deployUrl = space.deployUrl;
+  const published = Boolean(deployUrl);
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
+  const playUrl = deployUrl ? absoluteUrl(deployUrl, origin || "http://localhost") : "";
+  const publish = async () => {
+    try {
+      await deploy({ spaceId: space._id });
+      toast(published ? "Updating your onboarding world…" : "Publishing your onboarding world…");
+    } catch (err) {
+      toast(err instanceof ConvexError ? (err.data as { message: string }).message : "Couldn't start publishing. Please try again.");
+    }
+  };
   const open = (id: string) => router.push(`/course?id=${encodeURIComponent(id)}`);
 
   return (
@@ -42,15 +63,16 @@ export function CoursesTab({ space, toast }: TabProps) {
             onChange={(e) => setTopic(e.target.value)}
             style={{ flex: 1, minWidth: 220, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13 }}
             placeholder="e.g. Security best practices"
-            onKeyDown={(e) => e.key === "Enter" && toast(GEN_PENDING)}
+            title={TOPIC_PENDING}
+            onKeyDown={(e) => e.key === "Enter" && void runGenerate()}
           />
-          <span title={GEN_PENDING} style={{ display: "inline-flex" }}>
-            <button className="btn btn-dark" id="gen-btn" disabled title={GEN_PENDING}>
-              <Icon name="sparkle" /> Generate course
-            </button>
-          </span>
+          <button className="btn btn-dark" id="gen-btn" onClick={() => void runGenerate()} title={TOPIC_PENDING}>
+            <Icon name="sparkle" /> Generate course
+          </button>
         </div>
-        <div id="gen-status" style={{ fontSize: 13, color: "var(--muted)", marginTop: 10 }} />
+        <div id="gen-status" style={{ fontSize: 13, color: "var(--muted)", marginTop: 10 }}>
+          {genStatus ?? (space.deployState === "error" && space.deployError ? `Last publish failed: ${space.deployError}` : null)}
+        </div>
       </div>
       <div className="panel" id="publish-panel" hidden={!published}>
         <h3>
@@ -59,6 +81,11 @@ export function CoursesTab({ space, toast }: TabProps) {
         <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 10 }}>
           Share this link with new hires — they&apos;ll log in with their company email.
         </p>
+        <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 10 }}>
+          {space.deployMode === "vercel" ? "Deployed as its own Vercel project" : "Stand-in — served by Orthogonal (Vercel not configured)"}
+          {space.deployedAt ? ` · updated ${new Date(space.deployedAt).toLocaleString()}` : ""}
+        </p>
+        {playUrl && <DeployQr url={playUrl} />}
         <div className="linkbox">
           <span id="play-link">{playUrl}</span>
           <button
@@ -78,11 +105,9 @@ export function CoursesTab({ space, toast }: TabProps) {
       <div className="panel" id="gen-panel">
         <div className="ptitle">
           <h3>Curriculum</h3>
-          <span title={PUBLISH_PENDING} style={{ display: "inline-flex" }}>
-            <button className="btn btn-primary" id="pub-btn" disabled title={PUBLISH_PENDING}>
-              {published ? "Republish" : "Publish world"} <Icon name="globe" size={15} />
-            </button>
-          </span>
+          <button className="btn btn-primary" id="pub-btn" onClick={() => void publish()} disabled={building}>
+            {building ? "Publishing…" : published ? "Republish" : "Publish world"} <Icon name="globe" size={15} />
+          </button>
         </div>
         <div className="grid2" id="course-cards">
           {courses && courses.length === 0 && (
