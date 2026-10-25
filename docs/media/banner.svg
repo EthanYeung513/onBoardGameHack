@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420" role="img" aria-label="Orthogonal: your company, as a game your new hires actually play">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eef5ff"/>
+      <stop offset="1" stop-color="#fdf7e7"/>
+    </linearGradient>
+    <pattern id="grass" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="#7cc46b"/>
+      <rect x="2" y="3" width="2" height="2" fill="#6ab35a"/>
+      <rect x="10" y="9" width="2" height="2" fill="#8fd37d"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="420" rx="24" fill="url(#sky)"/>
+
+  <!-- mark + wordmark -->
+  <g transform="translate(96 92)">
+    <rect width="34" height="34" rx="7" fill="#3A97FA"/>
+    <rect x="38" width="34" height="34" rx="7" fill="#F86748"/>
+    <rect y="38" width="34" height="34" rx="7" fill="#4EC77D"/>
+    <rect x="38" y="38" width="34" height="34" rx="7" fill="#FCC836"/>
+  </g>
+  <text x="196" y="152" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="64" font-weight="600" letter-spacing="-2" fill="#101014">Orthogonal</text>
+  <text x="98" y="222" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="30" font-weight="500" letter-spacing="-0.5" fill="#101014">Your company, as a game your new hires actually play.</text>
+
+  <!-- the pipeline as pills -->
+  <g font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="600">
+    <g transform="translate(98 252)"><rect width="176" height="40" rx="20" fill="#fff" stroke="#3A97FA" stroke-width="2"/><text x="88" y="26" text-anchor="middle" fill="#1d4ed8">Website → brand</text></g>
+    <text x="286" y="279" font-size="20" fill="#9ca3af">›</text>
+    <g transform="translate(302 252)"><rect width="176" height="40" rx="20" fill="#fff" stroke="#4EC77D" stroke-width="2"/><text x="88" y="26" text-anchor="middle" fill="#15803d">Company brain</text></g>
+    <text x="490" y="279" font-size="20" fill="#9ca3af">›</text>
+    <g transform="translate(506 252)"><rect width="150" height="40" rx="20" fill="#fff" stroke="#F86748" stroke-width="2"/><text x="75" y="26" text-anchor="middle" fill="#c2410c">Courses</text></g>
+    <text x="668" y="279" font-size="20" fill="#9ca3af">›</text>
+    <g transform="translate(684 252)"><rect width="176" height="40" rx="20" fill="#101014"/><text x="88" y="26" text-anchor="middle" fill="#FCC836">Playable world</text></g>
+  </g>
+  <text x="98" y="328" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="16" fill="#6b6b76">Kept current by Mubit as the company changes.</text>
+
+  <!-- a little town: one building per course -->
+  <rect x="0" y="372" width="1280" height="48" fill="url(#grass)"/>
+  <rect x="0" y="372" width="1280" height="48" rx="0" fill="none"/>
+  <g transform="translate(940 200)">
+    <!-- town hall -->
+    <rect x="40" y="70" width="120" height="102" fill="#f3e2c0" stroke="#7a4a1f" stroke-width="4"/>
+    <polygon points="28,74 100,22 172,74" fill="#F86748" stroke="#7a4a1f" stroke-width="4"/>
+    <rect x="86" y="120" width="28" height="52" fill="#7a4a1f"/>
+    <rect x="54" y="92" width="22" height="20" fill="#3A97FA" stroke="#7a4a1f" stroke-width="3"/>
+    <rect x="124" y="92" width="22" height="20" fill="#3A97FA" stroke="#7a4a1f" stroke-width="3"/>
+    <!-- shop -->
+    <rect x="182" y="104" width="88" height="68" fill="#fff4dc" stroke="#7a4a1f" stroke-width="4"/>
+    <polygon points="172,108 226,70 280,108" fill="#4EC77D" stroke="#7a4a1f" stroke-width="4"/>
+    <rect x="214" y="134" width="22" height="38" fill="#7a4a1f"/>
+    <!-- cottage -->
+    <rect x="-56" y="112" width="80" height="60" fill="#fff4dc" stroke="#7a4a1f" stroke-width="4"/>
+    <polygon points="-66,116 -16,80 34,116" fill="#FCC836" stroke="#7a4a1f" stroke-width="4"/>
+    <rect x="-26" y="138" width="20" height="34" fill="#7a4a1f"/>
+    <!-- hire -->
+    <g transform="translate(130 150)"><rect width="12" height="10" fill="#f2c9a0"/><rect y="10" width="12" height="12" fill="#3A97FA"/><rect x="0" y="-4" width="12" height="5" fill="#5b3a1f"/></g>
+  </g>
+  <!-- trees -->
+  <g fill="#3f8f45" stroke="#2b6b31" stroke-width="3">
+    <circle cx="836" cy="350" r="22"/><circle cx="1240" cy="346" r="26"/>
+  </g>
+  <g fill="#7a4a1f"><rect x="832" y="368" width="8" height="8"/><rect x="1236" y="368" width="8" height="8"/></g>
+</svg>
