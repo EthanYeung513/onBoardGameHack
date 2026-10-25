@@ -100,7 +100,7 @@ export function offlineCourse(pack: CoursePack, facts: CourseFact[], pool: Cours
   return { title: pack.title, icon: pack.icon, building: pack.building, game: pack.game, desc: pack.desc, steps };
 }
 
-export type StepRefresh = { steps: CourseStep[]; remove?: string[] };
+export type StepRefresh = { steps: CourseStep[]; remove: string[] };
 
 /**
  * Offline step refresh: keep each stale step's still-approved citations and rebuild it from them;

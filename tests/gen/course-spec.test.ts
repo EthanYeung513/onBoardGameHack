@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { applyCoursePatches, stepRefreshPatches } from "@/lib/flow/course-patch";
 import { courseSpecSchema, validateCourseSpec, type CourseSpec } from "@/lib/flow/course-spec";
 import { COURSE_STEPS_SYSTEM_PROMPT, COURSE_SYSTEM_PROMPT } from "@/lib/prompts";
+import { normaliseRefresh } from "@/worker/stages/generate-courses";
 
 const approved = new Set(["f1", "f2", "f3"]);
 
@@ -118,6 +119,13 @@ describe("course patches", () => {
     expect(patches.map((p) => `${p.op} ${p.path}`)).toEqual(["set /steps/1", "remove /steps/2"]);
     const r = applyCoursePatches(s, patches, approved);
     expect(r.ok && r.spec.steps.map((x) => x.id)).toEqual(["welcome", "deploys", "done"]);
+  });
+});
+
+describe("step refresh output", () => {
+  it("normalises the ways models mark removals and drops steps that weren't asked for", () => {
+    const raw = { steps: [{ id: "a", kind: "lesson" }, { id: "b", remove: true }, "c", { id: "welcome", kind: "welcome" }] };
+    expect(normaliseRefresh(raw, ["a", "b", "c"])).toEqual({ steps: [{ id: "a", kind: "lesson" }], remove: ["b", "c"] });
   });
 });
 

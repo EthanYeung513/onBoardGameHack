@@ -21,6 +21,27 @@ type Context = FunctionReturnType<typeof api.courseGen.context>;
 /** Stop starting new targets when less than this is left in the slice. */
 const TARGET_BUDGET_MS = 20_000;
 
+/**
+ * Models vary in how they mark removals (`remove: [...]`, a step with `"remove": true`, or an id
+ * string in `steps`) and sometimes echo untouched steps; keep only the requested ids.
+ */
+export function normaliseRefresh(raw: unknown, stepIds: string[]): unknown {
+  if (typeof raw !== "object" || raw === null) return raw;
+  const r = raw as { steps?: unknown; remove?: unknown };
+  const remove = new Set(Array.isArray(r.remove) ? r.remove.filter((x): x is string => typeof x === "string") : []);
+  const steps: unknown[] = [];
+  for (const s of Array.isArray(r.steps) ? r.steps : []) {
+    if (typeof s === "string") remove.add(s);
+    else if (s && typeof s === "object" && "remove" in s) {
+      const { remove: flag, ...rest } = s as Record<string, unknown>;
+      if (flag) remove.add(String(rest.id));
+      else steps.push(rest);
+    } else steps.push(s);
+  }
+  const wanted = (id: unknown) => typeof id === "string" && stepIds.includes(id);
+  return { steps: steps.filter((s) => wanted((s as { id?: unknown })?.id)), remove: [...remove].filter(wanted) };
+}
+
 export function factsForPack(pack: CoursePack, facts: CourseFact[]): CourseFact[] {
   const rank = (f: CourseFact) => pack.categories.indexOf(f.category as CoursePack["categories"][number]);
   return facts
@@ -80,14 +101,14 @@ async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, 
   const byId = new Map(data.facts.map((f) => [f.id, f]));
   const kinds = new Map(course.spec.steps.map((s) => [s.id, s.kind]));
   const schema = z
-    .object({ steps: z.array(CourseStep).max(24), remove: z.array(z.string()).max(24).optional() })
+    .preprocess((raw) => normaliseRefresh(raw, stepIds), z.object({ steps: z.array(CourseStep).max(24), remove: z.array(z.string()).max(24) }))
     .superRefine((out, zctx) => {
-      const got = [...out.steps.map((s) => s.id), ...(out.remove ?? [])];
-      if (got.length !== stepIds.length || !stepIds.every((id) => got.includes(id))) {
-        zctx.addIssue({ code: "custom", message: `rewrite or remove exactly these step ids: ${stepIds.join(", ")}` });
+      if (out.steps.length + out.remove.length === 0) {
+        zctx.addIssue({ code: "custom", message: `rewrite or remove these step ids: ${stepIds.join(", ")}` });
         return;
       }
       for (const s of out.steps) if (kinds.get(s.id) !== s.kind) zctx.addIssue({ code: "custom", message: `step "${s.id}" must keep kind ${kinds.get(s.id)}` });
+      // Validating the patched course also proves no stale fact is still cited by an untouched target.
       const r = applyCoursePatches(course.spec, stepRefreshPatches(course.spec, out.steps, out.remove), allApproved);
       if (!r.ok) for (const message of r.errors) zctx.addIssue({ code: "custom", message });
     });
@@ -120,7 +141,7 @@ async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, 
     jobId: ctx.job._id,
     requestedBy: target.requestedBy,
   });
-  const removed = res.value.remove?.length ?? 0;
+  const removed = res.value.remove.length;
   await ctx.event(
     "info",
     `Refreshed ${res.value.steps.length} step${res.value.steps.length === 1 ? "" : "s"} of ${pack.title}${removed ? `, removed ${removed} with no approved facts left` : ""}${label(res.mode)}`,
