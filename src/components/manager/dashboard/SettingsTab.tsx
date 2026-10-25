@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@convex/_generated/api";
 import type { BrandInfo } from "./brandInfo";
+import { FormModal } from "./FormModal";
 import { errMsg, type TabProps } from "./shared";
 
 const input = { padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13 } as const;
@@ -56,18 +57,22 @@ export function SettingsTab({ space, toast, B, managerName }: TabProps & { B: Br
     }
   };
 
+  const [confirmWipe, setConfirmWipe] = useState(false);
   const wipe = async () => {
-    if (!window.confirm("Wipe all demo data and start over?")) return;
     try {
       await reset({ spaceId: space._id });
       router.push("/");
+      return null;
     } catch (err) {
-      toast(errMsg(err));
+      return errMsg(err);
     }
   };
 
   return (
     <>
+      {confirmWipe && (
+        <FormModal title="Wipe all demo data and start over?" sub="Deletes this space's scans, brain, courses, hires and rewards. Members and the audit log are kept." fields={[]} submitLabel="Reset space" danger onClose={() => setConfirmWipe(false)} onSubmit={wipe} />
+      )}
       <div className="top">
         <div>
           <h1>Settings</h1>
@@ -122,7 +127,7 @@ export function SettingsTab({ space, toast, B, managerName }: TabProps & { B: Br
             className="btn btn-ghost"
             style={{ color: "#dc2626", borderColor: "#dc2626", marginLeft: 10 }}
             disabled={!isOwner}
-            onClick={() => void wipe()}
+            onClick={() => setConfirmWipe(true)}
           >
             Reset space (wipe demo data)
           </button>

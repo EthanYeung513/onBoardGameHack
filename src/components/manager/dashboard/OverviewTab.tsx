@@ -1,24 +1,36 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
+import { useState, type ReactNode } from "react";
 import { api } from "@convex/_generated/api";
+import { FormModal } from "./FormModal";
 import { avatarText, errMsg, type Space, type TabProps, type Toast } from "./shared";
 
-/** "+ Invite" (mockup `invite()`): prompt for an email → real invite → copy the hire's link. */
-export function useInvite(space: Space, toast: Toast) {
+/** "+ Invite" (mockup `invite()`): an in-page email field → real invite → copy the hire's link. */
+export function useInvite(space: Space, toast: Toast): { open: () => void; modal: ReactNode } {
   const invite = useMutation(api.hires.invite);
-  return async () => {
-    const email = window.prompt("Invite a hire — enter their work email:");
-    if (!email) return;
-    try {
-      const { path } = await invite({ spaceId: space._id, email });
-      const link = `${window.location.origin}${path}`;
-      await navigator.clipboard?.writeText(link).catch(() => undefined);
-      toast("Invite link copied — email sending not set up yet");
-    } catch (err) {
-      toast(errMsg(err));
-    }
-  };
+  const [shown, setShown] = useState(false);
+  const modal = shown ? (
+    <FormModal
+      title="Invite a hire"
+      sub="They get a link to your onboarding world; you can share it however you like."
+      fields={[{ name: "email", label: "Work email", type: "email", placeholder: "name@company.com", required: true }]}
+      submitLabel="Create invite"
+      onClose={() => setShown(false)}
+      onSubmit={async ({ email }) => {
+        try {
+          const { path } = await invite({ spaceId: space._id, email });
+          const link = `${window.location.origin}${path}`;
+          await navigator.clipboard?.writeText(link).catch(() => undefined);
+          toast("Invite link copied — email sending not set up yet");
+          return null;
+        } catch (err) {
+          return errMsg(err);
+        }
+      }}
+    />
+  ) : null;
+  return { open: () => setShown(true), modal };
 }
 
 export function OverviewTab({ space, toast, managerName, brandPill }: TabProps & { managerName: string; brandPill: string }) {
@@ -35,6 +47,7 @@ export function OverviewTab({ space, toast, managerName, brandPill }: TabProps &
 
   return (
     <>
+      {invite.modal}
       <div className="top">
         <div>
           <h1 id="hello">Welcome, {managerName || "Manager"}</h1>
@@ -55,7 +68,7 @@ export function OverviewTab({ space, toast, managerName, brandPill }: TabProps &
       </div>
       <div className="ptitle">
         <h3>Team onboarding overview</h3>
-        <button className="btn btn-ghost" onClick={() => void invite()}>
+        <button className="btn btn-ghost" onClick={invite.open}>
           + Invite
         </button>
       </div>
