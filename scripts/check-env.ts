@@ -1,17 +1,14 @@
-import { runAllChecks } from "@/lib/status/checks";
+import { exitCode, formatTable, runAllChecks } from "@/lib/status/checks";
 
+// One real, read-only call per provisioned service. PASS / FAIL / WARN (optional) / SKIP (not
+// configured → offline stand-in). Exits 1 only when a configured required service fails.
 async function main() {
   const results = await runAllChecks();
-  const w = Math.max(...results.map((r) => r.name.length));
-  console.log(`${"Service".padEnd(w)}  Result  Time     Detail`);
-  for (const r of results) {
-    const mark = r.ok ? "PASS" : r.optional ? "WARN" : "FAIL";
-    console.log(`${r.name.padEnd(w)}  ${mark.padEnd(6)}  ${`${r.ms}ms`.padEnd(7)}  ${r.detail}`);
-  }
-  process.exit(results.some((r) => !r.ok && !r.optional) ? 1 : 0);
+  console.log(formatTable(results));
+  process.exit(exitCode(results));
 }
 
 main().catch((e) => {
-  console.error(e);
+  console.error(e instanceof Error ? e.message : e);
   process.exit(1);
 });
