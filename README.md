@@ -2,6 +2,8 @@
 
 <img src="docs/media/banner.svg" alt="Orthogonal: your company, as a game your new hires actually play" width="100%">
 
+### ▶ Live: [orthogonal-sigma.vercel.app](https://orthogonal-sigma.vercel.app/)
+
 <br>
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](next.config.ts)
