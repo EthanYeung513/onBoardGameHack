@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { TownScene } from '../game/TownScene';
 import { bus, input } from '../game/bridge';
@@ -177,9 +177,44 @@ function ShopMenu({ credits, onClose }: { credits: number; onClose: () => void }
   );
 }
 
+type Hover = { course: Course | null; shop?: boolean; x: number; y: number };
+
+/** Info card pinned above a building's top-centre (screen px from TownScene),
+ *  measured and kept inside the viewport — tall buildings near the top edge
+ *  would otherwise push it off-screen. */
+function BuildingTip({ hover }: { hover: Hover }) {
+  const el = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const d = el.current;
+    if (!d) return;
+    const m = 8, w = d.offsetWidth, h = d.offsetHeight;
+    const left = Math.min(Math.max(hover.x - w / 2, m), window.innerWidth - w - m);
+    const top = Math.min(Math.max(hover.y - h - 6, m), window.innerHeight - h - m);
+    d.style.left = `${left}px`;
+    d.style.top = `${top}px`;
+    d.style.visibility = 'visible';
+  });
+  return (
+    <div ref={el} className="tooltip" style={{ visibility: 'hidden' }}>
+      {hover.course ? (
+        <>
+          <span className="t-name">{hover.course.name}</span>
+          <div className="sd-bar"><i style={{ width: `${hover.course.completion}%` }} /></div>
+          <span className="t-pct">{hover.course.completion}% complete · <Coin size={12} /> {courseReward(hover.course)}</span>
+        </>
+      ) : (
+        <>
+          <span className="t-name">{SHOP_NAME}</span>
+          <span className="t-pct">Redeem your credits for rewards</span>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function Game({ hire, charRow }: { hire: Hire; charRow: number }) {
   const host = useRef<HTMLDivElement>(null);
-  const [hover, setHover] = useState<{ course: Course | null; shop?: boolean; x: number; y: number } | null>(null);
+  const [hover, setHover] = useState<Hover | null>(null);
   const [hint, setHint] = useState<string | null>(null);
   const [dialog, setDialog] = useState<Npc | null>(null);
   const [menu, setMenu] = useState<Course | null>(null);
@@ -266,20 +301,7 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
         </div>
       </div>
       {hover && !anyUi && (
-        <div className="tooltip" style={{ left: hover.x, top: hover.y }}>
-          {hover.course ? (
-            <>
-              <span className="t-name">{hover.course.name}</span>
-              <div className="sd-bar"><i style={{ width: `${hover.course.completion}%` }} /></div>
-              <span className="t-pct">{hover.course.completion}% complete · <Coin size={12} /> {courseReward(hover.course)}</span>
-            </>
-          ) : (
-            <>
-              <span className="t-name">{SHOP_NAME}</span>
-              <span className="t-pct">Redeem your credits for rewards</span>
-            </>
-          )}
-        </div>
+        <BuildingTip hover={hover} />
       )}
       {hint && !anyUi && <div className="sd-panel hint">{hint} — E / tap</div>}
       {dialog && <NpcDialog npc={dialog} onClose={closeOverlay} />}

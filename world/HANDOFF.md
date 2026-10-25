@@ -347,3 +347,28 @@ BFS-reachable from spawn, generation <= 20ms, deterministic per seed.
   balance chip + floating "+N" popups.
 - Camera clamped so out-of-bounds void can never show; map edges are forest.
 - Dev flag added: `?credits=N` seeds balance.
+
+## Session 5c — building info card fix (2026-10-25)
+
+Bug: hovering a building showed no info card, a regression from 599ffe8
+(card anchored to the building). There were two causes:
+- **Wrong screen math.** `(world - scrollX) * zoom` ignores Phaser zooming
+  about the camera **origin** (centre). At zoom ≠ 1 the card landed far
+  off-screen (for example `left: 2467px` on a 1280px viewport).
+  `TownScene.emitTip` now mirrors the camera matrix:
+  `canvasBounds + cam.x + ox + (world - scrollX - ox) * zoom`, where
+  `ox = width * originX`.
+- **Stuck at 0,0.** A new hover emitted a placeholder `x:0,y:0` and then
+  relied on the `lastTip` guard to send the real position. Re-hovering the
+  same building with an unmoved camera left the guard equal, so the card
+  stayed at 0,0, hidden by the old `translate(-50%,-110%)`. A hover change now
+  resets `lastTip`, and only a clear (nothing hovered) emits without a
+  position.
+- `Game.tsx` `BuildingTip` measures the card in `useLayoutEffect` and places
+  it centred above the anchor, clamped 8px inside the viewport. The CSS
+  transform is gone. Tall buildings whose top is off-screen keep their card
+  visible at the top edge.
+- The card is still re-anchored every frame through `onHover` in `update()`,
+  so it tracks the building while the camera pans and hides when the pointer
+  leaves the footprint (with its 1-tile margin). On touch, the tap's pointer
+  position drives the same path, so tapping a building shows its card.

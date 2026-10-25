@@ -266,19 +266,25 @@ export class TownScene extends Phaser.Scene {
     this.hoverBd = foundBd;
     if (found !== this.lastHover) {
       this.lastHover = found;
-      bus.emit('hover-building', { course: found === 'shop' ? null : found, shop: found === 'shop', x: 0, y: 0 });
+      // force a fresh positioned emit (or a clear when nothing is hovered);
+      // never emit a placeholder position — React would render it at 0,0
+      this.lastTip = { x: NaN, y: NaN };
+      if (!foundBd) bus.emit('hover-building', { course: null, shop: false, x: 0, y: 0 });
     }
     this.emitTip();
   }
 
   // info card anchors statically to the building's top-centre, in screen
-  // space — it does not follow the cursor
+  // space — it does not follow the cursor. Mirrors Phaser's camera matrix,
+  // which zooms about the camera origin (centre), not the top-left corner.
   private emitTip() {
     const bd = this.hoverBd;
     if (!bd) return;
     const cam = this.cameras.main;
-    const sx = Math.round(((bd.x + bd.w / 2) * T - cam.scrollX) * cam.zoom);
-    const sy = Math.round((bd.y * T - cam.scrollY) * cam.zoom);
+    const ox = cam.width * cam.originX, oy = cam.height * cam.originY;
+    const cb = this.scale.canvasBounds;
+    const sx = Math.round(cb.x + cam.x + ox + ((bd.x + bd.w / 2) * T - cam.scrollX - ox) * cam.zoom);
+    const sy = Math.round(cb.y + cam.y + oy + (bd.y * T - cam.scrollY - oy) * cam.zoom);
     if (sx !== this.lastTip.x || sy !== this.lastTip.y) {
       this.lastTip = { x: sx, y: sy };
       bus.emit('hover-building', { course: bd.course ?? null, shop: !!bd.shop, x: sx, y: sy });
@@ -387,10 +393,8 @@ export class TownScene extends Phaser.Scene {
 
     // re-evaluate hover every frame: the world moves under a stationary
     // pointer as the camera pans, so pointermove alone goes stale
+    // (onHover also re-anchors the info card if the camera moved)
     this.onHover(this.input.activePointer);
-
-    // info card follows the building if the camera moved
-    if (this.lastHover && this.hoverBd) this.emitTip();
 
     // --- weather drops ---
     if (this.drops.length) {
