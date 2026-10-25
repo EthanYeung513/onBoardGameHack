@@ -3,7 +3,7 @@ import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internalQuery, type QueryCtx } from "./_generated/server";
 import { factKey, hardKeys, normName } from "../src/lib/brain/normalize";
-import { addCitation, canonical, entityKeys, findByHardKeys, statusFor, upsertFact, type FactOutcome } from "./lib/brainWrite";
+import { addCitation, canonical, entityKeys, findByHardKeys, statusFor, upsertFact, type FactOutcome, type HardKeyCache } from "./lib/brainWrite";
 import { fail } from "./lib/errors";
 import { workerAction, workerMutation, workerQuery } from "./lib/worker";
 import { describeSource } from "./ingest";
@@ -72,8 +72,9 @@ export const matchHardKeys = workerQuery({
   args: { spaceId: v.id("spaces"), items: v.array(candidateV) },
   handler: async (ctx, { spaceId, items }) => {
     const out: ({ id: Id<"entities">; name: string; key: string } | null)[] = [];
+    const cache: HardKeyCache = new Map();
     for (const it of items) {
-      const hit = await findByHardKeys(ctx, spaceId, it.type, it);
+      const hit = await findByHardKeys(ctx, spaceId, it.type, it, cache);
       out.push(hit ? { id: hit.entity._id, name: hit.entity.name, key: hit.key } : null);
     }
     return out;
@@ -150,13 +151,14 @@ export const commitChunk = workerMutation({
     const ids: Id<"entities">[] = [];
     let created = 0;
     let merged = 0;
+    const hardKeyCache: HardKeyCache = new Map();
     for (const e of a.entities) {
       let target = e.match ? await canonical(ctx, e.match) : null;
       let method = e.decision.method;
       let reason = e.decision.reason;
       if (!target || target.spaceId !== a.spaceId || target.type !== e.type) {
         target = null;
-        const hk = await findByHardKeys(ctx, a.spaceId, e.type, e);
+        const hk = await findByHardKeys(ctx, a.spaceId, e.type, e, hardKeyCache);
         if (hk) {
           target = hk.entity;
           method = "hard_key";
