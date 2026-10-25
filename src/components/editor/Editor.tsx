@@ -178,6 +178,11 @@ export function Editor({ spaceId, data, assets, options, initialPanel = "assets"
                 design={design}
                 onPreview={(f, v) => setField(f, v, true)}
                 onPick={(f, v) => setField(f, v, false)}
+                logo={(() => {
+                  const logos = (assets?.assets ?? []).filter((a) => a.id.startsWith("logo-") && a.thumb.image);
+                  const best = logos.find((a) => a.category === "brand") ?? logos[0];
+                  return best ? { url: best.thumb.image!, label: best.name } : null;
+                })()}
               />
             )}
           </div>
