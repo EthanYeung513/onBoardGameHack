@@ -46,6 +46,21 @@ describe("offlineGenerateGame", () => {
     expect(result.ok && result.game).toBe(game);
   });
 
+  it.each(["word-match", "dilemma", "battle"] as const)("fits long prose into %s without cutting it off", (game) => {
+    const prose = {
+      doc: "Company handbook",
+      heading: "Who we are",
+      text: "Acme Pay moves money for 40,000 small businesses across the UK and EU. We take card payments for merchants and pay\nthe money out to their bank accounts every working day. About 200 people work here across Customer Support,\nOperations, Engineering, Sales and Compliance. Slack for chat, Google Workspace for documents and email, Vault for customer data, the Expenses app for claims, and the People app for holidays.",
+    };
+    const long = { ...input, game, sections: [prose, { ...prose, heading: "Tools we use" }, ...input.sections] };
+    const { spec } = offlineGenerateGame(long);
+    const result = instantiateGame({ game, spec });
+    expect(result.ok).toBe(true);
+    const text = JSON.stringify(spec);
+    expect(text).not.toContain("…");
+    expect(text).not.toContain("\\n");
+  });
+
   it("defaults to battle when no game is requested", () => {
     const result = instantiateGame(offlineGenerateGame(input));
     expect(result.ok && result.game).toBe("battle");

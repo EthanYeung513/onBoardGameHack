@@ -27,7 +27,7 @@ export function sectionRules(text: string): string[] {
   return text
     .replace(/\*\*/g, "")
     .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
+    .map((s) => s.replace(/\s+/g, " ").trim())
     .filter((s) => s.length > 20);
 }
 
