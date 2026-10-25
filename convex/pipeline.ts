@@ -71,7 +71,10 @@ export const claim = workerMutation({
     // A manager watching a scan beats background enrichment: scan jobs are claimed first. The
     // newest jobs are checked too, since a long background backlog can push a fresh scan past 50.
     // Priority work a manager is waiting on: the scan, and Generate's deploy (link + QR in seconds).
-    const scanJob = (jobs: Doc<"jobs">[]) => jobs.find((j) => (j.scanId || j.stage === "deploy") && stages.includes(j.stage));
+    // A course the manager just asked for (Courses tab Generate) is one of them too.
+    const managerCourse = (j: Doc<"jobs">) =>
+      j.stage === "generate_courses" && ((j.cursor as { targets?: { requestedBy?: string }[] } | null)?.targets ?? []).some((t) => t.requestedBy?.startsWith("user:"));
+    const scanJob = (jobs: Doc<"jobs">[]) => jobs.find((j) => (j.scanId || j.stage === "deploy" || managerCourse(j)) && stages.includes(j.stage));
     const job = scanJob(ready) ?? scanJob(await queued().order("desc").take(20)) ?? (scanOnly ? undefined : ready.find((j) => stages.includes(j.stage)));
     if (!job) return null;
     await ctx.db.patch(job._id, { status: "running", workerId, heartbeatAt: now, startedAt: job.startedAt ?? now, error: undefined });

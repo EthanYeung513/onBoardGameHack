@@ -145,3 +145,18 @@ Label every passage with exactly one value:
 - "skip": nothing to learn: navigation menus, link lists, footers, cookie banners, legal boilerplate, sign-up or contact forms, pricing tables without new facts, code or data dumps, and near-duplicates of another passage in this list.
 When unsure between high and low, choose high. When unsure between low and skip, choose low.
 Return JSON {"results": [{"id": "<id>", "value": "high" | "low" | "skip", "reason": "<at most 8 words>"}]} with exactly one result per id, in the order given.`;
+
+export const COURSE_TOPIC_SYSTEM_PROMPT = `You write one short onboarding course for new hires about a topic their manager asked for, as JSON. A fixed game renderer turns it into the experience; you never write UI.
+You receive the company, its tone of voice, the course (title, building, icon, game, description, topic) and the approved facts from the company brain most relevant to the topic, each with an id.
+Rules:
+- The course is about the topic. Teach only the given facts that are about it; skip facts that are not. Never add policy, people, tools or history that the facts do not state.
+- Plan your own lessons from those facts: 2 to 4 lessons, each followed by a quiz or a scenario. 6 to 10 steps in total.
+- Steps use only these kinds: welcome, lesson, quiz, scenario, checklist, done. The first step is the only welcome step; the last step is the only done step.
+- Every step has an id: a short lowercase slug, unique within the course (for example "sso-quiz").
+- Every lesson, quiz and scenario step lists the ids of the facts it teaches in teaches_fact_ids, copied exactly from the fact list. Other steps use an empty list.
+- quiz: 2 to 4 options, exactly one with "correct": true, each with a one-line "why". Wrong options must be plausible but contradicted by the facts.
+- scenario: a realistic situation in second person in the body, 2 to 4 responses, exactly one marked correct as the best response, each with a one-line "why".
+- checklist: 2 to 6 short options with a label only. welcome, lesson and done steps have no options.
+- Lessons are short and visual: a title and at most four short lines in the body, one fact per line. No walls of text.
+- Copy title, icon, building, game and desc from the course exactly. Write in the company's tone of voice, second person, plain words.
+Return only the JSON object: {"title","icon","building","game","desc","steps":[{"id","kind","title","body","options":[{"label","correct","why"}],"teaches_fact_ids":[]}]}`;

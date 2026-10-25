@@ -1,10 +1,14 @@
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
+import { internalQuery } from "./_generated/server";
 import type { CoursePatch } from "../src/lib/flow/course-patch";
 import { packFor } from "../src/lib/flow/course-packs";
 import type { CourseSpec } from "../src/lib/flow/course-spec";
 import { citedIds, DRIFT_ACTOR, patchForSpace, republishIfLive, syncCourseFacts, validateForSpace } from "./lib/courses";
 import { fail } from "./lib/errors";
-import { workerMutation, workerQuery } from "./lib/worker";
+import { EMBEDDING_DIMS } from "./schema";
+import { workerAction, workerMutation, workerQuery } from "./lib/worker";
 
 // Worker side of the `generate_courses` stage (src/worker/stages/generate-courses.ts). Writes are
 // re-validated here against the facts that are approved *now*, so a fact that went stale while the
@@ -62,7 +66,7 @@ export const upsert = workerMutation({
     requestedBy: v.optional(v.string()),
   },
   handler: async (ctx, { spaceId, packType, spec: raw, mode, jobId, regenerate, requestedBy }) => {
-    const pack = packFor(packType);
+    const pack = packFor(packType, (raw as { title?: string } | null)?.title);
     if (!pack) return fail(422, `Unknown course pack "${packType}"`);
     const checked = await validateForSpace(ctx, spaceId, raw);
     if (!checked.ok) return fail(422, `Course spec is invalid: ${checked.errors.slice(0, 5).join("; ")}`);
@@ -142,5 +146,51 @@ export const applySteps = workerMutation({
       payload: { courseId, course: course.title, stepIds, fromVersion: course.version, toVersion: version, mode, jobId, summary: r.summary ?? "" },
     });
     return { courseId, version, staleStepIds, republished: "publishedVersion" in live };
+  },
+});
+
+/** Approved facts matching `q` in full text, and the approved facts citing each chunk (in order). */
+export const topicCandidates = internalQuery({
+  args: { spaceId: v.id("spaces"), q: v.string(), chunkIds: v.array(v.id("doc_chunks")) },
+  handler: async (ctx, { spaceId, q, chunkIds }) => {
+    const terms = q.trim().split(/\s+/).slice(0, 16).join(" ");
+    const lexical = terms
+      ? await ctx.db
+          .query("facts")
+          .withSearchIndex("search_text", (s) => s.search("text", terms).eq("spaceId", spaceId).eq("status", "approved"))
+          .take(40)
+      : [];
+    const byChunk: { chunkId: Id<"doc_chunks">; factIds: string[] }[] = [];
+    for (const chunkId of chunkIds) {
+      const cites = await ctx.db.query("fact_citations").withIndex("by_chunk", (x) => x.eq("chunkId", chunkId)).take(25);
+      const ids: string[] = [];
+      for (const c of cites) {
+        const f = await ctx.db.get(c.factId);
+        if (f && f.spaceId === spaceId && f.status === "approved") ids.push(f._id);
+      }
+      byChunk.push({ chunkId, factIds: ids });
+    }
+    return { lexical: lexical.map((f) => f._id as string), byChunk };
+  },
+});
+
+/**
+ * F22 topic courses: candidate facts about a topic, the hybrid way brain search finds them (F17):
+ * full text over facts plus vector search over the chunks they cite (vector search is action-only).
+ * The worker re-ranks the candidates by embedding similarity to the topic.
+ */
+export const topicFacts = workerAction({
+  args: { spaceId: v.id("spaces"), q: v.string(), vector: v.optional(v.array(v.float64())) },
+  handler: async (ctx, { spaceId, q, vector }): Promise<{ lexical: string[]; semantic: { factId: string; score: number }[] }> => {
+    const hits = vector?.length === EMBEDDING_DIMS ? await ctx.vectorSearch("doc_chunks", "by_embedding", { vector, limit: 24, filter: (f) => f.eq("spaceId", spaceId) }) : [];
+    const r: { lexical: string[]; byChunk: { chunkId: Id<"doc_chunks">; factIds: string[] }[] } = await ctx.runQuery(internal.courseGen.topicCandidates, {
+      spaceId,
+      q: q.slice(0, 200),
+      chunkIds: hits.map((h) => h._id),
+    });
+    const score = new Map(hits.map((h) => [h._id as string, h._score]));
+    const best = new Map<string, number>();
+    for (const c of r.byChunk) for (const id of c.factIds) best.set(id, Math.max(best.get(id) ?? 0, score.get(c.chunkId) ?? 0));
+    return { lexical: r.lexical, semantic: [...best.entries()].map(([factId, s]) => ({ factId, score: s })).sort((a, b) => b.score - a.score) };
   },
 });
