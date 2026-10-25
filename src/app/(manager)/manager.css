@@ -205,6 +205,27 @@
 .ob .tool-card b { font-size: 15px; display: block; }
 .ob .tool-card span { font-size: 12px; color: var(--muted); display: block; }
 .ob .tool-card .st { margin-left: auto; font-size: 12px; }
+/* Connector cards are the buttons (Nicole): whole card opens the tool's page. */
+.ob .tool-card[role="button"] { cursor: pointer; text-align: left; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.ob .tool-card[role="button"]:hover { border-color: var(--brand); box-shadow: 0 6px 18px rgba(8,8,12,.06); transform: translateY(-1px); }
+.ob .tool-card[role="button"]:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.ob .tool-card .go { font-size: 22px; line-height: 1; color: var(--muted); }
+.ob .pill.err { background: #fff1f2; color: #e11d48; border-color: transparent; }
+.ob .modal .conn-line { font-size: 13px; color: #0e9f6e; margin: -2px 0 8px; }
+.ob .modal .conn-line.err { color: #e11d48; }
+.ob .modal .panel-note { font-size: 13px; color: var(--muted); background: #f6f6f8; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+.ob .modal .panel-err { color: #e11d48; font-size: 13px; margin-bottom: 12px; }
+.ob .modal .drop { width: 100%; border: 1.5px dashed var(--line); border-radius: var(--radius); background: #fafafb; padding: 26px 16px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; color: var(--ink); }
+.ob .modal .drop:hover, .ob .modal .drop.over { border-color: var(--brand); background: #fff; }
+.ob .modal .drop:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.ob .modal .drop b { font-size: 15px; }
+.ob .modal .drop span { font-size: 12px; color: var(--muted); }
+.ob .modal .up-h { font-size: 13px; color: var(--muted); font-weight: 600; margin: 20px 0 8px; }
+.ob .modal .up-list { list-style: none; border: 1px solid var(--line); border-radius: 10px; max-height: 240px; overflow: auto; }
+.ob .modal .up-list li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--line); }
+.ob .modal .up-list li:last-child { border-bottom: none; }
+.ob .modal .up-list li > span:first-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ob .modal .up-list .up-meta { color: var(--muted); font-size: 12px; }
 .ob .course-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; }
 .ob .course-card .ci { font-size: 30px; }
 .ob .course-card h4 { font-size: 17px; margin: 12px 0 4px; letter-spacing: -0.01em; }

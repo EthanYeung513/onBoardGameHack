@@ -126,6 +126,24 @@ describe("connectors (S6/S7/S15)", () => {
     expect(c).toMatchObject({ type: "files", status: "syncing", pendingFiles: 1 });
   });
 
+  it("uploads can be added again after the first batch is read, and both show in the list", async () => {
+    const { t, mgr, hire, spaceId } = await setup();
+    expect(await mgr.query(api.connectors.uploads, { spaceId })).toEqual({ pending: [], read: [] });
+    const first = await t.run((ctx) => ctx.storage.store(new Blob(["# Handbook\n\nWe deploy on Tuesdays."])));
+    await mgr.mutation(api.connectors.addFiles, { spaceId, files: [{ storageId: first, name: "handbook.md" }] });
+    expect((await mgr.query(api.connectors.uploads, { spaceId })).pending).toEqual([{ name: "handbook.md", size: expect.any(Number) }]);
+    vi.stubGlobal("fetch", async () => new Response("# Handbook\n\nWe deploy on Tuesdays."));
+    expect(await runWorker(t)).toBe("done");
+    expect((await mgr.query(api.connectors.list, { spaceId })).connectors[0]).toMatchObject({ type: "files", status: "ready" });
+
+    const second = await t.run((ctx) => ctx.storage.store(new Blob(["# Glossary"])));
+    expect(await mgr.mutation(api.connectors.addFiles, { spaceId, files: [{ storageId: second, name: "glossary.md" }] })).toMatchObject({ accepted: 1 });
+    const list = await mgr.query(api.connectors.uploads, { spaceId });
+    expect(list.pending.map((f) => f.name)).toEqual(["glossary.md"]);
+    expect(list.read.map((f) => f.name)).toEqual(["handbook.md"]);
+    await expect(hire.query(api.connectors.uploads, { spaceId })).rejects.toThrow();
+  });
+
   it("a Slack message batch flows source → fact → course step: an edit marks the teaching step stale", async () => {
     const { t, spaceId, userId } = await setup();
     const now = Date.now();

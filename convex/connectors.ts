@@ -100,6 +100,25 @@ export const generateUploadUrl = mutation({
   },
 });
 
+/** What the manager has uploaded: files still queued for reading, then docs already read (newest first). */
+export const uploads = query({
+  args: { spaceId: v.id("spaces") },
+  handler: async (ctx, { spaceId }) => {
+    await requireRole(ctx, spaceId, MANAGERS);
+    const c = await ctx.db.query("connectors").withIndex("by_space_type", (q) => q.eq("spaceId", spaceId).eq("type", "files")).first();
+    if (!c) return { pending: [], read: [] };
+    const items = await ctx.db.query("source_items").withIndex("by_connector", (q) => q.eq("connectorId", c._id)).take(200);
+    // The worker stores the doc a moment before it drops the upload from the queue: don't list it twice.
+    const readBlobs = new Set(items.map((i) => (i.meta as { storageId?: string } | undefined)?.storageId));
+    const pending = ((c.config as { pending?: PendingFile[] } | undefined)?.pending ?? []).filter((f) => !readBlobs.has(f.storageId)).map((f) => ({ name: f.name, size: f.size }));
+    const read = items
+      .filter((i) => !i.removedAt)
+      .sort((a, b) => b.fetchedAt - a.fetchedAt)
+      .map((i) => ({ _id: i._id, name: i.title, size: (i.meta as { size?: number } | undefined)?.size ?? null, readAt: i.fetchedAt }));
+    return { pending, read };
+  },
+});
+
 /** Register uploaded files (PDF/MD/DOCX/TXT ≤ 5 MB) and queue their parse + ingest. */
 export const addFiles = mutation({
   args: { spaceId: v.id("spaces"), files: v.array(v.object({ storageId: v.id("_storage"), name: v.string() })) },
