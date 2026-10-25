@@ -173,7 +173,7 @@ describe("course regeneration (F36)", () => {
     let course = await mgr.query(api.courses.get, { courseId: tools._id });
     expect(course).toMatchObject({ needsRefresh: true, staleStepIds: [deployStep.id] });
     const audits = await t.run((ctx) => ctx.db.query("audit_events").collect());
-    expect(audits.find((a) => a.kind === "course.needs_refresh")?.payload).toMatchObject({ course: "Tools & Stack", source: "deploys", connector: "slack", stepIds: [deployStep.id] });
+    expect(audits.find((a) => a.kind === "course.step_stale")?.payload).toMatchObject({ courseTitle: "Tools & Stack", source: { title: "deploys", connectorType: "slack" }, stepId: deployStep.id });
 
     await expect(mgr.mutation(api.courses.regenerateSteps, { courseId: tools._id, stepIds: ["nope"] })).rejects.toThrow(/422/);
     await mgr.mutation(api.courses.regenerateSteps, { courseId: tools._id, stepIds: [deployStep.id] });
