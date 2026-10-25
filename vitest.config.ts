@@ -13,7 +13,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["tests/**/*.test.{ts,tsx}"],
+    include: ["tests/**/*.test.{ts,tsx}", "world/src/**/*.test.{ts,tsx}"],
     setupFiles: ["tests/setup.ts"],
     // @convex-dev/auth imports `next/server` without an extension; let Vite resolve it.
     server: { deps: { inline: ["@convex-dev/auth"] } },

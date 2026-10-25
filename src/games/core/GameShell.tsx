@@ -4,10 +4,11 @@ import { useState, useSyncExternalStore } from "react";
 import type { GameId, GameResult } from "./types";
 import { GamePlayer } from "./GamePlayer";
 import { loadGameSave, writeGameSave, type GameSave } from "./save";
+import { ASSET_BASE } from "../dilemma/sprites";
 import styles from "./GameShell.module.css";
 
 const FRONT_SPRITE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated";
-const OFFICE_BG = "/games/ace-attorney/fey-co.-office-entrance.png";
+const OFFICE_BG = `${ASSET_BASE}/fey-co.-office-entrance.png`;
 
 /** The shell's own labels per game: the real game's name, and a mascot line for its menu. */
 const GAME_BRAND: Record<GameId, string> = {
@@ -38,6 +39,8 @@ export function GameShell({
   packId,
   packTitle,
   exitHref,
+  onExit,
+  onComplete,
 }: {
   game: GameId;
   spec: unknown;
@@ -45,6 +48,10 @@ export function GameShell({
   /** The course's name — shown as the menu title, never the minigame's name. */
   packTitle: string;
   exitHref?: string;
+  /** In-app exit (e.g. back to the world's town), shown as "Leave the building" in place of the link. */
+  onExit?: () => void;
+  /** Called once per finished run, after the result is saved. */
+  onComplete?: (result: GameResult) => void;
 }) {
   const [mode, setMode] = useState<"menu" | "play">("menu");
   const [activeSpec, setActiveSpec] = useState<unknown>(spec);
@@ -66,6 +73,7 @@ export function GameShell({
 
   const finished = (result: GameResult) => {
     writeGameSave(packId, game, { spec: activeSpec, status: "finished", result, savedAt: Date.now() });
+    onComplete?.(result);
   };
 
   const backToMenu = () => setMode("menu");
@@ -118,7 +126,15 @@ export function GameShell({
               <span className={styles.optionNote}>{savedLine(save)}</span>
             </button>
           )}
-          {exitHref && (
+          {onExit && (
+            <button className={styles.option} onClick={onExit}>
+              <span className={styles.optionCursor} aria-hidden>
+                ▶
+              </span>
+              Leave the building
+            </button>
+          )}
+          {!onExit && exitHref && (
             <a className={styles.option} href={exitHref}>
               <span className={styles.optionCursor} aria-hidden>
                 ▶

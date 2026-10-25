@@ -1,0 +1,649 @@
+{
+ "version": 1,
+ "company": {
+  "name": "Linear",
+  "host": "linear.app",
+  "logoUrl": null
+ },
+ "brand": {
+  "primary": "#5e6ad2",
+  "accent": "#eb5757",
+  "surface": "#0f1011",
+  "text": "#f7f8f8",
+  "headingFont": "Inter Variable",
+  "bodyFont": "Inter Variable"
+ },
+ "courses": [
+  {
+   "id": "company",
+   "name": "Company 101",
+   "desc": "History, mission, and how we talk to each other.",
+   "building": "HQ Hall",
+   "game": "battle",
+   "spec": {
+    "title": "Company 101",
+    "intro": "History, mission, and how we talk to each other.",
+    "opponent": {
+     "name": "COMPANY",
+     "pokemon": 445,
+     "level": 40,
+     "moves": [
+      "Wrong Turn",
+      "Old Docs",
+      "Hot Take"
+     ]
+    },
+    "player": {
+     "name": "NEW JOINER",
+     "pokemon": 25,
+     "level": 30
+    },
+    "arena": "city",
+    "rounds": [
+     {
+      "id": "quiz-workspace-0",
+      "prompt": "Which plan includes private teams and guests?",
+      "choices": [
+       "Business",
+       "Basic",
+       "Free",
+       "Enterprise"
+      ],
+      "answer": 0,
+      "explanation": "Business adds unlimited teams, private teams and guests, and more."
+     },
+     {
+      "id": "free-0",
+      "prompt": "Fill the blank: The ___ plan costs $0 and includes unlimited members, 2 teams, 250 issues, the Agent platform, and Linear Agent.",
+      "choices": [
+       "Guides",
+       "GitHub",
+       "Free",
+       "Basic"
+      ],
+      "answer": 2,
+      "explanation": "The Free plan costs $0 and includes unlimited members, 2 teams, 250 issues, the Agent platform, and Linear Agent."
+     },
+     {
+      "id": "basic-1",
+      "prompt": "Fill the blank: The ___ plan costs $10 per user per month, billed yearly, and adds 5 teams, unlimited issues, unlimited file uploads, admin roles, and Loops.",
+      "choices": [
+       "Linear Docs",
+       "Free",
+       "Business",
+       "Basic"
+      ],
+      "answer": 3,
+      "explanation": "The Basic plan costs $10 per user per month, billed yearly, and adds 5 teams, unlimited issues, unlimited file uploads, admin roles, and Loops."
+     },
+     {
+      "id": "business-2",
+      "prompt": "Fill the blank: The ___ plan costs $16 per user per month, billed yearly, and adds unlimited teams, private teams and guests, Triage Intelligence, Code Intelligence, Linear\u2026",
+      "choices": [
+       "Linear issue",
+       "Gong",
+       "Business",
+       "GitHub"
+      ],
+      "answer": 2,
+      "explanation": "The Business plan costs $16 per user per month, billed yearly, and adds unlimited teams, private teams and guests, Triage Intelligence, Code Intelligence, Linear Insights, Linear Asks, and Zendesk and Intercom\u2026"
+     },
+     {
+      "id": "linear-docs-3",
+      "prompt": "Fill the blank: ___ gives an overview of Linear's features, integrations, and how to use the app.",
+      "choices": [
+       "Linear issue",
+       "Gong",
+       "Linear Docs",
+       "GitHub"
+      ],
+      "answer": 2,
+      "explanation": "Linear Docs gives an overview of Linear's features, integrations, and how to use the app."
+     },
+     {
+      "id": "linear-docs-4",
+      "prompt": "Fill the blank: ___ includes guides for Select Issues, Issue Relations, Display Options, Triage, Parent and Sub-Issues, Notifications, and Teams.",
+      "choices": [
+       "Basic",
+       "Guides",
+       "Free",
+       "Linear Docs"
+      ],
+      "answer": 3,
+      "explanation": "Linear Docs includes guides for Select Issues, Issue Relations, Display Options, Triage, Parent and Sub-Issues, Notifications, and Teams."
+     },
+     {
+      "id": "gong-5",
+      "prompt": "Fill the blank: The ___ integration automatically creates Linear issues from ___ call recordings.",
+      "choices": [
+       "Linear Docs",
+       "Basic",
+       "Business",
+       "Gong"
+      ],
+      "answer": 3,
+      "explanation": "The Gong integration automatically creates Linear issues from Gong call recordings."
+     },
+     {
+      "id": "gong-6",
+      "prompt": "Fill the blank: Each ___-created issue includes a drafted title and description, transcript excerpts with speaker attribution, and a link to the exact moment in the recording\u2026",
+      "choices": [
+       "Linear Docs",
+       "Business",
+       "Gong",
+       "Linear issue"
+      ],
+      "answer": 2,
+      "explanation": "Each Gong-created issue includes a drafted title and description, transcript excerpts with speaker attribution, and a link to the exact moment in the recording where the request or problem was raised."
+     },
+     {
+      "id": "gong-7",
+      "prompt": "Fill the blank: Linear periodically checks ___ recordings and only includes customer-facing conversations, skipping internal or private calls and recordings under 10 minutes.",
+      "choices": [
+       "Guides",
+       "GitHub",
+       "Gong",
+       "Free"
+      ],
+      "answer": 2,
+      "explanation": "Linear periodically checks Gong recordings and only includes customer-facing conversations, skipping internal or private calls and recordings under 10 minutes."
+     },
+     {
+      "id": "gong-8",
+      "prompt": "Fill the blank: When customer requests are enabled, ___ can create customers just in time as the first request is added and reuse an existing matching Linear customer for the\u2026",
+      "choices": [
+       "GitHub",
+       "Linear issue",
+       "Gong",
+       "Guides"
+      ],
+      "answer": 2,
+      "explanation": "When customer requests are enabled, Gong can create customers just in time as the first request is added and reuse an existing matching Linear customer for the request."
+     }
+    ],
+    "lives": 3
+   }
+  },
+  {
+   "id": "people-culture",
+   "name": "People & Culture",
+   "desc": "Who's who, rituals, birthdays and unwritten rules.",
+   "building": "Community Hall",
+   "game": "word-match",
+   "spec": {
+    "title": "People & Culture",
+    "intro": "Who's who, rituals, birthdays and unwritten rules.",
+    "pairs": [
+     {
+      "id": "basic-0",
+      "term": "Basic",
+      "meaning": "The ___ plan costs $10 per user per month, billed yearly, and adds 5 teams, unlimited issues, unlimited file uploads\u2026"
+     },
+     {
+      "id": "support-linear-app-1",
+      "term": "support@linear.app",
+      "meaning": "If the troubleshooting steps do not work, Linear says to contact ___."
+     },
+     {
+      "id": "linear-owner-or-admin-2",
+      "term": "Linear owner or admin",
+      "meaning": "If GitHub is not yet connected, a ___ can configure the GitHub integration to enable code access for selected\u2026"
+     },
+     {
+      "id": "github-3",
+      "term": "GitHub",
+      "meaning": "Personal ___ connections are required to access pull requests, repository code, and review information for your own\u2026"
+     }
+    ],
+    "boardSize": 4,
+    "timeLimitSec": 60,
+    "lives": 5
+   }
+  },
+  {
+   "id": "tools-stack",
+   "name": "Tools & Stack",
+   "desc": "The stack you'll live in: repos, boards, deploys.",
+   "building": "Workshop",
+   "game": "battle",
+   "spec": {
+    "title": "Tools & Stack",
+    "intro": "The stack you'll live in: repos, boards, deploys.",
+    "opponent": {
+     "name": "TOOLS",
+     "pokemon": 448,
+     "level": 40,
+     "moves": [
+      "Wrong Turn",
+      "Old Docs",
+      "Hot Take"
+     ]
+    },
+    "player": {
+     "name": "NEW JOINER",
+     "pokemon": 25,
+     "level": 30
+    },
+    "arena": "cave",
+    "rounds": [
+     {
+      "id": "homescreen-0",
+      "prompt": "Fill the blank: ___ shows a loading spinner only while syncStatus is PENDING, then renders the dashboard with sync status.",
+      "choices": [
+       "HomeScreen",
+       "Linear issue",
+       "GitHub",
+       "MCP server"
+      ],
+      "answer": 0,
+      "explanation": "HomeScreen shows a loading spinner only while syncStatus is PENDING, then renders the dashboard with sync status."
+     },
+     {
+      "id": "mcp-server-1",
+      "prompt": "Fill the blank: Linear\u2019s ___ provides a standardized interface for compatible AI models or agents to access Linear data securely.",
+      "choices": [
+       "Linear issue",
+       "MCP server",
+       "GitHub",
+       "HomeScreen"
+      ],
+      "answer": 1,
+      "explanation": "Linear\u2019s MCP server provides a standardized interface for compatible AI models or agents to access Linear data securely."
+     },
+     {
+      "id": "mcp-server-2",
+      "prompt": "Fill the blank: The Linear ___ can find, create, and update issues, projects, and comments.",
+      "choices": [
+       "Figma",
+       "MCP server",
+       "Linear issue",
+       "GitHub"
+      ],
+      "answer": 1,
+      "explanation": "The Linear MCP server can find, create, and update issues, projects, and comments."
+     },
+     {
+      "id": "mcp-server-3",
+      "prompt": "Fill the blank: Linear\u2019s ___ uses Streamable HTTP as its primary transport and is available at https://mcp.linear.app/mcp by default for read-write access.",
+      "choices": [
+       "HomeScreen",
+       "MCP server",
+       "SSE endpoint",
+       "Figma"
+      ],
+      "answer": 1,
+      "explanation": "Linear\u2019s MCP server uses Streamable HTTP as its primary transport and is available at https://mcp.linear.app/mcp by default for read-write access."
+     },
+     {
+      "id": "mcp-server-4",
+      "prompt": "Fill the blank: The ___ docs include example workflows for roadmap planning and standup note automation.",
+      "choices": [
+       "MCP server",
+       "HomeScreen",
+       "SSE endpoint",
+       "Figma"
+      ],
+      "answer": 0,
+      "explanation": "The MCP server docs include example workflows for roadmap planning and standup note automation."
+     },
+     {
+      "id": "sse-endpoint-5",
+      "prompt": "Fill the blank: The ___ at https://mcp.linear.app/sse is a deprecated fallback for clients that do not support Streamable HTTP.",
+      "choices": [
+       "MCP server",
+       "HomeScreen",
+       "SSE endpoint",
+       "Figma"
+      ],
+      "answer": 2,
+      "explanation": "The SSE endpoint at https://mcp.linear.app/sse is a deprecated fallback for clients that do not support Streamable HTTP."
+     },
+     {
+      "id": "figma-6",
+      "prompt": "Fill the blank: To embed ___ previews in Linear, connect ___ in Settings > Features > Integrations > ___.",
+      "choices": [
+       "Linear issue",
+       "MCP server",
+       "SSE endpoint",
+       "Figma"
+      ],
+      "answer": 3,
+      "explanation": "To embed Figma previews in Linear, connect Figma in Settings > Features > Integrations > Figma."
+     },
+     {
+      "id": "figma-7",
+      "prompt": "Fill the blank: Linear recommends connecting the ___ integration in a browser rather than in the desktop client.",
+      "choices": [
+       "GitHub",
+       "SSE endpoint",
+       "Linear issue",
+       "Figma"
+      ],
+      "answer": 3,
+      "explanation": "Linear recommends connecting the Figma integration in a browser rather than in the desktop client."
+     },
+     {
+      "id": "figma-8",
+      "prompt": "Fill the blank: You can link ___ designs to existing Linear issues by searching for the issue ID, title, or description.",
+      "choices": [
+       "SSE endpoint",
+       "Figma",
+       "Linear issue",
+       "GitHub"
+      ],
+      "answer": 1,
+      "explanation": "You can link Figma designs to existing Linear issues by searching for the issue ID, title, or description."
+     },
+     {
+      "id": "linear-issue-9",
+      "prompt": "Fill the blank: You can link multiple issues to the same design and multiple frames, sections, or pages to one ___.",
+      "choices": [
+       "GitHub",
+       "Figma",
+       "Linear issue",
+       "HomeScreen"
+      ],
+      "answer": 2,
+      "explanation": "You can link multiple issues to the same design and multiple frames, sections, or pages to one Linear issue."
+     }
+    ],
+    "lives": 3
+   }
+  },
+  {
+   "id": "hard-conversations",
+   "name": "Hard Conversations",
+   "desc": "Practice real scenarios with AI characters.",
+   "building": "Dojo",
+   "game": "dilemma",
+   "spec": {
+    "title": "Hard Conversations",
+    "intro": "Practice real scenarios with AI characters.",
+    "player": {
+     "name": "You",
+     "character": "phoenix"
+    },
+    "cast": [
+     {
+      "id": "p0",
+      "name": "Karri",
+      "role": "People",
+      "voice": "mid",
+      "character": "maya"
+     },
+     {
+      "id": "p1",
+      "name": "Jori",
+      "role": "People",
+      "voice": "high",
+      "character": "redd-white"
+     },
+     {
+      "id": "p2",
+      "name": "didier",
+      "role": "People",
+      "voice": "low",
+      "character": "dee-vasquez"
+     }
+    ],
+    "scenes": [
+     {
+      "id": "feedback-quiz-0",
+      "title": "Quick check",
+      "setting": "office",
+      "lines": [
+       {
+        "speaker": "p0",
+        "text": "New joiner question, and it matters. Ready?",
+        "mood": "thinking"
+       }
+      ],
+      "question": {
+       "speaker": "p0",
+       "text": "What is true about Slack issue creation?",
+       "mood": "neutral"
+      },
+      "options": [
+       {
+        "text": "Only users with Linear accounts can create issues in Slack using the Linear integration.",
+        "verdict": "best",
+        "response": [
+         {
+          "speaker": "p0",
+          "text": "That's exactly how we do it here.",
+          "mood": "happy"
+         }
+        ],
+        "feedback": "The fact says a Linear account is required."
+       },
+       {
+        "text": "Anyone in the Slack workspace can create issues without a Linear account.",
+        "verdict": "wrong",
+        "response": [
+         {
+          "speaker": "p0",
+          "text": "Hmm. That's not how it works here.",
+          "mood": "shocked"
+         }
+        ],
+        "feedback": "The integration requires a Linear account."
+       },
+       {
+        "text": "Slack issue creation works even for external shared channels and DMs.",
+        "verdict": "wrong",
+        "response": [
+         {
+          "speaker": "p0",
+          "text": "Hmm. That's not how it works here.",
+          "mood": "shocked"
+         }
+        ],
+        "feedback": "Those Slack message triggers are not supported."
+       }
+      ]
+     },
+     {
+      "id": "conflict-scenario-1",
+      "title": "Choose the move",
+      "setting": "meeting-room",
+      "lines": [
+       {
+        "speaker": "p1",
+        "text": "Hey, got a minute? I need your call on something.",
+        "mood": "thinking"
+       }
+      ],
+      "question": {
+       "speaker": "p1",
+       "text": "You want to use a loop, but the connector is restricted to Selected connectors. The workspace admin has not added it yet. What do you do?",
+       "mood": "neutral"
+      },
+      "options": [
+       {
+        "text": "Ask a workspace admin to add the connector to the allowlist first.",
+        "verdict": "best",
+        "response": [
+         {
+          "speaker": "p1",
+          "text": "That's exactly how we do it here.",
+          "mood": "happy"
+         }
+        ],
+        "feedback": "Selected connectors need admin allowlist approval before use."
+       },
+       {
+        "text": "Use the connector anyway and retry later.",
+        "verdict": "wrong",
+        "response": [
+         {
+          "speaker": "p1",
+          "text": "Hmm. That's not how it works here.",
+          "mood": "shocked"
+         }
+        ],
+        "feedback": "It cannot be used until it is allowlisted."
+       },
+       {
+        "text": "Create a Slack canvas document instead.",
+        "verdict": "wrong",
+        "response": [
+         {
+          "speaker": "p1",
+          "text": "Hmm. That's not how it works here.",
+          "mood": "shocked"
+         }
+        ],
+        "feedback": "Loops cannot manage Slack canvas documents."
+       }
+      ]
+     },
+     {
+      "id": "escalate-quiz-2",
+      "title": "Escalation check",
+      "setting": "video-call",
+      "lines": [
+       {
+        "speaker": "p2",
+        "text": "Hey, got a minute? I need your call on something.",
+        "mood": "thinking"
+       }
+      ],
+      "question": {
+       "speaker": "p2",
+       "text": "Which statement is correct about deleting pipelines and teams?",
+       "mood": "neutral"
+      },
+      "options": [
+       {
+        "text": "Only workspace admins or team owners for every team attached to a pipeline can delete that pipeline, and\u2026",
+        "verdict": "best",
+        "response": [
+         {
+          "speaker": "p2",
+          "text": "That's exactly how we do it here.",
+          "mood": "happy"
+         }
+        ],
+        "feedback": "That is the exact rule."
+       },
+       {
+        "text": "Any team member can delete a pipeline, and it is permanent immediately.",
+        "verdict": "wrong",
+        "response": [
+         {
+          "speaker": "p2",
+          "text": "Hmm. That's not how it works here.",
+          "mood": "shocked"
+         }
+        ],
+        "feedback": "Deletion is restricted, and pipelines are recoverable for 30 days."
+       },
+       {
+        "text": "Deleting a team keeps its issues available for later recovery by Linear.",
+        "verdict": "wrong",
+        "response": [
+         {
+          "speaker": "p2",
+          "text": "Hmm. That's not how it works here.",
+          "mood": "shocked"
+         }
+        ],
+        "feedback": "Deleting a team permanently deletes its issues after the grace period."
+       }
+      ]
+     }
+    ],
+    "credibility": 4
+   }
+  }
+ ],
+ "npcs": [
+  {
+   "name": "Karri",
+   "role": "People",
+   "facts": [
+    "Karri reported that the app shows a spinner forever during iOS startup, making it look like the car disappeared."
+   ]
+  },
+  {
+   "name": "Jori",
+   "role": "People",
+   "facts": [
+    "Jori asked Linear to take a stab at the issue."
+   ]
+  },
+  {
+   "name": "didier",
+   "role": "People",
+   "facts": [
+    "Didier said the team is still blocking initial render on a full vehicle_state sync every time."
+   ]
+  },
+  {
+   "name": "andreas",
+   "role": "People",
+   "facts": [
+    "Andreas suggested rendering sooner, loading the rest in the background, and tracking startup timing."
+   ]
+  },
+  {
+   "name": "support@linear.app",
+   "role": "People",
+   "facts": [
+    "If the troubleshooting steps do not work, Linear says to contact support@linear.app."
+   ]
+  },
+  {
+   "name": "Linear owner or admin",
+   "role": "People",
+   "facts": [
+    "If GitHub is not yet connected, a Linear owner or admin can configure the GitHub integration to enable code access for selected repositories."
+   ]
+  }
+ ],
+ "facts": [
+  "Linear describes itself as a product development system for teams and agents.",
+  "Karri reported that the app shows a spinner forever during iOS startup, making it look like the car disappeared.",
+  "Jori asked Linear to take a stab at the issue.",
+  "Linear created the issue via Slack on behalf of Karri.",
+  "Linear is designed for workflows shared by humans and agents, including drafting PRDs and pushing PRs.",
+  "Linear is described as being purpose-built for modern teams with AI workflows at its core.",
+  "Intake and integrations automatically turn conversations and customer feedback into actionable issues that are routed, labeled, and prioritized for the right team.",
+  "Didier said the team is still blocking initial render on a full vehicle_state sync every time.",
+  "Andreas suggested rendering sooner, loading the rest in the background, and tracking startup timing.",
+  "Planning and monitoring helps teams plan and navigate from idea to launch with initiatives, roadmaps, and up-to-date PRDs.",
+  "AI and automations lets teams build and deploy AI agents that work alongside people or take over entire issues end to end.",
+  "Cursor added retry handling for failed image uploads to an issue.",
+  "ChatPRD drafted complete offline mode requirements and broke the work into sub-issues.",
+  "Build, review, and ship helps teams streamline code reviews with clear diffs, better context, and fewer back-and-forth comments.",
+  "HomeScreen renders a loading spinner until isFullySynced is true, then shows the dashboard with vehicle state.",
+  "HomeScreen shows a loading spinner only while syncStatus is PENDING, then renders the dashboard with sync status.",
+  "CodeReview is shown with Diff.Provider and several components, including Slow, Fragmented, HumanOnly, Frictionless, Integrated, and AgentReady.",
+  "The changelog announces new Slack and GitHub loop triggers, letting loops start from Slack and GitHub changes and be shared as templates.",
+  "Linear Agent can be assigned a task, then works in a secure cloud environment to write and test code before opening a pull request for review.",
+  "Loops are recurring agent workflows for teams, and they can respond to changes in initiatives, projects, and cycles, edit Linear documents, and post updates to Slack.",
+  "Linear says it powers over 40,000 product teams, from startups to major enterprises.",
+  "The Free plan costs $0 and includes unlimited members, 2 teams, 250 issues, the Agent platform, and Linear Agent.",
+  "The Basic plan costs $10 per user per month, billed yearly, and adds 5 teams, unlimited issues, unlimited file uploads, admin roles, and Loops.",
+  "The Business plan costs $16 per user per month, billed yearly, and adds unlimited teams, private teams and guests, Triage Intelligence, Code Intelligence, Linear Insights, Linear Asks, and Zendesk\u2026",
+  "The Enterprise plan has custom pricing with annual billing only and adds invoice/PO billing, SAML and SCIM, granular admin controls, enterprise-grade security, advanced org modeling, migration and\u2026",
+  "The pricing page says the Enterprise plan is trusted by more than 40,000 companies.",
+  "Linear Docs gives an overview of Linear's features, integrations, and how to use the app.",
+  "The docs include popular guides for Start Guide, Import Issues, Projects, and GitHub Automations.",
+  "The Workflows guide explains how to create new statuses and design custom issue workflows.",
+  "Linear Docs includes guides for Select Issues, Issue Relations, Display Options, Triage, Parent and Sub-Issues, Notifications, and Teams.",
+  "Issue Relations lets you mark issues as blocked, blocking, related, or duplicate.",
+  "Triage is a special inbox for issues from integrations and other teams.",
+  "The Gong integration automatically creates Linear issues from Gong call recordings.",
+  "The integration is available to workspaces on the Enterprise plan.",
+  "Each Gong-created issue includes a drafted title and description, transcript excerpts with speaker attribution, and a link to the exact moment in the recording where the request or problem was raised.",
+  "Linear periodically checks Gong recordings and only includes customer-facing conversations, skipping internal or private calls and recordings under 10 minutes.",
+  "The integration filters out non-actionable items such as sales-related questions, beta access requests, general inquiries, and internal commentary.",
+  "Actionable findings are created as issues in Linear and added to the team's Triage view for review and backlog management.",
+  "To set up Gong, you go to workspace Settings > Integrations, search for Gong, then enable recording intake in Gong and choose the team that should receive Gong-generated issues.",
+  "You can optionally add guidance with examples, team mentions, or internal rules for the Linear Agent to follow when interpreting feedback, and you can turn on mention call participants in created\u2026"
+ ],
+ "rewards": [],
+ "offline": false,
+ "generatedAt": "2026-10-25T04:18:16.496Z"
+}

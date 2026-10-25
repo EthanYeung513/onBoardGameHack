@@ -1,5 +1,5 @@
 {
-  "source": "Ace Attorney Wiki (aceattorney.fandom.com). Sprites and art are Capcom's, used for a non-commercial hackathon demo. Run `npm run fetch:ace-attorney` to download them into public/games/ace-attorney/.",
+  "source": "Ace Attorney Wiki (aceattorney.fandom.com). Sprites and art are Capcom's, used for a non-commercial hackathon demo. They are bundled with the world in world/public/games/ace-attorney/.",
   "backgrounds": {
     "defense": "Defense(THD).png",
     "witness": "WitnessStand(THD).png",

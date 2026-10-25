@@ -2,10 +2,11 @@ import manifest from "./ace-attorney.json";
 import type { Mood } from "./spec";
 
 /**
- * Ace Attorney sprites, backgrounds and shout graphics, listed in ace-attorney.json and downloaded into
- * public/games/ace-attorney/ by `npm run fetch:ace-attorney`.
+ * Ace Attorney sprites, backgrounds and shout graphics, listed in ace-attorney.json and bundled with the
+ * hire-facing world in world/public/games/ace-attorney/. The base is relative, so the files resolve next to
+ * the world's index.html wherever it is served (including under `<base href="/world/">`).
  */
-export const ASSET_BASE = "/games/ace-attorney";
+export const ASSET_BASE = "games/ace-attorney";
 
 /** Must match `assetFile` in scripts/fetch-ace-attorney.mjs. */
 export const assetFile = (title: string) =>
