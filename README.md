@@ -1,157 +1,149 @@
-# GymQuest
+<div align="center">
 
-> This branch also contains Onboarding Studio, which turns a company website into branded, gamified onboarding flows. See [docs/onboarding-studio.md](docs/onboarding-studio.md).
->
-> **The real Orthogonal site** (landing, manager login, scan, tool connections, company brain, courses, editor, dashboard) is specified in [PRD.md](PRD.md). Agent rules: [AGENTS.md](AGENTS.md) · shared contracts: [docs/BUILD-CONTRACT.md](docs/BUILD-CONTRACT.md) · multi-agent process: [docs/AGENT-BUILD.md](docs/AGENT-BUILD.md) · tool setup: [docs/PROVISIONING.md](docs/PROVISIONING.md).
+<img src="docs/media/banner.svg" alt="Orthogonal: your company, as a game your new hires actually play" width="100%">
 
-Onboarding for any role, played as a Pokémon-style game. New hires walk the office, battle trainers and dodge phishing
-in the long grass, answering real work situations in their own words. An AI grader scores each answer against company
-policy, managers correct the grades, and every correction becomes a Mubit model update.
+<br>
 
-Built for Night Shift × Mubit (track: **Recurring tasks**). The plan is in [PLAN.md](PLAN.md); overnight build notes
-are in [DECISIONS.md](DECISIONS.md).
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)](next.config.ts)
+[![Convex](https://img.shields.io/badge/Convex-realtime%20backend-EE342F)](convex/)
+[![Mubit](https://img.shields.io/badge/Mubit-LLM%20gateway%20%2B%20learning-3A97FA)](src/llm/mubit.ts)
+[![Phaser](https://img.shields.io/badge/Phaser-Stardew%20world-8B5CF6)](world/)
+[![Vercel](https://img.shields.io/badge/Vercel-one%20link%20per%20company-000000?logo=vercel&logoColor=white)](src/lib/onboarding/vercel.ts)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](tsconfig.json)
 
-## Quick start
+**Paste your website. Get a branded onboarding game your new hires play on their phone.**
 
-```bash
-npm install          # uses the public npm registry (see .npmrc)
-npm run db:seed      # local Postgres (PGlite) in .data/, seeded with Acme Pay
-npm run dev          # http://localhost:3000
+[**What it does**](#what-it-does) · [**See it**](#see-it) · [**Architecture**](#architecture) · [**Run locally**](#run-locally) · [**Product brief**](PRD.md)
+
+</div>
+
+---
+
+Onboarding is a pile of docs nobody reads. The facts a new hire needs are already out there:
+on the website, in Slack, in GitHub, in Notion. **Orthogonal** reads them, builds a company
+brain that cites its sources, writes courses from it, and ships them as a small Stardew-style
+town where every building is a game. When the company changes, Mubit notices and the manager
+pushes the update with one click.
+
+## What it does
+
+| | |
+| --- | --- |
+| **Website to brand in ~20 s** | Paste a URL. Logo, fonts, colours and style cues (glass, gradients, radius) come back as four theme cards. Measured: apple.com 20 s, notion.com 18 s, linear.app 28 s. One click applies the look everywhere. |
+| **A company brain** | The website crawl and connected tools (GitHub, Slack, Jira, Notion, Google Drive, uploaded files) become facts. Every fact cites the chunk it came from. A cheap Mubit triage pass routes passages first: the first fact lands ~5 s after learning starts (was 18 s). |
+| **Courses from the brain** | Company 101, People, Tools, Hard Conversations, plus any topic the manager types ("Security" in ~10 s). Validated course specs whose steps cite brain facts; four courses in ~9 s. |
+| **A world to play** | A Phaser town with one building per course. Each building plays a game: a Pokemon-style **battle**, an Ace Attorney **dilemma**, or **word match**. |
+| **Live link + QR in under a second** | Publish templates the world from current content (no model call). Measured: 0.8 s to a link; a world builds in 1 to 4 ms. |
+| **Continuous learning via Mubit** | Source changes stale the facts that cited them, courses get rewritten steps with **New** badges, and the manager clicks **Update courses**. Theme picks and every course-assistant edit are fed back, so the next recommendation and the next course match how this manager works. |
+
+## See it
+
+<table>
+<tr>
+<td width="33%"><img src="docs/media/themes-apple-cards.png" alt="Theme cards for apple.com"></td>
+<td width="33%"><img src="docs/media/themes-apple-glass-dashboard.png" alt="Frosted glass dashboard"></td>
+<td width="33%"><img src="docs/media/dash-ours-overview.png" alt="Dashboard overview"></td>
+</tr>
+<tr>
+<td><b>Pick your look.</b> apple.com in 20 s, glass detected.</td>
+<td><b>Branded everywhere.</b> The dashboard takes the picked theme.</td>
+<td><b>One dashboard.</b> Courses, team, tools, rewards.</td>
+</tr>
+<tr>
+<td><img src="docs/media/brain-ours-desktop.png" alt="Company brain"></td>
+<td><img src="docs/media/update-courses-banner.png" alt="Update courses banner"></td>
+<td><img src="docs/media/world-bundle-desktop-town.png" alt="The town"></td>
+</tr>
+<tr>
+<td><b>Company brain.</b> Facts with sources.</td>
+<td><b>Your company changed.</b> New content, one button.</td>
+<td><b>The town.</b> One building per course.</td>
+</tr>
+<tr>
+<td><img src="docs/media/world-bundle-desktop-battle-play.png" alt="Battle game"></td>
+<td><img src="docs/media/world-bundle-desktop-word-match-play.png" alt="Word match game"></td>
+<td><img src="docs/media/world-bundle-desktop-dilemma-results.png" alt="Dilemma results"></td>
+</tr>
+<tr>
+<td><b>Battle.</b> Quiz rounds from the course.</td>
+<td><b>Word match.</b> Names and what they mean here.</td>
+<td><b>Dilemma.</b> Hard conversations, your own cast.</td>
+</tr>
+<tr>
+<td><img src="docs/media/course-topics-done.png" alt="A typed topic becomes a course"></td>
+<td><img src="docs/media/course-learning-edit3.png" alt="The course assistant shows what Mubit learned from your edits"></td>
+<td><img src="docs/media/connector-cards-upload-after-team-glossary.png" alt="Upload docs"></td>
+</tr>
+<tr>
+<td><b>Ask for a course.</b> Type a topic, it is built from the brain.</td>
+<td><b>Edit by asking.</b> The assistant edits, Mubit learns.</td>
+<td><b>Feed the brain.</b> Upload docs any time.</td>
+</tr>
+</table>
+
+## Architecture
+
+```mermaid
+flowchart LR
+  M([Manager]) --> APP[Next.js 16 app<br/>landing, scan, editor,<br/>dashboard, brain]
+  APP <-->|queries + mutations| CVX[(Convex<br/>schema, jobs, audit)]
+  W[Worker<br/>stage registry] <-->|claim + write| CVX
+  W --> MB[Mubit gateway<br/>LLM + embeddings,<br/>task-tagged]
+  SRC[Website + connectors<br/>GitHub, Slack, Jira,<br/>Notion, Drive, files] --> W
+  W --> WB[World bundle<br/>Phaser + games<br/>world.json]
+  WB --> V[Vercel project<br/>or /o/slug stand-in]
+  V --> H([New hire<br/>link + QR])
 ```
 
-- **Landing page:** <http://localhost:3000/>. The mockup landing (`public/index.html` + `public/assets/`, copied
-  verbatim from `main`). "Log in" → <http://localhost:3000/login> → create your space → scan. The GymQuest landing
-  page moved to <http://localhost:3000/gymquest>.
-- **Play:** <http://localhost:3000/play>. Company code `ACME`. Walk with the arrow keys/WASD (a d-pad appears on
-  phones). Walk into a door to battle; the long grass has wild phishing emails; Your Desk opens the skills passport.
-- **Manager console:** <http://localhost:3000/admin>. Review queue, learning timeline, readiness, content.
+Every job is a `StageDefinition` in [`src/worker/stages`](src/worker/stages), registered in
+[`src/worker/registry.ts`](src/worker/registry.ts). The model never writes UI: it returns JSON
+checked by Zod, with fixed system prompts and bounded retries.
 
-With no `MUBIT_API_KEY` everything runs **offline**: a rule-based baseline grader, template card writer and hashed
-embeddings. The UI says so wherever it matters.
+| Chain | Stages | What happens |
+| --- | --- | --- |
+| **Scan** (seconds) | `extract_design` → `ready` | dembrandt plus an HTML/CSS read, in parallel. Ends in theme cards. |
+| **Enrich** (background) | `crawl` → `analyse` → `seed_brain` → `generate_courses` | Pages to chunks, facts with citations, then course specs. Never blocks the scan. |
+| **Drift** | `sync_connector`, `cascade` | Changed items are re-extracted; facts whose passage changed go stale. |
+| **Publish** | `deploy` | Templates `world.json` from current courses and brain, deploys on a reserved worker lane. |
 
-## Orthogonal frontend
+## The Mubit loop
 
-The home page is Orthogonal, a constructor that reads a website and builds a gamified, multi-step onboarding for it:
-hero → scan → GitHub → describe → findings → build → editor (steps, live preview, assets/design/publish inspector).
-It's ported from the Claude Design export with Next.js and Tailwind; colours and fonts are tokens in
-`src/app/globals.css` (`carbon`, `azure`, `coral`, `marigold`, `font-grotesk`, …).
+```mermaid
+flowchart LR
+  C[Company changes<br/>re-scan, sync, upload] --> D[cascade<br/>stale facts]
+  D --> R[Rewrite stale steps<br/>cite replacement facts]
+  R --> N[New badges +<br/>Update courses]
+  N --> P[Manager pushes<br/>same link + QR]
+  P -.snapshot.-> H[Hire's world]
+```
 
-Today every scan answers with the **Lumen demo**, served by mock endpoints. The UI only knows the JSON contract, so
-wiring in a real backend changes no components:
+- **Every LLM and embedding call** goes through one adapter, [`src/llm/mubit.ts`](src/llm/mubit.ts), tagged with its task name so Mubit learns per task.
+- **Drift:** a pricing page edit reached a New badge in ~36 to 40 s; **Update courses** took 0.6 s and kept the same link. Hires see a snapshot until the manager pushes.
+- **Brand learning:** theme and Design-tab picks become `brand_decisions` fed back to `brand.recommend`, alongside precedents from similar companies.
+- **Course learning:** every instruction to the course assistant (`course.assist`) is stored as a `course_edits` row, sent to Mubit, and distilled (hourly, task `course.preferences`) into manager preferences that the next course generation follows. Example: three edits became "prefer scenario steps over quizzes", and the regenerated course swapped its quizzes for scenarios.
 
-| Endpoint | Body | Returns |
-|---|---|---|
-| `POST /api/orthogonal/scans` | `{ url }` | `ScanResult`: log lines, wireframe, palette, type, features, ideas, structure |
-| `POST /api/orthogonal/projects` | `{ scanId, siteUrl, repo, description }` | `Project`: build log, steps, levels, assets, connectors |
-| `POST /api/orthogonal/projects/:id/push` | `{ siteUrl, repo, steps, connectors }` | `PushResult`: repo, branch, PR URL |
-| `POST /api/orthogonal/projects/:id/publish` | same as push | `PublishResult`: host, `vercel` or `orthogonal`, storage |
+## Run locally
 
-Types are in `src/lib/orthogonal/types.ts` and request validation (zod) in `src/lib/orthogonal/schema.ts`. Either:
+```bash
+npm install && npm run dev
+```
 
-- **Implement it here:** replace the bodies in `src/services/orthogonal/index.ts` (crawler, agent, GitHub, deploy).
-  The route handlers already validate input and map errors like the rest of the API.
-- **Or point at another service:** set `NEXT_PUBLIC_ORTHOGONAL_API_URL` to its base URL; it must serve the same paths.
+One command boots the local Convex backend (Docker), pushes functions, seeds the demo space,
+and starts Next and the worker. It prints the URLs; sign in as `demo@orthogonal.dev` /
+`demo-password`. **No keys needed:** every provider has a labelled offline stand-in, and
+anything without one says so instead of faking success.
 
-All editing happens client-side and is sent whole with push/publish. Scan and build progress is played back from the
-returned `log` arrays; the `pace` prop on `<Constructor>` (`fast` / `realistic` / `cinematic`) sets the speed.
+| | |
+| --- | --- |
+| Keys | [`.env.example`](.env.example) lists every variable; `npm run check:env` tests each configured service |
+| Checks | `npm run lint` · `npm run typecheck` · `npm test` · `npm run test:e2e` |
+| Demo | `npm run demo:reset` · `npm run demo:change -- <spaceId> "<text>" "<replacement>"` |
 
-| Path | What |
-|---|---|
-| `public/index.html` + `public/assets/` | Landing page at `/` — the mockup from `main`, served verbatim (D-18) |
-| `src/app/(auth)/login/` | Sign-in (login.html ported, Convex Auth) |
-| `src/app/(orthogonal)/` | Constructor layout (no public page; its components are reused inside the signed-in flow) |
-| `src/components/orthogonal/` | `Constructor` (flow state + API calls) and one component per stage |
-| `src/components/orthogonal/workbench/` | Editor: `Workbench`, `StepPreview`, `Inspector`, step kinds |
-| `src/lib/orthogonal/` | API contract, client, URL and theme helpers (shared by UI and server) |
-| `src/services/orthogonal/` | Mock backend; `demo.ts` holds the Lumen content |
+## Read next
 
-## Connecting Mubit
-
-Copy `.env.example` to `.env.local` and set at least:
-
-| Variable | What |
-|---|---|
-| `MUBIT_API_KEY` | Turns on Mubit. Every LLM call then goes through Mubit's OpenAI-compatible endpoint |
-| `MUBIT_BASE_URL` | Default `https://api.mubit.ai/openai/v1` (confirm at kickoff) |
-| `MUBIT_MODEL` | The frontier model used as v0 (placeholder default `gpt-4.1-mini`) |
-| `MUBIT_EMBED_MODEL` | Optional embedding model; unset = offline hashed embeddings |
-| `MUBIT_FEEDBACK_URL` | Optional correction endpoint; unset = fast path + distillation fallback |
-| `MUBIT_TASK_HEADER` | Header that tags each call with its task (default `X-Mubit-Task`) |
-| `MUBIT_PRICE_INPUT_PER_M`, `MUBIT_PRICE_OUTPUT_PER_M` | USD per million tokens, for the cost column |
-| `DATABASE_URL` | Hosted Postgres for deploys (see below; `POSTGRES_URL` also works). Unset = PGlite. `localhost:5432` is refused on purpose |
-
-Three Mubit tasks, each with a fixed, snapshot-tested system prompt in [src/tasks/registry.ts](src/tasks/registry.ts):
-`grade` (the one we train), `generate` (cards from docs) and `persona` (synthetic answers, data only). Everything
-that varies goes in the user message, so Mubit keeps each task's examples together.
-
-## Deploying (Vercel + Supabase)
-
-The local PGlite database can't run on Vercel (read-only, per-request filesystem), so a deploy needs a hosted
-Postgres. We use Supabase; any Postgres works, since the app only needs a connection string.
-
-1. **Create the database.** Add Supabase from the Vercel Marketplace (Project → Storage), or create a project at
-   supabase.com. The Vercel integration sets `POSTGRES_URL` (the transaction pooler, port 6543), which the app reads
-   when `DATABASE_URL` isn't set. If you set it by hand, use Supabase's **transaction pooler** string. The direct
-   `db.<ref>.supabase.co` host is IPv6-only on the free plan, which Vercel functions can't reach.
-2. **Seed it once from your machine:** `DATABASE_URL="<supabase connection string>" npm run db:seed`. This runs
-   the migrations and loads Acme Pay. Provider extras in the string (`supa=…`, `pgbouncer=true`) are stripped
-   automatically, and `sslmode=require` is added for Supabase hosts.
-3. **Set env vars in Vercel:** `DEMO_RESET_KEY` (so `npm run demo:reset -- --url https://<app> --key <key>` works
-   and strangers can't wipe the demo), plus the Mubit variables when you have them.
-4. **Deploy:** import the GitHub repo at vercel.com/new (Next.js is detected), or run `npx vercel`.
-
-There's no login: anyone with the URL can use `/admin`, edit policies and upload packs (which make LLM calls once
-Mubit is on). Share the link only with the team and the judges.
-
-## How a correction becomes a model update
-
-1. A hire answers; `grade` scores it (0–3 per competency, an exact evidence quote, feedback, the gap).
-2. A manager overrides the score in the review queue with a one-line reason.
-3. **Fast path:** the correction is embedded; the next similar answer retrieves it into the grader's prompt and is
-   graded to the new standard straight away.
-4. **Slow path:** the correction goes to Mubit (`MUBIT_FEEDBACK_URL`), or is distilled into kept examples by the
-   fast-path calls. Mubit trains the next adapter.
-5. `npm run eval -- --label v1 --model <adapter> --record` measures it on the held-out set. The regression gate
-   promotes it only if agreement with the managers is at least the current version's. The learning timeline shows
-   every version.
-
-## Scripts
-
-| Command | What |
-|---|---|
-| `npm run dev` / `build` / `start` | Next.js |
-| `npm test` / `lint` / `typecheck` | Vitest (in-memory PGlite, offline LLM) / ESLint / tsc |
-| `npm run db:seed` | Wipe and re-seed the local DB directly (stop `dev` first) |
-| `npm run demo:reset` | Reset to the seeded state through the running app (or directly if it isn't running) |
-| `npm run personas -- --per 5` | Write ~300 synthetic persona answers to `eval/personas/answers.json` |
-| `npm run bulk-grade -- --limit 150` | Grade those answers through Mubit (fills kept examples and the review queue) |
-| `npm run eval -- --label vN [--model id] [--record]` | Held-out eval → `eval/results/vN.json`, plus the gate with `--record` |
-| `npm run smoke -- --url http://localhost:3000` | Drive the real app in Edge: join, walk, battle, review queue, pack upload |
-
-PGlite is single-process: run `db:seed`, `bulk-grade` and `eval --record` with the dev server stopped, or point
-`DATABASE_URL` at Supabase.
-
-## Held-out labels
-
-`eval/heldout.example.json` holds 12 **placeholder** labels so the harness runs. Before quoting any number, the
-manager writes real labels to `eval/heldout.json` (same format: `id`, `card` = start of the card prompt, `answer`,
-`human` 0–3, `labeller`). Those answers must never go through the review queue.
-
-## Code map
-
-| Path | What |
-|---|---|
-| `content/acme-pay/` | Fictional handbook (markdown) and `world.ts`: packs, gyms, cards with citations |
-| `content/samples/warehouse-ops.ts` | The pack uploaded live in the demo |
-| `src/tasks/` | Task prompts, the grader, the card writer, offline stand-ins |
-| `src/llm/` | Mubit client, offline client, embeddings |
-| `src/services/` | Grading, corrections + fast path, feedback sinks, review, adaptive boss, refresh, reporting, xAPI |
-| `src/eval/` | Held-out set, metrics, regression gate |
-| `src/game/` | Map, grid movement, battle rules, Phaser scene, event bus |
-| `src/components/` | Play screens (battle, gym, passport) and the manager console |
-
-## IP note
-
-The Pokémon style is a fan-project look for the hackathon demo. Creatures are emoji by default;
-`NEXT_PUBLIC_SPRITE_SOURCE=pokeapi` switches to Gen V sprites for the demo only. Any public or commercial release
-needs original art. All company content is fictional.
+| | |
+| --- | --- |
+| [PRD.md](PRD.md) | What we are building, screen by screen |
+| [AGENTS.md](AGENTS.md) | Rules for contributors, human or otherwise |
+| [DECISIONS.md](DECISIONS.md) | Every product and engineering decision, numbered |
+| [docs/BUILD-CONTRACT.md](docs/BUILD-CONTRACT.md) | Shared contracts: schema, pipeline, ingest |
