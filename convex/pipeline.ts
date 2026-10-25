@@ -140,6 +140,8 @@ export const finish = workerMutation({
         await ctx.db.patch(jobId, { status: "failed", attempt, error: outcome.message, finishedAt: now });
         await logEvent(ctx, job, "error", `${label} failed after ${attempt} attempts: ${outcome.message}`);
         await setScanOutcome(ctx, job, "failed", outcome.message);
+        // A deploy that gave up must release the Publish button (it shows the error instead).
+        if (job.stage === "deploy") await ctx.db.patch(job.spaceId, { deployState: "error", deployError: outcome.message });
         if (job.connectorId && job.stage === "sync_connector") {
           await ctx.db.patch(job.connectorId, { status: "error", error: outcome.message });
           await ctx.db.insert("audit_events", { spaceId: job.spaceId, actor: "system:sync", kind: "connector.sync_failed", payload: { connectorId: job.connectorId, jobId, error: outcome.message } });
@@ -188,6 +190,7 @@ export const watchdog = internalMutation({
       if ((job.heartbeatAt ?? 0) >= cutoff) continue;
       await ctx.db.patch(job._id, { status: "stalled", error: "No heartbeat for over 60 seconds", workerId: undefined });
       await logEvent(ctx, job, "warn", `${STAGE_LABELS[job.stage]} stalled: no heartbeat for over 60 seconds. Resume to continue.`);
+      if (job.stage === "deploy") await ctx.db.patch(job.spaceId, { deployState: "error", deployError: "Publishing stalled. Press Publish again." });
       stalled++;
     }
     return stalled;
