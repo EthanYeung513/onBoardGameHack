@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -13,7 +13,8 @@ import "./course.css";
 
 // course.html, ported: /course?id=<courseId>. Overview (outcomes + course plan) then one slide per
 // lesson, from the course's real CourseSpec steps. The assistant panel edits the course through
-// the same validated patches as the editor (courses.applyPatch).
+// the same validated patches as the editor: every instruction goes to Mubit (`course.assist`,
+// convex/courseAssist.ts), and each kept edit teaches Mubit the manager's preferences.
 
 type Step = { id: string; kind: string; title: string; body?: string; options?: { label: string; correct?: boolean; why?: string }[] };
 
@@ -28,7 +29,9 @@ function CourseView() {
   const id = params.get("id") as Id<"courses"> | null;
   const course = useQuery(api.courses.get, id ? { courseId: id } : "skip");
   const space = useQuery(api.spaces.get, course ? { spaceId: course.spaceId } : "skip");
-  const patch = useMutation(api.courses.applyPatch);
+  const assist = useAction(api.courseAssist.assist);
+  const learned = useQuery(api.courseLearning.preferences, course ? { spaceId: course.spaceId } : "skip");
+  const [thinking, setThinking] = useState(false);
   const [slide, setSlide] = useState(0);
   const [aiOpen, setAiOpen] = useState(false);
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -53,7 +56,10 @@ function CourseView() {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [go]);
-  useEffect(() => msgEnd.current?.scrollIntoView({ block: "end" }), [msgs]);
+  useEffect(() => {
+    // Braces: newer Chromium returns a Promise from scrollIntoView, which React rejects as a cleanup.
+    msgEnd.current?.scrollIntoView({ block: "end" });
+  }, [msgs, thinking]);
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(""), 2600);
@@ -63,34 +69,21 @@ function CourseView() {
   if (!course) return <div className="cw" />;
   const say = (text: string) => setMsgs((m) => [...m, { who: "agent", text }]);
 
-  async function apply(ops: { op: "set" | "remove"; path: string; value?: unknown }[], done: string) {
-    try {
-      await patch({ courseId: course!._id, version: course!.version, patches: ops });
-      say(done);
-    } catch (err) {
-      say(err instanceof ConvexError ? (err.data as { message: string }).message : "That change didn't go through. Please try again.");
-    }
-  }
-
   async function ask() {
     const q = input.trim();
-    if (!q) return;
+    if (!q || thinking) return;
     setInput("");
     setMsgs((m) => [...m, { who: "you", text: q }]);
-    const all = ((course!.spec as { steps?: Step[] }).steps ?? []) as Step[];
-    if (/^(rename|retitle|call it)\b/i.test(q)) {
-      const title = q.replace(/^(rename|retitle|call it)\s*(the course|it|this course)?\s*(to|as)?\s*/i, "").trim();
-      if (!title) return say("What should I rename it to?");
-      return apply([{ op: "set", path: "/title", value: title }], `Renamed the course to "${title}".`);
+    setThinking(true);
+    try {
+      const r = await assist({ courseId: course!._id, version: course!.version, instruction: q });
+      say(r.mode === "offline" ? `${r.reply} (offline stand-in)` : r.reply);
+      if (r.applied && slide > n) setSlide(n);
+    } catch (err) {
+      say(err instanceof ConvexError ? (err.data as { message: string }).message : "That change didn't go through. Please try again.");
+    } finally {
+      setThinking(false);
     }
-    if (/^(remove|delete|drop|take out)\b/i.test(q)) {
-      const kw = q.replace(/^(remove|delete|drop|take out)\s*(the\s*)?(lesson\s*)?(on\s*)?/i, "").toLowerCase();
-      const idx = all.findIndex((s) => s.kind !== "welcome" && s.kind !== "done" && s.title.toLowerCase().includes(kw));
-      if (idx < 0) return say("I could not find a lesson matching that. Try quoting its name.");
-      if (slide > n - 1) setSlide(Math.max(0, n - 1));
-      return apply([{ op: "remove", path: `/steps/${idx}` }], `Removed "${all[idx].title}".`);
-    }
-    say("I can rename the course or remove a lesson here. Drafting new lessons from your company brain is coming to this panel next.");
   }
 
   const step = slide > 0 ? steps[slide - 1] : null;
@@ -186,11 +179,18 @@ function CourseView() {
           </button>
         </div>
         <div id="ai-msgs">
+          {learned?.items.length ? (
+            <div className="msg agent learned">
+              <b>Learned from your edits:</b> {learned.items.join(" · ")}
+              {learned.mode === "offline" ? " (offline stand-in)" : ""}
+            </div>
+          ) : null}
           {msgs.map((m, i) => (
             <div key={i} className={`msg ${m.who}`}>
               {m.text}
             </div>
           ))}
+          {thinking && <div className="msg agent thinking">Thinking…</div>}
           <div ref={msgEnd} />
         </div>
         <div id="ai-in">
@@ -210,7 +210,7 @@ function CourseView() {
             <div className="row">
               <span className="agent-mini">Mubit</span>
               <span style={{ flex: 1 }} />
-              <button className="send" onClick={() => void ask()} title="Send">
+              <button className="send" onClick={() => void ask()} title="Send" disabled={thinking}>
                 <Icon name="up" />
               </button>
             </div>

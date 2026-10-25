@@ -9,4 +9,7 @@ crons.interval("pipeline watchdog", { seconds: 20 }, internal.pipeline.watchdog,
 // F34: ready connectors re-sync after their interval (15 min default; the website re-scans daily).
 crons.interval("connector sync scheduler", { minutes: 1 }, internal.connectors.scheduleSyncs, {});
 
+// Mubit course learning: distil spaces' new assistant edits into manager preferences.
+crons.interval("course preference distillation", { hours: 1 }, internal.courseAssist.distilDue, {});
+
 export default crons;

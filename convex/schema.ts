@@ -502,6 +502,49 @@ export default defineSchema({
     .index("by_course", ["courseId"])
     .index("by_fact", ["factId"]),
 
+  /** Every edit the course assistant made for a manager: the evidence Mubit learns preferences from. */
+  course_edits: defineTable({
+    spaceId: v.id("spaces"),
+    courseId: v.id("courses"),
+    packType: v.string(),
+    instruction: v.string(),
+    reply: v.string(),
+    patchSummary: v.string(),
+    signals: v.array(v.string()),
+    before: v.array(v.object({ kind: v.string(), title: v.string(), lines: v.number() })),
+    after: v.array(v.object({ kind: v.string(), title: v.string(), lines: v.number() })),
+    fromVersion: v.number(),
+    toVersion: v.number(),
+    accepted: v.boolean(),
+    mode: v.union(v.literal("live"), v.literal("offline")),
+    mubitRequestId: v.optional(v.string()),
+    actor: v.string(),
+    /** Outcome of the Mubit loop (feedback + memory), written by convex/courseAssist.ts. */
+    loop: v.optional(
+      v.object({
+        feedback: v.object({ sink: v.string(), delivered: v.boolean(), detail: v.string() }),
+        memory: v.object({ status: v.union(v.literal("remembered"), v.literal("skipped"), v.literal("failed")), detail: v.string() }),
+        at: v.number(),
+      }),
+    ),
+  })
+    .index("by_space", ["spaceId"])
+    .index("by_course", ["courseId"]),
+
+  /** What Mubit learned from a space's course edits; generate_courses reads it as manager_preferences. */
+  course_preferences: defineTable({
+    spaceId: v.id("spaces"),
+    items: v.array(v.object({ text: v.string(), evidenceEditIds: v.array(v.string()) })),
+    basedOnEdits: v.number(),
+    /** _creationTime of the newest edit distilled; the hourly cron skips spaces with nothing newer. */
+    lastEditAt: v.number(),
+    updatedAt: v.number(),
+    mode: v.union(v.literal("live"), v.literal("offline")),
+    mubitRequestId: v.optional(v.string()),
+    /** Preferences recalled from similar companies through Mubit memory, when enabled. */
+    recalled: v.optional(v.string()),
+  }).index("by_space", ["spaceId"]),
+
   hires: defineTable({
     spaceId: v.id("spaces"),
     userId: v.optional(v.id("users")),
