@@ -142,6 +142,29 @@ function run(cmd, args, opts = {}) {
   if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
+/** Newest mtime under a directory (files only). */
+function newestMtime(dir) {
+  let newest = 0;
+  if (!fs.existsSync(dir)) return newest;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name);
+    newest = Math.max(newest, entry.isDirectory() ? newestMtime(p) : fs.statSync(p).mtimeMs);
+  }
+  return newest;
+}
+
+// The hire-facing world (world/, served from /world/) is a prebuilt static bundle in public/world/.
+// Rebuild it when it is missing or older than its sources: world/ itself, the games and the contract.
+function ensureWorldBundle() {
+  const index = path.join(root, "public", "world", "index.html");
+  const built = fs.existsSync(index) ? fs.statSync(index).mtimeMs : 0;
+  const sources = ["world", "src/games", "src/lib/world"].map((d) => newestMtime(path.join(root, d)));
+  if (built && built >= Math.max(...sources)) return;
+  console.log(`world: ${built ? "sources changed, rebuilding" : "building"} the hire-facing world bundle (npm run build:world)`);
+  run(npx, ["vite", "build", "--config", "world/vite.config.ts", "--logLevel", "warn"], { env: process.env });
+}
+
+ensureWorldBundle();
 let env = await ensureBackend();
 // Shared secret between the Convex functions and the pipeline worker (convex/lib/worker.ts).
 if (!env.WORKER_SECRET) {
@@ -203,6 +226,7 @@ console.log(`
   Orthogonal is starting:
     App          http://localhost:${port}            (landing)
     Sign up      http://localhost:${port}/login      (email + password; no keys needed)
+    World        http://localhost:${port}/world/index.html   (hire-facing town, bundled sample content)
     Convex       ${env.NEXT_PUBLIC_CONVEX_URL ?? env.CONVEX_DEPLOYMENT}
     Convex UI    http://127.0.0.1:${process.env.CONVEX_LOCAL_PORT ? Number(process.env.CONVEX_LOCAL_PORT) + 2 : 6791}               (self-hosted dashboard; admin key in .env.local)
   Worker         pipeline jobs (${offline ? "LLM/embeddings OFFLINE — labelled stand-ins" : "Mubit live"})

@@ -34,7 +34,10 @@ export function GameResults({
   const accuracy = result.total ? Math.round((result.correct / result.total) * 100) : 0;
   const top = useRef<HTMLDivElement>(null);
   // The game before was often taller (a phone's word board), so its scroll position would open the results mid-list.
-  useEffect(() => top.current?.scrollIntoView({ block: "start" }), []);
+  // Braces matter: newer browsers return a Promise from scrollIntoView, and React would call it as a cleanup.
+  useEffect(() => {
+    top.current?.scrollIntoView({ block: "start" });
+  }, []);
   return (
     <div ref={top} className={`${styles.screen} ${game ? styles[game] : ""} ${result.won ? "" : styles.lost}`}>
       <section className={styles.card} aria-label="Results">

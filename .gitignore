@@ -14,3 +14,6 @@ artifacts/
 test-results/
 playwright-report/
 __pycache__/
+
+# the hire-facing world bundle (npm run build:world)
+public/world/
