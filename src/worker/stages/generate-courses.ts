@@ -3,23 +3,27 @@ import { api } from "@convex/_generated/api";
 import type { CourseTarget } from "@convex/courses";
 import type { FunctionReturnType } from "convex/server";
 import { applyCoursePatches, stepRefreshPatches } from "@/lib/flow/course-patch";
-import { COURSE_PACKS, MAX_FACTS_PER_COURSE, MIN_FACTS_PER_COURSE, packFor, type CoursePack } from "@/lib/flow/course-packs";
+import { COURSE_PACKS, MAX_FACTS_PER_COURSE, MIN_FACTS_PER_COURSE, MIN_FACTS_PER_TOPIC, packFor, type CoursePack } from "@/lib/flow/course-packs";
 import { CourseStep, courseSpecSchema, type CourseSpec } from "@/lib/flow/course-spec";
-import { COURSE_STEPS_SYSTEM_PROMPT, COURSE_SYSTEM_PROMPT } from "@/lib/prompts";
+import { COURSE_STEPS_SYSTEM_PROMPT, COURSE_SYSTEM_PROMPT, COURSE_TOPIC_SYSTEM_PROMPT } from "@/lib/prompts";
 import type { StageContext, StageDefinition } from "../types";
+import { factsForCourse } from "./course-facts";
 import { offlineCourse, offlineStepRefresh, type CourseFact } from "./course-offline";
 
-// `generate_courses` (scan chain after seed_brain, and manager-confirmed regeneration, F36).
-// One slice works through course targets: in a scan every default pack (an existing course is
-// kept — courses only regenerate on the manager's confirm); a manual job carries explicit targets,
-// either a whole pack or just its stale step ids. Progress is saved after each target so a resumed
+// `generate_courses` (scan chain after seed_brain, manager-confirmed regeneration F36, and courses
+// the manager names, F22). One slice works through course targets: in a scan every default pack (an
+// existing course is kept — courses only regenerate on the manager's confirm); a manual job carries
+// explicit targets: a whole pack, a topic (`topic-<slug>`), or just a course's stale step ids.
+// Targets run in parallel (one LLM call each); progress is saved as each one lands so a resumed
 // slice repeats nothing.
 
 type Cursor = { targets?: CourseTarget[]; done?: string[] };
 type Context = FunctionReturnType<typeof api.courseGen.context>;
 
-/** Stop starting new targets when less than this is left in the slice. */
+/** Don't start another target when less than this is left in the slice. */
 const TARGET_BUDGET_MS = 20_000;
+/** Courses written at once: each is one independent LLM call. */
+export const COURSE_CONCURRENCY = 4;
 
 /**
  * Models vary in how they mark removals (`remove: [...]`, a step with `"remove": true`, or an id
@@ -42,37 +46,44 @@ export function normaliseRefresh(raw: unknown, stepIds: string[]): unknown {
   return { steps: steps.filter((s) => wanted((s as { id?: unknown })?.id)), remove: [...remove].filter(wanted) };
 }
 
-export function factsForPack(pack: CoursePack, facts: CourseFact[]): CourseFact[] {
-  const rank = (f: CourseFact) => pack.categories.indexOf(f.category as CoursePack["categories"][number]);
-  return facts
-    .filter((f) => rank(f) >= 0)
-    .sort((a, b) => rank(a) - rank(b) || b.confidence - a.confidence || a.id.localeCompare(b.id))
-    .slice(0, MAX_FACTS_PER_COURSE);
-}
-
 const label = (mode: "live" | "offline") => (mode === "offline" ? " (offline stand-in)" : "");
 
+/** The honest "not enough in the brain" line for a topic (F22); never padded with other facts. */
+export function tooFewTopicFacts(topic: string, n: number): string {
+  // "Security" reads as "about security"; acronyms ("SOC 2") keep their case.
+  const about = `about ${/^[A-Z][a-z]/.test(topic) ? topic.replace(/^./, (c) => c.toLowerCase()) : topic}`;
+  const have = n === 0 ? `No facts ${about} in your brain yet.` : `Only ${n} fact${n === 1 ? "" : "s"} ${about} in your brain.`;
+  return `${have} Connect a tool or upload a doc that covers it.`;
+}
+
 async function buildCourse(ctx: StageContext, data: Context, pack: CoursePack, target: CourseTarget, scan: boolean): Promise<string> {
-  const facts = factsForPack(pack, data.facts);
-  if (facts.length < MIN_FACTS_PER_COURSE) {
-    const msg = `Skipped ${pack.title}: ${facts.length} approved ${pack.categories.join("/")} fact${facts.length === 1 ? "" : "s"} in the brain, needs ${MIN_FACTS_PER_COURSE}. Approve more facts, then regenerate.`;
-    await ctx.event("warn", msg, { packType: pack.packType, facts: facts.length });
+  const t0 = Date.now();
+  const facts = await factsForCourse(ctx, pack, data.facts, MAX_FACTS_PER_COURSE);
+  const retrievalMs = Date.now() - t0;
+  const min = pack.topic ? MIN_FACTS_PER_TOPIC : MIN_FACTS_PER_COURSE;
+  if (facts.length < min) {
+    const msg = pack.topic
+      ? tooFewTopicFacts(pack.topic, facts.length)
+      : `Skipped ${pack.title}: ${facts.length} approved ${pack.categories.join("/")} fact${facts.length === 1 ? "" : "s"} in the brain, needs ${MIN_FACTS_PER_COURSE}. Approve more facts, then regenerate.`;
+    await ctx.event("warn", msg, { packType: pack.packType, facts: facts.length, skipped: true });
     return `${pack.title} skipped`;
   }
   const approved = new Set(facts.map((f) => f.id));
+  const course = { title: pack.title, icon: pack.icon, building: pack.building, game: pack.game, desc: pack.desc };
   const user = JSON.stringify({
     company: data.company,
     voice: data.voice || "(no tone of voice extracted; plain, friendly, direct)",
-    course: { title: pack.title, icon: pack.icon, building: pack.building, game: pack.game, desc: pack.desc, outline: pack.lessons },
+    course: pack.topic ? { ...course, topic: pack.topic } : { ...course, outline: pack.lessons },
     facts: facts.map((f) => ({ id: f.id, category: f.category, text: f.text })),
   });
   const res = await ctx.llm.json({
-    task: "generate_course",
-    system: COURSE_SYSTEM_PROMPT,
+    task: pack.topic ? "generate_topic_course" : "generate_course",
+    system: pack.topic ? COURSE_TOPIC_SYSTEM_PROMPT : COURSE_SYSTEM_PROMPT,
     user,
     schema: courseSpecSchema(approved),
     offline: () => offlineCourse(pack, facts, data.facts),
   });
+  const llmMs = Date.now() - t0 - retrievalMs;
   // The pack's identity is the mockup's, whatever the model echoed back.
   const spec: CourseSpec = { ...res.value, title: pack.title, icon: pack.icon, building: pack.building, game: pack.game, desc: pack.desc };
   const r = await ctx.convex.mutation(api.courseGen.upsert, {
@@ -90,7 +101,17 @@ async function buildCourse(ctx: StageContext, data: Context, pack: CoursePack, t
   }
   const taught = new Set(spec.steps.flatMap((s) => s.teaches_fact_ids)).size;
   const verb = r.status === "created" ? "Drafted" : "Regenerated";
-  await ctx.event("info", `${verb} ${pack.title}: ${spec.steps.length} steps teaching ${taught} facts${label(res.mode)}`, { courseId: r.courseId, version: r.version, mode: res.mode });
+  const ms = Date.now() - t0;
+  await ctx.event("info", `${verb} ${pack.title}: ${spec.steps.length} steps teaching ${taught} facts${label(res.mode)} · ${(ms / 1000).toFixed(1)} s`, {
+    courseId: r.courseId,
+    version: r.version,
+    mode: res.mode,
+    packType: pack.packType,
+    facts: facts.length,
+    ms,
+    retrievalMs,
+    llmMs,
+  });
   return `${pack.title} ${r.status}`;
 }
 
@@ -162,7 +183,7 @@ async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, 
       course: course.spec,
       rewrite_step_ids: stepIds,
       must_remove: orphaned,
-      facts: [...new Map([...replacements, ...factsForPack(pack, data.facts)].map((f) => [f.id, f])).values()].map((f) => ({ id: f.id, category: f.category, text: f.text })),
+      facts: [...new Map([...replacements, ...(await factsForCourse(ctx, pack, data.facts, MAX_FACTS_PER_COURSE))].map((f) => [f.id, f])).values()].map((f) => ({ id: f.id, category: f.category, text: f.text })),
       no_longer_true: data.staleFacts.map((f) => f.text),
       now_true_instead: replacements.map((f) => f.text),
     }),
@@ -203,14 +224,12 @@ export const generateCoursesStage: StageDefinition = {
     const done = new Set(cursor.done ?? []);
     const data = await ctx.convex.query(api.courseGen.context, { spaceId: ctx.space._id });
     const lines: string[] = [];
-    for (const target of targets) {
-      if (done.has(target.packType)) continue;
-      if (done.size > 0 && ctx.remainingMs() < TARGET_BUDGET_MS) {
-        return { done: false, cursor: { ...cursor, done: [...done] }, progress: done.size / targets.length };
-      }
-      if (ctx.lost()) break;
-      const pack = packFor(target.packType);
+    let saved = Promise.resolve();
+    let deferred = false;
+    const one = async (target: CourseTarget) => {
       const course = data.courses.find((c) => c.packType === target.packType);
+      // A topic course keeps its title as its topic when it is rebuilt.
+      const pack = packFor(target.packType, target.topic ?? course?.spec?.title);
       if (!pack) {
         await ctx.event("warn", `No course pack "${target.packType}", skipped`);
       } else if (scan && course) {
@@ -222,8 +241,27 @@ export const generateCoursesStage: StageDefinition = {
         lines.push(await buildCourse(ctx, data, pack, target, scan));
       }
       done.add(target.packType);
-      await ctx.progress(done.size / targets.length, { ...cursor, done: [...done] });
-    }
+      const snapshot = [...done];
+      saved = saved.then(() => ctx.progress(snapshot.length / targets.length, { ...cursor, done: snapshot }));
+      await saved;
+    };
+    const queue = targets.filter((t) => !done.has(t.packType));
+    const errors: unknown[] = [];
+    const lane = async () => {
+      for (let target = queue.shift(); target; target = queue.shift()) {
+        if (ctx.lost()) return;
+        if (done.size > 0 && ctx.remainingMs() < TARGET_BUDGET_MS) {
+          deferred = true;
+          return;
+        }
+        // One failed course doesn't throw away the others: they land, then the slice retries it.
+        await one(target).catch((err) => errors.push(err));
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(COURSE_CONCURRENCY, queue.length) }, lane));
+    await saved;
+    if (errors.length) throw errors[0];
+    if (deferred || queue.length) return { done: false, cursor: { ...cursor, done: [...done] }, progress: done.size / targets.length };
     return { done: true, summary: lines.join(", ") || "no courses to build" };
   },
 };

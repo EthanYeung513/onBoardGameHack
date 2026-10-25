@@ -5,31 +5,58 @@ import { ConvexError } from "convex/values";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { DeployQr, absoluteUrl } from "@/components/manager/DeployPanel";
 import { UpdateCoursesButton, usePendingUpdates } from "./UpdateCourses";
 import { Icon } from "@/components/manager/icons";
 import type { TabProps } from "./shared";
 
-// "Generate course" queues the default packs the space is missing (generate_courses stage, real
-// Mubit). Free-text topics need the assistant (F22, postponed) — the input is kept as designed.
-// Publish = Generate → deploy (D-33): #pub-btn deploys this company's own onboarding world (its own
-// Vercel project, or the labelled stand-in at /o/<slug>).
-export const TOPIC_PENDING = "Custom topics arrive with the course assistant";
+// "Create a course" (F22): the typed topic becomes a course (`topic-<slug>`) built from the brain
+// facts most relevant to it (generate_courses stage, real Mubit). It shows as "Generating…" in the
+// curriculum at once; if the brain knows too little about the topic, #gen-status says so. With no
+// topic, Generate queues the default packs the space is missing (else the mockup's "Type a course
+// name first"). Publish = Generate → deploy (D-33): #pub-btn deploys this company's own onboarding
+// world (its own Vercel project, or the labelled stand-in at /o/<slug>).
+const errorText = (err: unknown, fallback: string) => (err instanceof ConvexError ? (err.data as { message: string }).message : fallback);
+
+/** #gen-status for a finished topic request: added, or the worker's honest "not enough" line. */
+function useTopicOutcome(request: { jobId: Id<"jobs">; packType: string; title: string } | null) {
+  const outcome = useQuery(api.courses.outcome, request ? { jobId: request.jobId, packType: request.packType } : "skip");
+  if (!outcome || !request || outcome.status === "queued" || outcome.status === "running" || outcome.status === "stalled") return null;
+  const skipped = outcome.skipped.find((s) => s.packType === request.packType);
+  if (skipped) return skipped.message;
+  if (outcome.error) return `Couldn't write "${request.title}": ${outcome.error}`;
+  if (!outcome.built) return `Couldn't write "${request.title}". Please try again.`;
+  return `"${request.title}" added to the curriculum.`;
+}
 
 export function CoursesTab({ space, toast }: TabProps) {
   const courses = useQuery(api.dashboard.courses, { spaceId: space._id });
+  const generating = useQuery(api.courses.generating, { spaceId: space._id });
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const deploy = useMutation(api.deploy.deployOnboarding);
   const generate = useMutation(api.courses.generate);
   const [genStatus, setGenStatus] = useState<string | null>(null);
+  const [request, setRequest] = useState<{ jobId: Id<"jobs">; packType: string; title: string } | null>(null);
+  const topicOutcome = useTopicOutcome(request);
   const runGenerate = async () => {
     setGenStatus(null);
+    setRequest(null);
+    const name = topic.trim();
+    const missingDefaults = (courses?.length ?? 0) === 0;
+    if (!name && !missingDefaults) return toast("Type a course name first");
     try {
-      const { queued } = await generate({ spaceId: space._id });
-      setGenStatus(queued.length ? `Generating ${queued.length} course${queued.length === 1 ? "" : "s"} from your brain…` : "All standard courses exist.");
+      const r = await generate(name ? { spaceId: space._id, topic: name } : { spaceId: space._id });
+      if (name && r.jobId && r.title) {
+        setTopic("");
+        setRequest({ jobId: r.jobId, packType: r.queued[0], title: r.title });
+        setGenStatus(`Writing "${r.title}" from your company brain…`);
+      } else {
+        setGenStatus(r.queued.length ? `Generating ${r.queued.length} course${r.queued.length === 1 ? "" : "s"} from your brain…` : "All standard courses exist.");
+      }
     } catch (err) {
-      setGenStatus(err instanceof ConvexError ? (err.data as { message: string }).message : "Couldn't start generation. Please try again.");
+      setGenStatus(errorText(err, "Couldn't start generation. Please try again."));
     }
   };
   // D-36: courses whose content changed since the last push (detected company changes).
@@ -69,15 +96,14 @@ export function CoursesTab({ space, toast }: TabProps) {
             onChange={(e) => setTopic(e.target.value)}
             style={{ flex: 1, minWidth: 220, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13 }}
             placeholder="e.g. Security best practices"
-            title={TOPIC_PENDING}
             onKeyDown={(e) => e.key === "Enter" && void runGenerate()}
           />
-          <button className="btn btn-dark" id="gen-btn" onClick={() => void runGenerate()} title={TOPIC_PENDING}>
+          <button className="btn btn-dark" id="gen-btn" onClick={() => void runGenerate()}>
             <Icon name="sparkle" /> Generate course
           </button>
         </div>
-        <div id="gen-status" style={{ fontSize: 13, color: "var(--muted)", marginTop: 10 }}>
-          {genStatus ?? (space.deployState === "error" && space.deployError ? `Last publish failed: ${space.deployError}` : null)}
+        <div id="gen-status" style={{ fontSize: 13, color: "var(--muted)", marginTop: 10 }} aria-live="polite">
+          {topicOutcome ?? genStatus ?? (space.deployState === "error" && space.deployError ? `Last publish failed: ${space.deployError}` : null)}
         </div>
       </div>
       <div className="panel" id="publish-panel" hidden={!published}>
@@ -124,9 +150,24 @@ export function CoursesTab({ space, toast }: TabProps) {
           )}
         </div>
         <div className="grid2" id="course-cards">
-          {courses && courses.length === 0 && (
+          {courses && courses.length === 0 && !generating?.length && (
             <p style={{ color: "var(--muted)" }}>No courses yet.</p>
           )}
+          {generating?.map((g) => (
+            <div key={g.packType} className="course-card" aria-busy="true" data-generating={g.packType}>
+              <div className="ci">
+                <Icon name={g.icon} size={30} />
+              </div>
+              <h4>{g.title}</h4>
+              <div className="cb">
+                <Icon name="building" size={13} /> {g.building} · {g.game} game
+              </div>
+              <p>Writing lessons from your company brain.</p>
+              <span className="pill inv" style={{ alignSelf: "flex-start" }}>
+                Generating…
+              </span>
+            </div>
+          ))}
           {courses?.map((c) => (
             <div
               key={c._id}

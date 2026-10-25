@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { CoursePatch } from "../src/lib/flow/course-patch";
-import { PACK_TYPES } from "../src/lib/flow/course-packs";
+import { cleanTopic, PACK_TYPES, topicPack } from "../src/lib/flow/course-packs";
 import type { CourseSpec } from "../src/lib/flow/course-spec";
 import { audit, MANAGERS, requireRole } from "./lib/access";
 import { DRIFT_ACTOR, patchForSpace, syncCourseFacts } from "./lib/courses";
@@ -14,7 +14,7 @@ import { workerMutation } from "./lib/worker";
 // edits. Courses never regenerate on their own — drift only flags `needsRefresh`/`staleStepIds`.
 
 /** One unit of course work in a `generate_courses` job cursor. No `stepIds` = rebuild the course. */
-export type CourseTarget = { packType: string; stepIds?: string[]; requestedBy?: string };
+export type CourseTarget = { packType: string; stepIds?: string[]; requestedBy?: string; topic?: string };
 
 async function loadCourse(ctx: QueryCtx, courseId: Id<"courses">) {
   const course = await ctx.db.get(courseId);
@@ -57,16 +57,71 @@ const packOrder = (packType: string) => {
   return i < 0 ? PACK_TYPES.length : i;
 };
 
-/** Dashboard "Generate course": queue every default pack the space doesn't have yet (F20/F25). */
+/**
+ * Dashboard "Generate course". With a topic (F22, "Create a course"): queue one course about it,
+ * `topic-<slug>`, built from the brain facts most relevant to the topic (asking again rebuilds it).
+ * Without: queue every default pack the space doesn't have yet (F20/F25).
+ */
 export const generate = mutation({
-  args: { spaceId: v.id("spaces") },
-  handler: async (ctx, { spaceId }) => {
+  args: { spaceId: v.id("spaces"), topic: v.optional(v.string()) },
+  handler: async (ctx, { spaceId, topic }) => {
     const { userId } = await requireRole(ctx, spaceId, MANAGERS);
+    const requestedBy = `user:${userId}`;
+    if (topic !== undefined) {
+      const title = cleanTopic(topic);
+      if (!title) return fail(422, "Type a course name first");
+      const pack = topicPack(title);
+      if (!pack.packType) return fail(422, "Use letters or numbers in the course name");
+      const jobId = await requestCourseJob(ctx, spaceId, { packType: pack.packType, topic: pack.title, requestedBy });
+      await audit(ctx, spaceId, requestedBy, "courses.generate_requested", { packs: [pack.packType], topic: pack.title });
+      return { queued: [pack.packType], jobId, title: pack.title };
+    }
     const existing = new Set((await ctx.db.query("courses").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).collect()).map((c) => c.packType));
     const missing = PACK_TYPES.filter((p) => !existing.has(p));
-    for (const packType of missing) await requestCourseJob(ctx, spaceId, { packType, requestedBy: `user:${userId}` });
-    if (missing.length) await audit(ctx, spaceId, `user:${userId}`, "courses.generate_requested", { packs: missing });
-    return { queued: missing };
+    let jobId: Id<"jobs"> | null = null;
+    for (const packType of missing) jobId = await requestCourseJob(ctx, spaceId, { packType, requestedBy });
+    if (missing.length) await audit(ctx, spaceId, requestedBy, "courses.generate_requested", { packs: missing });
+    return { queued: missing, jobId, title: null };
+  },
+});
+
+/** Curriculum placeholders: topic courses queued or being written that don't exist yet. */
+export const generating = query({
+  args: { spaceId: v.id("spaces") },
+  handler: async (ctx, { spaceId }) => {
+    await requireRole(ctx, spaceId, MANAGERS);
+    const existing = new Set((await ctx.db.query("courses").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).collect()).map((c) => c.packType));
+    const seen = new Set<string>();
+    const out: { packType: string; title: string; building: string; icon: string; game: string }[] = [];
+    for (const t of (await openCourseJobs(ctx, spaceId)).flatMap(targetsOf)) {
+      if (!t.topic || existing.has(t.packType) || seen.has(t.packType)) continue;
+      seen.add(t.packType);
+      const p = topicPack(t.topic);
+      out.push({ packType: t.packType, title: p.title, building: p.building, icon: p.icon, game: p.game });
+    }
+    return out;
+  },
+});
+
+/**
+ * How a Generate request went: still running, or done with the courses it couldn't build and why;
+ * `built` says whether the asked-for course (`packType`) now exists.
+ */
+export const outcome = query({
+  args: { jobId: v.id("jobs"), packType: v.optional(v.string()) },
+  handler: async (ctx, { jobId, packType }) => {
+    const job = await ctx.db.get(jobId);
+    if (!job || job.stage !== "generate_courses") return fail(404, "Job not found");
+    await requireRole(ctx, job.spaceId, MANAGERS);
+    const events = await ctx.db.query("job_events").withIndex("by_job", (q) => q.eq("jobId", jobId)).take(200);
+    const skipped = events.flatMap((e) => {
+      const d = e.data as { packType?: unknown; skipped?: unknown } | undefined;
+      return e.level === "warn" && d?.skipped === true && typeof d.packType === "string" ? [{ packType: d.packType, message: e.message }] : [];
+    });
+    const built = packType
+      ? Boolean(await ctx.db.query("courses").withIndex("by_space_pack", (q) => q.eq("spaceId", job.spaceId).eq("packType", packType)).first())
+      : null;
+    return { status: job.status, error: job.status === "failed" ? (job.error ?? "Generation failed") : null, skipped, built };
   },
 });
 
