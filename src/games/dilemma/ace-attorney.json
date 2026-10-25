@@ -1,0 +1,103 @@
+{
+  "source": "Ace Attorney Wiki (aceattorney.fandom.com). Sprites and art are Capcom's, used for a non-commercial hackathon demo. Run `npm run fetch:ace-attorney` to download them into public/games/ace-attorney/.",
+  "backgrounds": {
+    "defense": "Defense(THD).png",
+    "witness": "WitnessStand(THD).png",
+    "office": "Grossbergoffice.png",
+    "reception": "Fey_&_Co._Office_entrance.png"
+  },
+  "shouts": {
+    "objection": "ObjectionEnglishFrenchPCTrilogy.png",
+    "holdIt": "HoldItEnglishPCTrilogy.png",
+    "takeThat": "TakeThatEnglishPCTrilogy.png"
+  },
+  "characters": {
+    "phoenix": {
+      "name": "Phoenix Wright",
+      "aspect": "4:3",
+      "moods": {
+        "neutral": ["Phoenix_Wright_Normal.gif", "Phoenix_Wright_Normal_Talking.gif"],
+        "happy": ["Phoenix_Wright_Confident.gif", "Phoenix_Wright_Confident_Talking.gif"],
+        "thinking": ["Phoenix_Wright_Thinking.gif"],
+        "shocked": ["Phoenix_Wright_Shocked.gif"],
+        "angry": ["Phoenix_Wright_Determined.gif", "Phoenix_Wright_Determined_Talking.gif"],
+        "sweating": ["Phoenix_Wright_Sweating.gif", "Phoenix_Wright_Sweating_Talking.gif"],
+        "sad": ["Phoenix_Wright_Headshake.gif"],
+        "confident": ["Phoenix_Wright_Confident.gif", "Phoenix_Wright_Confident_Talking.gif"]
+      },
+      "poses": {
+        "point": ["Phoenix_Wright_Point.gif", "Phoenix_Wright_Point_Talking.gif"],
+        "objecting": ["Phoenix_Wright_Objecting.gif"],
+        "deskSlam": ["Phoenix_Wright_Desk_Slam.gif"]
+      }
+    },
+    "maya": {
+      "name": "Maya Fey",
+      "aspect": "3:2",
+      "moods": {
+        "neutral": ["Maya-Normal-1-HD.gif", "Maya-Normal-2-HD.gif"],
+        "happy": ["Maya-Happy-1-HD.gif", "Maya-Happy-2-HD.gif"],
+        "thinking": ["Maya-Thinking-1-HD.gif", "Maya-Thinking-2-HD.gif"],
+        "shocked": ["Maya-Shocked-HD.gif"],
+        "angry": ["Maya-Angry-1-HD.gif", "Maya-Angry-2-HD.gif"],
+        "sweating": ["Maya-Worried-1-HD.gif", "Maya-Worried-2-HD.gif"],
+        "sad": ["Maya-Sad-1-HD.gif", "Maya-Sad-2-HD.gif"],
+        "confident": ["Maya-Confident-1-HD.gif", "Maya-Confident-2-HD.gif"]
+      }
+    },
+    "redd-white": {
+      "name": "Redd White",
+      "aspect": "3:2",
+      "moods": {
+        "neutral": ["White-Normal-1-HD.gif", "White-Normal-2-HD.gif"],
+        "happy": ["White-Confident-HD.gif", "White-Confident-2-HD.gif"],
+        "thinking": ["White-Shrugging-HD.gif"],
+        "shocked": ["White-Surprised-1-HD.gif", "White-Surprised-2-HD.gif"],
+        "angry": ["White-Sulking-1-HD.gif", "White-Sulking-2-HD.gif"],
+        "sweating": ["White-Sweating-1-HD.gif", "White-Sweating-2-HD.gif"],
+        "sad": ["White-Sulking-1-HD.gif", "White-Sulking-2-HD.gif"],
+        "confident": ["White-Showing_Off-HD.gif"]
+      }
+    },
+    "dee-vasquez": {
+      "name": "Dee Vasquez",
+      "aspect": "3:2",
+      "moods": {
+        "neutral": ["Vasquez-Normal-1-HD.gif", "Vasquez-Normal-2-HD.gif"],
+        "happy": ["Vasquez-Smiling-1-HD.gif", "Vasquez-Smiling-2-HD.gif"],
+        "thinking": ["Vasquez-Normal-1-HD.gif", "Vasquez-Normal-2-HD.gif"],
+        "shocked": ["Vasquez-Shocked-HD.gif"],
+        "angry": ["Vasquez-Flinch-1-HD.gif", "Vasquez-Flinch-2-HD.gif"],
+        "sweating": ["Vasquez-Sweating-1-HD.gif", "Vasquez-Sweating-2-HD.gif"],
+        "sad": ["Vasquez-Confessing-1-HD.gif", "Vasquez-Confessing-2-HD.gif"],
+        "confident": ["Vasquez-Smiling-1-HD.gif", "Vasquez-Smiling-2-HD.gif"]
+      }
+    },
+    "wendy-oldbag": {
+      "name": "Wendy Oldbag",
+      "aspect": "3:2",
+      "moods": {
+        "neutral": ["Wendy-Normal-1-HD.gif", "Wendy-Normal-2-HD.gif"],
+        "happy": ["Wendy-Blushing-1-HD.gif", "Wendy-Blushing-2-HD.gif"],
+        "thinking": ["Wendy-Normal-1-HD.gif", "Wendy-Normal-2-HD.gif"],
+        "shocked": ["Wendy-Shocked-HD.gif"],
+        "angry": ["Wendy-Angry-1-HD.gif", "Wendy-Angry-2-HD.gif"],
+        "sweating": ["Wendy-Embarrassed-1-HD.gif", "Wendy-Embarrassed-2-HD.gif"],
+        "sad": ["Wendy-Embarrassed-1-HD.gif", "Wendy-Embarrassed-2-HD.gif"],
+        "confident": ["Wendy-Smirking-1-HD.gif", "Wendy-Smirking-2-HD.gif"]
+      }
+    },
+    "judge": {
+      "name": "Judge",
+      "aspect": "3:2",
+      "moods": {
+        "neutral": ["Judge-Normal-1-HD.gif", "Judge-Normal-2-HD.gif"],
+        "happy": ["Judge-Nod-HD.gif"],
+        "thinking": ["Judge-Thinking-HD.gif"],
+        "shocked": ["Judge-Surprised-1-HD.gif", "Judge-Surprised-2-HD.gif"],
+        "angry": ["Judge-Stern-1-HD.gif", "Judge-Stern-2-HD.gif"],
+        "sad": ["Judge-Head_Shake-HD.gif"]
+      }
+    }
+  }
+}
