@@ -25,6 +25,7 @@ import type * as facts from "../facts.js";
 import type * as hires from "../hires.js";
 import type * as http from "../http.js";
 import type * as ingest from "../ingest.js";
+import type * as join from "../join.js";
 import type * as lib_access from "../lib/access.js";
 import type * as lib_brainWrite from "../lib/brainWrite.js";
 import type * as lib_brand from "../lib/brand.js";
@@ -71,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   hires: typeof hires;
   http: typeof http;
   ingest: typeof ingest;
+  join: typeof join;
   "lib/access": typeof lib_access;
   "lib/brainWrite": typeof lib_brainWrite;
   "lib/brand": typeof lib_brand;

@@ -214,4 +214,14 @@ describe("course regeneration (F36)", () => {
     const otherId = await t.run((ctx) => ctx.db.insert("users", { email: "eve@evil.com" }));
     await expect(t.withIdentity({ subject: `${otherId}|s` }).query(api.courses.get, { courseId: tools._id })).rejects.toThrow(/403/);
   });
+
+  it("join page (public): course titles for anyone, no facts or specs; unknown slug → null", async () => {
+    const { t, spaceId } = await withCourses();
+    const space = await t.run((ctx) => ctx.db.get(spaceId));
+    const page = await t.query(api.join.bySlug, { slug: space!.slug });
+    expect(page?.name).toBe("Acme Pay");
+    expect(page?.courses.map((c) => c.title)).toEqual(["People & Culture", "Tools & Stack", "Hard Conversations"]);
+    expect(page?.courses.every((c) => !c.live && !("spec" in c))).toBe(true);
+    expect(await t.query(api.join.bySlug, { slug: "nope" })).toBeNull();
+  });
 });
