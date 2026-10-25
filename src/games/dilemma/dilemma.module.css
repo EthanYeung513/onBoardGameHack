@@ -13,8 +13,16 @@
   background: #0a0f24;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
   user-select: none;
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-courtroom), system-ui, sans-serif;
   cursor: pointer;
+  /* Text sizes below are cqw of the stage, so they keep the games' proportions at any size. */
+  container-type: inline-size;
+}
+
+/* Background, character and desk layers. Fills the stage; on phones it becomes the top screen. */
+.scene {
+  position: absolute;
+  inset: 0;
 }
 
 .backdrop {
@@ -243,33 +251,36 @@
   right: 2%;
   bottom: 2.5%;
   height: 25%;
-  padding: 2.2% 3% 2%;
+  padding: 0.6em 1.1em 0.5em;
+  overflow-y: auto;
+  scrollbar-width: none;
   border: 3px solid #fff;
   border-radius: 10px;
   background: linear-gradient(180deg, rgba(20, 32, 78, 0.94), rgba(8, 14, 42, 0.94));
   box-shadow: 0 0 0 3px #0a1030, inset 0 0 18px rgba(80, 120, 255, 0.25);
   color: #fff;
   font-weight: 700;
-  font-size: clamp(14px, 2.5vw, 23px);
-  line-height: 1.35;
-  letter-spacing: 0.2px;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6);
+  font-size: max(15px, 2.55cqw);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  text-shadow: 0.07em 0.07em 0 rgba(0, 0, 0, 0.65);
 }
 .nametag {
   position: absolute;
   z-index: 7;
   left: 3.5%;
   bottom: calc(2.5% + 25% - 3px);
-  padding: 6px 16px 5px;
+  padding: 0.25em 1em 0.2em;
   border: 3px solid #fff;
   border-bottom: 0;
   border-radius: 8px 8px 0 0;
   background: linear-gradient(180deg, #4878e0, #1f3f9c);
   color: #fff;
-  font-family: var(--font-pixel-face), monospace;
-  font-size: clamp(8px, 1.4vw, 12px);
-  letter-spacing: 1px;
-  text-shadow: 2px 2px 0 #0a1030;
+  font-weight: 800;
+  font-size: max(14px, 1.9cqw);
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-shadow: 0.08em 0.08em 0 #0a1030;
 }
 .emphasis {
   color: #ff5f56;
@@ -308,8 +319,9 @@
   background: rgba(10, 16, 48, 0.85);
   border: 2px solid #fff;
   color: #ffd166;
-  font-family: var(--font-pixel-face), monospace;
-  font-size: clamp(8px, 1.3vw, 11px);
+  font-weight: 800;
+  font-size: max(14px, 1.6cqw);
+  letter-spacing: 0.08em;
 }
 .choice {
   position: relative;
@@ -320,9 +332,10 @@
   box-shadow: 0 4px 0 #3a2a10;
   color: #2a1d08;
   text-align: left;
+  font-family: inherit;
   font-weight: 800;
-  font-size: clamp(12px, 1.9vw, 17px);
-  line-height: 1.25;
+  font-size: max(15px, 2.1cqw);
+  line-height: 1.3;
   cursor: pointer;
   animation: choiceIn 0.3s ease-out both;
   transition: transform 0.1s, background 0.1s;
@@ -412,8 +425,9 @@
   border-radius: 8px;
   background: rgba(10, 16, 48, 0.8);
   border: 2px solid #fff;
-  font-family: var(--font-pixel-face), monospace;
-  font-size: clamp(7px, 1.2vw, 10px);
+  font-weight: 800;
+  font-size: max(14px, 1.5cqw);
+  letter-spacing: 0.06em;
   color: #fff;
 }
 .segment {
@@ -456,8 +470,8 @@
 }
 .bannerKicker {
   display: block;
-  font-family: var(--font-pixel-face), monospace;
-  font-size: clamp(8px, 1.4vw, 12px);
+  font-weight: 800;
+  font-size: max(14px, 1.5cqw);
   color: #9fb4ff;
   letter-spacing: 3px;
 }
@@ -520,8 +534,10 @@
   border: 3px solid #fff;
   background: linear-gradient(180deg, #4878e0, #1f3f9c);
   color: #fff;
-  font-family: var(--font-pixel-face), monospace;
-  font-size: clamp(9px, 1.4vw, 12px);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: max(16px, 1.8cqw);
+  letter-spacing: 0.05em;
   box-shadow: 0 4px 0 #0a1030;
   cursor: pointer;
   animation: fadeIn 0.4s 1.2s ease-out both;
@@ -551,7 +567,7 @@
 .titleLogo {
   font-family: Impact, "Arial Black", system-ui, sans-serif;
   font-style: italic;
-  font-size: clamp(30px, 7vw, 70px);
+  font-size: clamp(30px, 7cqw, 70px);
   line-height: 1;
   color: #ffd166;
   -webkit-text-stroke: 2px #fff;
@@ -561,7 +577,8 @@
 .titleIntro {
   max-width: 34em;
   font-weight: 700;
-  font-size: clamp(13px, 2vw, 18px);
+  font-size: max(15px, 2cqw);
+  line-height: 1.4;
   text-shadow: 2px 2px 0 #000;
 }
 .startButton {
@@ -570,8 +587,10 @@
   border: 3px solid #3a2a10;
   background: linear-gradient(180deg, #fff6d4, #f0d58a);
   color: #2a1d08;
-  font-family: var(--font-pixel-face), monospace;
-  font-size: clamp(9px, 1.4vw, 12px);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: max(16px, 1.8cqw);
+  letter-spacing: 0.05em;
   box-shadow: 0 5px 0 #3a2a10;
   cursor: pointer;
 }
@@ -586,6 +605,55 @@
   padding: 2px 6px;
   font-size: 15px;
   cursor: pointer;
+}
+
+/* Portrait phones: like the DS, the scene is a 3:2 top screen and the text box and answers sit
+   below it at full size, instead of shrinking onto a 250px-tall picture and covering the speaker. */
+@media (orientation: portrait) and (max-width: 640px) {
+  .stage {
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: auto;
+    min-height: min(calc(100dvh - 24px), calc(66.7vw + 340px));
+    padding-bottom: 12px;
+  }
+  .scene {
+    position: relative;
+    inset: auto;
+    flex: none;
+    aspect-ratio: 3 / 2;
+  }
+  .nametag {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    align-self: flex-start;
+    margin: 12px 0 0 3.5%;
+  }
+  .textbox {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    height: auto;
+    min-height: calc(3 * 1.4em + 1.1em);
+    margin: 12px 2% 0;
+  }
+  .nametag + .textbox {
+    margin-top: 0;
+  }
+  .choices {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 96%;
+    margin: 14px auto 0;
+    transform: none;
+    gap: 8px;
+  }
+  .choice {
+    padding: 10px 12px 10px 30px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

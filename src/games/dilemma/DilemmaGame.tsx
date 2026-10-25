@@ -261,46 +261,49 @@ export function DilemmaGame({ spec, onComplete, instant = false }: GameProps<Dil
 
   return (
     <div ref={stageRef} className={styles.stage} onClick={advance} data-testid="dilemma">
-      <div className={styles.backdrop}>
+      {/* The scene: the whole stage on wide screens, the top screen above the text on phones. */}
+      <div className={styles.scene}>
+        <div className={styles.backdrop}>
+          {sprite ? (
+            // eslint-disable-next-line @next/next/no-img-element -- static game art served from /public
+            <img className={styles.backgroundImg} src={backgroundFor(view)} alt="" />
+          ) : (
+            <Backdrop setting={setting} label={onStage?.name} />
+          )}
+        </div>
+        {beat?.kind === "shout" && <div className={styles.speedlines} />}
+        {beat?.kind === "penalty" && <div className={`${styles.speedlines} ${styles.speedlinesRed}`} />}
+
+        {phase === "play" &&
+          (sprite ? (
+            <div key={`char-${stage.key}`} className={`${styles.spriteLayer} ${SPRITE_ANIM[stage.anim]}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF sprites, served as-is */}
+              <img
+                className={styles.spriteImg}
+                src={spriteFor(sprite, stage.mood, talking, stage.pose)}
+                alt={stage.who === "player" ? spec.player.name : (onStage?.name ?? "Judge")}
+                onError={() => setBrokenPacks((b) => [...b, sprite])}
+                draggable={false}
+              />
+            </div>
+          ) : (
+            <div key={`char-${stage.key}`} className={`${styles.character} ${setting === "video-call" && stage.who !== "player" ? styles.characterCall : ""} ${DRAWN_ANIM[stage.anim]}`}>
+              <div className={styles.characterInner}>
+                {onStage?.portraitUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- spec-supplied portrait, any host
+                  <img className={styles.portraitImg} src={onStage.portraitUrl} alt={onStage.name} />
+                ) : (
+                  <Portrait look={look} mood={stage.mood} talking={talking} pose={stage.pose} />
+                )}
+              </div>
+            </div>
+          ))}
         {sprite ? (
-          // eslint-disable-next-line @next/next/no-img-element -- static game art served from /public
-          <img className={styles.backgroundImg} src={backgroundFor(view)} alt="" />
+          desk && <Desk kind={desk} />
         ) : (
-          <Backdrop setting={setting} label={onStage?.name} />
+          <div className={`${styles.desk} ${setting === "reception" ? styles.counter : ""} ${setting === "video-call" ? styles.noDesk : ""}`} />
         )}
       </div>
-      {beat?.kind === "shout" && <div className={styles.speedlines} />}
-      {beat?.kind === "penalty" && <div className={`${styles.speedlines} ${styles.speedlinesRed}`} />}
-
-      {phase === "play" &&
-        (sprite ? (
-          <div key={`char-${stage.key}`} className={`${styles.spriteLayer} ${SPRITE_ANIM[stage.anim]}`}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- animated GIF sprites, served as-is */}
-            <img
-              className={styles.spriteImg}
-              src={spriteFor(sprite, stage.mood, talking, stage.pose)}
-              alt={stage.who === "player" ? spec.player.name : (onStage?.name ?? "Judge")}
-              onError={() => setBrokenPacks((b) => [...b, sprite])}
-              draggable={false}
-            />
-          </div>
-        ) : (
-          <div key={`char-${stage.key}`} className={`${styles.character} ${setting === "video-call" && stage.who !== "player" ? styles.characterCall : ""} ${DRAWN_ANIM[stage.anim]}`}>
-            <div className={styles.characterInner}>
-              {onStage?.portraitUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element -- spec-supplied portrait, any host
-                <img className={styles.portraitImg} src={onStage.portraitUrl} alt={onStage.name} />
-              ) : (
-                <Portrait look={look} mood={stage.mood} talking={talking} pose={stage.pose} />
-              )}
-            </div>
-          </div>
-        ))}
-      {sprite ? (
-        desk && <Desk kind={desk} />
-      ) : (
-        <div className={`${styles.desk} ${setting === "reception" ? styles.counter : ""} ${setting === "video-call" ? styles.noDesk : ""}`} />
-      )}
 
       {phase === "play" && (
         <div className={styles.trust} aria-label={`Trust ${trust} of ${spec.credibility}`}>

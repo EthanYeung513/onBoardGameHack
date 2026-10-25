@@ -336,7 +336,7 @@ export function BattleGame({ spec, onComplete, instant = false }: GameProps<Batt
         <div className={styles.foeSide}>
           <div className={styles.platform} />
           <div className={styles.spriteFrame}>
-            <div key={`foe-${foeAnim.key}`} className={`${foeShown ? foeAnim.cls : styles.hidden}`} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+            <div key={`foe-${foeAnim.key}`} className={`${styles.spriteAnim} ${foeShown ? foeAnim.cls : styles.hidden}`}>
               <Sprite src={frontSprite(spec.opponent.pokemon)} fallback="👾" alt={spec.opponent.name} />
             </div>
           </div>
@@ -344,7 +344,7 @@ export function BattleGame({ spec, onComplete, instant = false }: GameProps<Batt
         <div className={styles.playerSide}>
           <div className={styles.platform} />
           <div className={styles.spriteFrame}>
-            <div key={`player-${playerAnim.key}`} className={`${playerShown ? playerAnim.cls : styles.hidden}`} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+            <div key={`player-${playerAnim.key}`} className={`${styles.spriteAnim} ${playerShown ? playerAnim.cls : styles.hidden}`}>
               <Sprite src={backSprite(spec.player.pokemon)} fallback="🧑‍💼" alt={spec.player.name} />
             </div>
           </div>

@@ -8,28 +8,28 @@ const seconds = (ms: number) => `${Math.max(1, Math.round(ms / 1000))}s`;
 export function GameResults({ title, result, onReplay, onExit }: { title: string; result: GameResult; onReplay?: () => void; onExit?: () => void }) {
   const accuracy = result.total ? Math.round((result.correct / result.total) * 100) : 0;
   return (
-    <section className="mx-auto flex w-full max-w-2xl flex-col gap-5 rounded-2xl border-4 border-ink bg-paper p-6 shadow-xl" aria-label="Results">
+    <section className="mx-auto flex w-full max-w-2xl flex-col gap-5 rounded-2xl border-4 border-ink bg-paper p-6 font-sans text-ink shadow-xl" aria-label="Results">
       <div className="text-center">
         <p className="text-5xl" aria-hidden>
           {result.won ? "🏆" : "📘"}
         </p>
         <h2 className="mt-2 font-pixel text-base leading-relaxed">{result.won ? "Cleared!" : "Not yet. Study and retry."}</h2>
-        <p className="text-sm text-ink/70">{title}</p>
+        <p className="text-base text-ink/70">{title}</p>
       </div>
       <dl className="grid grid-cols-3 gap-2 text-center">
         <div className="rounded-lg bg-white p-3">
-          <dt className="text-xs uppercase tracking-wide text-ink/60">Score</dt>
+          <dt className="text-sm uppercase tracking-wide text-ink/70">Score</dt>
           <dd className="text-2xl font-bold tabular-nums">
             {result.score}
-            <span className="text-sm font-normal text-ink/60">/{result.maxScore}</span>
+            <span className="text-base font-normal text-ink/60">/{result.maxScore}</span>
           </dd>
         </div>
         <div className="rounded-lg bg-white p-3">
-          <dt className="text-xs uppercase tracking-wide text-ink/60">Accuracy</dt>
+          <dt className="text-sm uppercase tracking-wide text-ink/70">Accuracy</dt>
           <dd className="text-2xl font-bold tabular-nums">{accuracy}%</dd>
         </div>
         <div className="rounded-lg bg-white p-3">
-          <dt className="text-xs uppercase tracking-wide text-ink/60">Time</dt>
+          <dt className="text-sm uppercase tracking-wide text-ink/70">Time</dt>
           <dd className="text-2xl font-bold tabular-nums">{seconds(result.durationMs)}</dd>
         </div>
       </dl>
@@ -38,7 +38,7 @@ export function GameResults({ title, result, onReplay, onExit }: { title: string
           <h3 className="mb-2 font-bold">To review</h3>
           <ul className="flex flex-col gap-2">
             {result.mistakes.map((m, i) => (
-              <li key={`${m.itemId}-${i}`} className="rounded-lg border-2 border-ink/10 bg-white p-3 text-sm">
+              <li key={`${m.itemId}-${i}`} className="rounded-lg border-2 border-ink/10 bg-white p-3 text-base">
                 <p className="font-semibold">{m.prompt}</p>
                 <p className="text-red-800">
                   <span aria-hidden>✗</span> You: {m.chosen}
@@ -48,7 +48,7 @@ export function GameResults({ title, result, onReplay, onExit }: { title: string
                 </p>
                 {m.explanation && <p className="mt-1 text-ink/80">{m.explanation}</p>}
                 {m.source && (
-                  <p className="mt-1 text-xs text-ink/60">
+                  <p className="mt-1 text-sm text-ink/70">
                     Source: {m.source.doc}
                     {m.source.section ? ` › ${m.source.section}` : ""}
                   </p>

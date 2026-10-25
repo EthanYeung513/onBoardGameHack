@@ -31,8 +31,8 @@
 }
 
 .brand {
-  font-size: clamp(0.6rem, 1.6vw, 0.85rem);
-  letter-spacing: 0.35em;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  letter-spacing: 0.25em;
   text-transform: uppercase;
   opacity: 0.75;
 }
@@ -85,7 +85,7 @@
 }
 .optionNote {
   margin-left: auto;
-  font-size: 0.62em;
+  font-size: max(14px, 0.7em);
   letter-spacing: 0.02em;
   text-transform: none;
   opacity: 0.7;
@@ -97,23 +97,24 @@
 .play {
   display: flex;
   height: 100dvh;
-  align-items: center;
   justify-content: center;
-  overflow: hidden;
+  /* Anything taller than the screen (a phone's word board, the results list) scrolls instead of being cut off. */
+  overflow-y: auto;
 }
 .play > * {
   flex: 1;
-  min-height: 0;
   /* No forced height: games that fill the viewport still do, shorter stages
-     centre vertically like a handheld screen instead of top-anchoring. */
-  align-self: center;
+     centre vertically like a handheld screen; auto margins centre without
+     pushing an over-tall child's top out of reach. */
+  margin-block: auto;
 }
 /* Inside a building the game fills the page like the real thing: each game's
    width cap is lifted as far as the viewport height allows without clipping
    (ratios measured from each game's real layout). On portrait phones the
    cap resolves to 100% anyway, so the game keeps filling the screen. */
+/* Battle: the 3:2 top screen plus ~330px of status bar and DS bottom screen. */
 .play.battle > * {
-  max-width: min(100%, calc(100dvh * 1.15));
+  max-width: min(100%, calc((100dvh - 330px) * 1.5));
 }
 .play.dilemma > * {
   max-width: min(100%, calc(100dvh * 1.45));
@@ -125,19 +126,20 @@
 /* ── Battle: a Pokémon-style title screen ─────────────────────────────── */
 .battle {
   color: #fff;
-  font-family: var(--font-game-text), monospace;
+  font-family: var(--font-pokemon), var(--font-game-text), monospace;
   background:
     radial-gradient(ellipse 60% 50% at 70% 15%, rgb(58 90 200 / 55%), transparent 70%),
     linear-gradient(180deg, #101430 0%, #05060f 100%);
 }
 .battle .courseTitle {
-  font-family: var(--font-pixel-face), monospace;
-  font-size: clamp(1.1rem, 4.5vw, 2.2rem);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 6vw, 3.2rem);
   color: #f8d030;
   text-shadow: 0 3px 0 #3050a8, 0 6px 0 rgb(0 0 0 / 45%);
 }
 .battle .option {
-  font-size: clamp(0.95rem, 2.6vw, 1.3rem);
+  font-size: clamp(1.15rem, 3vw, 1.5rem);
+  font-weight: 600;
   color: #fff;
   text-shadow: 0 2px 0 rgb(0 0 0 / 60%);
 }
@@ -154,17 +156,24 @@
 .word-match .courseTitle {
   font-family: var(--font-pixel-face), monospace;
   font-size: clamp(1.1rem, 4.5vw, 2.2rem);
+  line-height: 1.4;
   color: #6ff5ff;
   text-shadow: 0 0 18px rgb(110 245 255 / 65%), 0 4px 0 rgb(0 0 0 / 50%);
 }
+.word-match .brand {
+  color: #ff9ae9;
+  text-shadow: 0 0 10px rgb(255 79 216 / 70%);
+}
 .word-match .option {
-  font-size: clamp(0.95rem, 2.6vw, 1.3rem);
+  font-size: clamp(1.4rem, 3.4vw, 1.8rem);
+  color: #fff;
+  text-shadow: 0 0 8px rgb(110 245 255 / 55%);
 }
 
 /* ── Dilemma: an Ace Attorney title card over the office art ──────────── */
 .dilemma {
   color: #fff;
-  font-family: var(--font-game-text), monospace;
+  font-family: var(--font-courtroom), system-ui, sans-serif;
   background: #0a0f24;
 }
 .dilemma .courseTitle {
@@ -181,6 +190,8 @@
 }
 .dilemma .brand {
   color: #ffd23e;
+  font-weight: 800;
+  text-shadow: 0 2px 0 #0a0f24;
 }
 .dilemma .options {
   background: rgb(10 15 36 / 82%);
@@ -189,5 +200,7 @@
   padding: 0.75rem;
 }
 .dilemma .option {
-  font-size: clamp(1rem, 2.8vw, 1.4rem);
+  font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
 }
