@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
-import { COURSES, NPCS, type Course, type Npc } from '../config';
+import { COURSES, NPCS, SHOP_NAME, type Course, type Npc } from '../config';
 import { bus, input } from './bridge';
-import { T, BUILDINGS, PROPS, generateWorld, type WorldSpec, type BuildingSpec } from '../worldgen';
+import { T, TILE, BUILDINGS, PROPS, generateWorld, type WorldSpec, type BuildingSpec } from '../worldgen';
 import type { WeatherMode } from '../weather';
 
 const SPEED = 85;
+const BORDER = 8; // tiles of forest drawn beyond each map edge (never walkable)
+// what a door opens: a course building or the rewards shop
+type Door = { x: number; y: number; name: string; course?: Course; shop?: boolean };
 const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
 
 export class TownScene extends Phaser.Scene {
@@ -16,7 +19,7 @@ export class TownScene extends Phaser.Scene {
   private sprites: Phaser.GameObjects.Image[] = [];
   private buildings: BuildingSpec[] = [];
   private npcs: { spec: Npc; sprite: Phaser.GameObjects.Sprite; dir: Phaser.Math.Vector2; timer: number; home: { x: number; y: number } }[] = [];
-  private doorZones: { x: number; y: number; course: Course }[] = [];
+  private doorZones: Door[] = [];
   private facing: 'down' | 'up' | 'left' | 'right' = 'down';
   private interactCooldown = 0;
   private charRow = 0;
@@ -24,7 +27,7 @@ export class TownScene extends Phaser.Scene {
   private weather: WeatherMode = 'sunny';
   private world!: WorldSpec;
   private drops: Phaser.GameObjects.Image[] = [];
-  private lastHover: Course | null = null;
+  private lastHover: Course | 'shop' | null = null;
   private enterHint: Phaser.GameObjects.Text | null = null;
   // Zombie scene instances (created then destroyed before their first shutdown,
   // e.g. React StrictMode remounts) keep their bus subscriptions — guard them off.
@@ -39,23 +42,22 @@ export class TownScene extends Phaser.Scene {
 
   constructor() { super('town'); }
 
-  // Zoom scales with the viewport so you always see a chunk of the world around
-  // the player (~2-3x), and never drops below the zoom at which the map covers
-  // the whole viewport (no void beside the map on big/wide screens).
-  // ?zoom=Z (dev) wins outright; if the map is then smaller than the view,
-  // the camera bounds centre it.
+  // The player must never see past the world. Zoom scales with the viewport
+  // so you see a chunk of the world around the player (~2-3x), but it is
+  // floored at the zoom where the map covers the whole viewport, and the
+  // camera is bounded to the map — so every on-screen pixel is map. The dev
+  // ?zoom=Z override is clamped by the same floor. As a safety net (sub-pixel
+  // rounding, a frame mid-resize) the forest continues BORDER tiles past every
+  // edge and the clear colour is the forest-floor green.
   private fitCamera() {
     const cam = this.cameras.main;
     const { width, height } = this.scale;
     cam.setSize(width, height);
     const W = this.world.w * T, H = this.world.h * T;
-    const cover = Math.max(width / W, height / H);
+    const cover = Math.max(width / W, height / H) * 1.001;
     const pref = Phaser.Math.Clamp(Math.min(width, height) / (T * 18), 2, 3);
-    const z = this.zoomOverride || Math.max(cover, pref);
-    cam.setZoom(z);
-    // pad the bounds to at least the view size so a too-small map is centred
-    const bw = Math.max(W, width / z), bh = Math.max(H, height / z);
-    cam.setBounds((W - bw) / 2, (H - bh) / 2, bw, bh);
+    cam.setZoom(Math.max(cover, this.zoomOverride || pref));
+    cam.setBounds(0, 0, W, H);
   }
 
   init(data: { charRow?: number; weather?: WeatherMode }) {
@@ -84,6 +86,22 @@ export class TownScene extends Phaser.Scene {
     return name;
   }
 
+  // dense forest beyond the map edges, like the real game's tree border
+  private buildBorder() {
+    const { w, h } = this.world;
+    this.add.tileSprite(-BORDER * T, -BORDER * T, (w + 2 * BORDER) * T, (h + 2 * BORDER) * T, 'tiles', TILE.G_DARK)
+      .setOrigin(0).setDepth(-2e4); // under everything, incl. top-border trees
+    const kinds = ['tree_oak', 'tree_maple', 'tree_pine', 'tree_oak'];
+    for (let y = -BORDER; y < h + BORDER; y++) for (let x = -BORDER; x < w + BORDER; x++) {
+      if (x >= 0 && y >= 0 && x < w && y < h + 2) { if (x === 0) x = w - 1; continue; } // inside (+ worldgen's 2 rows below)
+      if ((x + y * 3) % 2 !== 0) continue;
+      const hsh = ((x * 73856093) ^ (y * 19349663)) >>> 0;
+      const d = PROPS[kinds[hsh % kinds.length]];
+      const px = x * T + (T - d.rect[2]) / 2, py = (y + 1) * T - d.rect[3];
+      this.sprites.push(this.add.image(px, py, d.tex, this.frameFor(d.tex, d.rect)).setOrigin(0).setDepth((y + 1) * T - 1));
+    }
+  }
+
   private buildGround() {
     const { w, h, ground } = this.world;
     // ground tiles + flat decals (debris, tall grass) baked into one texture
@@ -109,6 +127,7 @@ export class TownScene extends Phaser.Scene {
     this.world = generateWorld(COURSES, Number(q.get('seed')) || undefined);
     this.buildings = this.world.buildings;
     this.blocked = this.world.blocked;
+    this.buildBorder();
     this.buildGround();
     this.placeProps();
     if (import.meta.env.DEV && q.has('debug')) {
@@ -126,7 +145,8 @@ export class TownScene extends Phaser.Scene {
       const img = this.add.image((bd.x + bd.w / 2) * T, (bd.y + bd.h) * T, bd.key)
         .setOrigin(0.5, 1).setDepth((bd.y + bd.h) * T);
       img.setInteractive({ useHandCursor: true });
-      if (bd.course) this.doorZones.push({ x: bd.doorX, y: bd.doorY, course: bd.course });
+      if (bd.course) this.doorZones.push({ x: bd.doorX, y: bd.doorY, name: bd.course.name, course: bd.course });
+      if (bd.shop) this.doorZones.push({ x: bd.doorX, y: bd.doorY, name: SHOP_NAME, shop: true });
     }
 
     // player anims — SDV sheet: down(0-3) right(4-7) up(8-11) left(12-15)
@@ -176,7 +196,7 @@ export class TownScene extends Phaser.Scene {
         const dx = dz.x * T + T / 2, dy = dz.y * T + T / 2;
         if (Math.abs(wx - dx) < T * 4 && Math.abs(wy - dy) < T * 4 &&
             dist(this.player.getCenter(), { x: dx, y: dy }) < T * 3.5) {
-          this.enterBuilding(dz.course); return;
+          this.enterBuilding(dz); return;
         }
       }
       this.tryInteract();
@@ -234,17 +254,18 @@ export class TownScene extends Phaser.Scene {
     // main camera explicitly: the weather overlay camera sits on top
     const wp = this.cameras.main.getWorldPoint(p.x, p.y);
     const tx = Math.floor(wp.x / T), ty = Math.floor(wp.y / T);
-    let found: Course | null = null;
+    let found: Course | 'shop' | null = null;
     for (const bd of this.buildings) {
-      if (bd.course && tx >= bd.x - 1 && tx < bd.x + bd.w + 1 && ty >= bd.y - 1 && ty < bd.y + bd.h + 1) {
-        found = bd.course; break;
+      if ((bd.course || bd.shop) && tx >= bd.x - 1 && tx < bd.x + bd.w + 1 && ty >= bd.y - 1 && ty < bd.y + bd.h + 1) {
+        found = bd.course ?? 'shop'; break;
       }
     }
+    const ev = (x: number, y: number) => ({ course: found === 'shop' ? null : found, shop: found === 'shop', x, y });
     if (found !== this.lastHover) {
       this.lastHover = found;
-      bus.emit('hover-building', { course: found, x: 0, y: 0 });
+      bus.emit('hover-building', ev(0, 0));
     }
-    if (found) bus.emit('hover-building', { course: found, x: p.x, y: p.y });
+    if (found) bus.emit('hover-building', ev(p.x, p.y));
   }
 
   private tryInteract() {
@@ -262,21 +283,22 @@ export class TownScene extends Phaser.Scene {
     for (const dz of this.doorZones) {
       const dx = dz.x * T + T / 2, dy = dz.y * T + T / 2;
       if (dist(pc, { x: dx, y: dy }) < T * 2.5) {
-        this.enterBuilding(dz.course);
+        this.enterBuilding(dz);
         this.interactCooldown = 400;
         return;
       }
     }
   }
 
-  private enterBuilding(course: Course) {
-    bus.emit('enter-building', { course });
+  private enterBuilding(dz: Door) {
+    if (dz.shop) bus.emit('enter-shop');
+    else if (dz.course) bus.emit('enter-building', { course: dz.course });
   }
 
-  private nearDoor(): Course | null {
+  private nearDoor(): Door | null {
     const pc = this.player.getCenter();
     for (const dz of this.doorZones) {
-      if (dist(pc, { x: dz.x * T + T / 2, y: dz.y * T + T / 2 }) < T * 2.5) return dz.course;
+      if (dist(pc, { x: dz.x * T + T / 2, y: dz.y * T + T / 2 }) < T * 2.5) return dz;
     }
     return null;
   }

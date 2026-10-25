@@ -335,3 +335,15 @@ BFS-reachable from spawn, generation <= 20ms, deterministic per seed.
 - Login / char select reuse the backdrop. Play button and tagline scale with
   the viewport.
 - `COMPANY.name`: dev `?company=` > localStorage `ob_company` > "Orthogonal".
+
+## Session 5b — credits economy + rewards shop (2026-10-24)
+
+- `src/economy.ts`: credits persist in `ob_credits`; courses pay `course.reward`
+  (default 50) on completion via `awardCompleted`; `ob_shop` overrides the
+  catalogue, `ob_redeemed`/`ob_awarded`/`ob_progress` track state.
+- Rewards shop = JojaMart (`b_store`, never a course building) beside the
+  plaza; door opens the shop menu (buy/redeem/owned tracking).
+- HUD: blue-hex credit coin (Coin.tsx, pixel-art SVG matching the +50 mock) +
+  balance chip + floating "+N" popups.
+- Camera clamped so out-of-bounds void can never show; map edges are forest.
+- Dev flag added: `?credits=N` seeds balance.

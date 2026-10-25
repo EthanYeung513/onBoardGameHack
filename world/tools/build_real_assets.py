@@ -23,7 +23,7 @@ REQUIRED = [
     ("TerrainFeatures", "hoeDirt..png"), ("Buildings", "houses..png"),
     ("Characters", "Lewis..png"), ("Portraits", "Lewis..png"),
     ("LooseSprites", "logo..png"), ("LooseSprites", "stardewPanorama..png"),
-    ("Minigames", "TitleButtons..png"),
+    ("Minigames", "TitleButtons..png"), ("Characters", "Farmer", "shirts..png"),
 ]
 _missing = [os.path.join(*r) for r in REQUIRED if not os.path.isfile(os.path.join(SRC, *r))]
 if _missing:
@@ -170,6 +170,7 @@ for src, name in [
     (("TileSheets", "fruitTrees..png"), "fruittrees.png"),
     (("TileSheets", "crops..png"), "crops.png"),
     (("Maps", "spring_town..png"), "town.png"),
+    (("Characters", "Farmer", "shirts..png"), "shirts.png"),  # shop reward icons
 ]:
     save(Image.open(p(*src)).convert("RGBA"), name)
 
@@ -288,6 +289,8 @@ save(houses.crop((160, 160, 272, 320)), "b_greenhouse.png")
 cc = town.crop((12 * T, 40 * T, 25 * T, 50 * T))
 save(cc, "b_community.png")
 save(cc, "b_townhall.png")  # town hall = community center
+# JojaMart = the rewards shop (a fixed landmark, never a course building)
+save(main_component(town.crop((0, 52 * T, 12 * T, 62 * T))), "b_store.png")
 
 # ---------- characters: villagers for player + NPCs ----------
 PLAYERS = ["Sam", "Sebastian", "Abigail", "Emily", "Maru", "Alex"]

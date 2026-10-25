@@ -1,11 +1,13 @@
 // World config — later this comes from the manager dashboard / generated world spec.
 // For now it's the mock: one building per course, NPCs with company fun facts.
+import { applyProgress } from './economy';
 
 export interface Course {
   id: string;
   name: string;
   building?: string; // key into worldgen BUILDINGS; omitted -> BUILDING_CYCLE
   completion: number; // 0-100
+  reward?: number; // credits paid on completion; omitted -> DEFAULT_COURSE_REWARD (economy.ts)
 }
 
 export interface Npc {
@@ -28,6 +30,9 @@ export const COMPANY = {
   tagline: 'Learn the tribe, not just the tools',
 };
 
+// the rewards shop building (a fixed landmark; catalogue lives in economy.ts)
+export const SHOP_NAME = `${COMPANY.name} Store`;
+
 function loadCourses(): Course[] {
   // dev-only: ?courses=N fakes N courses to eyeball how the world scales
   const n = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get('courses')) : 0;
@@ -36,13 +41,14 @@ function loadCourses(): Course[] {
   try {
     const raw = localStorage.getItem('ob_courses');
     if (raw) {
-      const arr = JSON.parse(raw) as { id?: string; name: string; completion?: number; building?: string }[];
+      const arr = JSON.parse(raw) as { id?: string; name: string; completion?: number; building?: string; reward?: number }[];
       if (Array.isArray(arr) && arr.length) {
         return arr.map((c, i) => ({
           id: c.id ?? `c${i}`,
           name: c.name,
           building: c.building, // optional; worldgen cycles buildings when absent
           completion: c.completion ?? 0,
+          reward: c.reward, // optional per-course credit payout
         }));
       }
     }
@@ -56,7 +62,8 @@ function loadCourses(): Course[] {
   ];
 }
 
-export const COURSES: Course[] = loadCourses();
+// world-earned progress (ob_progress) overlays the dashboard's completion
+export const COURSES: Course[] = applyProgress(loadCourses());
 
 export const NPCS: Npc[] = [
   {

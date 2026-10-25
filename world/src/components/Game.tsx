@@ -2,9 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import Phaser from 'phaser';
 import { TownScene } from '../game/TownScene';
 import { bus, input } from '../game/bridge';
-import { COMPANY, type Course, type Npc } from '../config';
+import { COMPANY, COURSES, SHOP_NAME, type Course, type Npc } from '../config';
+import {
+  SHOP_ITEMS, awardCompleted, courseReward, getCredits, onCredits, ownedCount, redeem, setProgress, soldOut,
+  type Icon, type ShopItem,
+} from '../economy';
+import Coin from './Coin';
 import type { Hire } from '../App';
 import { resolveWeather } from '../weather';
+
+// dev-only: ?credits=N seeds the balance for testing
+if (import.meta.env.DEV) {
+  const c = new URLSearchParams(location.search).get('credits');
+  if (c) localStorage.setItem('ob_credits', c);
+}
 
 function Joystick() {
   const ref = useRef<HTMLDivElement>(null);
@@ -65,15 +76,26 @@ function NpcDialog({ npc, onClose }: { npc: Npc; onClose: () => void }) {
 
 function CourseMenu({ course, onClose }: { course: Course; onClose: () => void }) {
   const [view, setView] = useState<'menu' | 'progress'>('menu');
+  const [, rerender] = useState(0);
+  const done = course.completion >= 100;
   return (
     <div className="menu-overlay" onClick={onClose}>
       <div className="sd-panel menu-card" onClick={e => e.stopPropagation()}>
         <h2>{course.name}</h2>
         <p className="m-sub">{COMPANY.name} · course</p>
+        <p className="m-reward">
+          {done ? 'Completed · earned' : 'Reward on completion:'} <Coin size={18} /> {courseReward(course)}
+        </p>
         {view === 'menu' ? (
           <>
             <button className="sd-btn" onClick={() => setView('progress')}>View Progress</button>
             <button className="sd-btn" disabled title="Minigames land in a later build">Start Course</button>
+            {/* demo progress plumbing until minigames report real completion */}
+            {!done && (
+              <button className="sd-btn" onClick={() => { setProgress(course, course.completion + 25); rerender(n => n + 1); }}>
+                Finish a Lesson (demo)
+              </button>
+            )}
             <button className="sd-btn" onClick={onClose}>Leave</button>
           </>
         ) : (
@@ -88,16 +110,104 @@ function CourseMenu({ course, onClose }: { course: Course; onClose: () => void }
   );
 }
 
+/** A sprite crop from one of the public/assets sheets, scaled to fit `box` px. */
+function SpriteIcon({ icon, box = 48 }: { icon: Icon; box?: number }) {
+  const [x, y, w, h] = icon.rect;
+  const s = Math.max(1, Math.floor(box / Math.max(w, h)));
+  return (
+    <div className="sprite-icon" style={{ width: box, height: box }}>
+      <div style={{
+        width: w, height: h, transform: `scale(${s})`,
+        background: `url(assets/${icon.sheet}.png) -${x}px -${y}px`,
+      }} />
+    </div>
+  );
+}
+
+function ShopMenu({ credits, onClose }: { credits: number; onClose: () => void }) {
+  const [step, setStep] = useState<{ kind: 'list' } | { kind: 'confirm' | 'done'; item: ShopItem }>({ kind: 'list' });
+  return (
+    <div className="menu-overlay" onClick={onClose}>
+      <div className="sd-panel menu-card shop-card" onClick={e => e.stopPropagation()}>
+        <h2>{SHOP_NAME}</h2>
+        <p className="m-sub">Spend the credits you earn finishing courses</p>
+        <div className="shop-balance">Your balance: <Coin size={20} /> <b>{credits}</b></div>
+        {step.kind === 'list' && (
+          <>
+            <div className="shop-grid">
+              {SHOP_ITEMS.map(it => {
+                const out = soldOut(it), short = it.cost - credits, owned = ownedCount(it.id);
+                return (
+                  <div key={it.id} className={`shop-item${out || short > 0 ? ' dim' : ''}`}>
+                    <SpriteIcon icon={it.icon} />
+                    <div className="si-body">
+                      <span className="si-name">{it.name}</span>
+                      {it.blurb && <span className="si-blurb">{it.blurb}</span>}
+                      <span className="si-cost"><Coin size={16} /> {it.cost}{owned > 0 && !out ? ` · owned ×${owned}` : ''}</span>
+                    </div>
+                    <button className="sd-btn small" disabled={out || short > 0}
+                      onClick={() => setStep({ kind: 'confirm', item: it })}>
+                      {out ? 'Owned' : short > 0 ? `Need ${short}` : 'Buy'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <button className="sd-btn" onClick={onClose}>Leave</button>
+          </>
+        )}
+        {step.kind === 'confirm' && (
+          <div className="shop-step">
+            <SpriteIcon icon={step.item.icon} box={64} />
+            <p>Redeem <b>{step.item.name}</b> for <Coin size={16} /> {step.item.cost}?</p>
+            <button className="sd-btn" onClick={() => redeem(step.item) ? setStep({ kind: 'done', item: step.item }) : setStep({ kind: 'list' })}>Redeem</button>
+            <button className="sd-btn" onClick={() => setStep({ kind: 'list' })}>Cancel</button>
+          </div>
+        )}
+        {step.kind === 'done' && (
+          <div className="shop-step">
+            <SpriteIcon icon={step.item.icon} box={64} />
+            <p><b>{step.item.name}</b> redeemed!</p>
+            <p className="m-sub">The People team will get it to you this week.</p>
+            <button className="sd-btn" onClick={() => setStep({ kind: 'list' })}>Back to Shop</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Game({ hire, charRow }: { hire: Hire; charRow: number }) {
   const host = useRef<HTMLDivElement>(null);
-  const [hover, setHover] = useState<{ course: Course; x: number; y: number } | null>(null);
+  const [hover, setHover] = useState<{ course: Course | null; shop?: boolean; x: number; y: number } | null>(null);
   const [hint, setHint] = useState<string | null>(null);
   const [dialog, setDialog] = useState<Npc | null>(null);
   const [menu, setMenu] = useState<Course | null>(null);
+  const [shop, setShop] = useState(false);
+  const [credits, setCredits] = useState(getCredits);
+  const [popups, setPopups] = useState<{ id: number; delta: number; delay: number }[]>([]);
+
+  // credits: live balance + floating "+50" chips; pay out courses already complete
+  useEffect(() => {
+    let seq = 0, timers: number[] = [];
+    const off = onCredits(e => {
+      setCredits(e.balance);
+      if (e.delta <= 0) return;
+      const id = ++seq;
+      setPopups(ps => {
+        const delay = ps.length * 450; // stack several payouts one after another
+        timers.push(window.setTimeout(() => setPopups(q => q.filter(p => p.id !== id)), delay + 2200));
+        return [...ps, { id, delta: e.delta, delay }];
+      });
+    });
+    const t = window.setTimeout(() => awardCompleted(COURSES), 900); // after the world fades in
+    return () => { off(); clearTimeout(t); timers.forEach(clearTimeout); timers = []; };
+  }, []);
 
   useEffect(() => {
-    const onHover = (d: { course: Course | null; x: number; y: number }) =>
-      setHover(d.course ? { course: d.course, x: d.x, y: d.y } : null);
+    const onHover = (d: { course: Course | null; shop?: boolean; x: number; y: number }) =>
+      setHover(d.course || d.shop ? d : null);
+    const onShop = () => { setShop(true); bus.emit('ui-open'); };
     const onEnter = (d: { course: Course }) => { setMenu(d.course); bus.emit('ui-open'); };
     const onNpc = (d: { npc: Npc }) => { setDialog(d.npc); bus.emit('ui-open'); };
     const onHint = (d: { text: string | null }) => setHint(prev => prev === d.text ? prev : d.text);
@@ -105,7 +215,9 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
     bus.on('enter-building', onEnter);
     bus.on('npc-dialog', onNpc);
     bus.on('hint', onHint);
+    bus.on('enter-shop', onShop);
     return () => {
+      bus.off('enter-shop', onShop);
       bus.off('hover-building', onHover);
       bus.off('enter-building', onEnter);
       bus.off('npc-dialog', onNpc);
@@ -113,7 +225,7 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
     };
   }, []);
 
-  const closeOverlay = () => { setMenu(null); setDialog(null); bus.emit('ui-close'); };
+  const closeOverlay = () => { setMenu(null); setDialog(null); setShop(false); bus.emit('ui-close'); };
 
   useEffect(() => {
     if (!host.current) return;
@@ -122,7 +234,7 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
       parent: host.current,
       width: 960,
       height: 540,
-      backgroundColor: '#1a2410',
+      backgroundColor: '#146135', // forest-floor green (G_DARK): never a visible void,
       pixelArt: true,
       roundPixels: true,
       scale: { mode: Phaser.Scale.RESIZE, autoCenter: Phaser.Scale.CENTER_BOTH },
@@ -137,22 +249,42 @@ export default function Game({ hire, charRow }: { hire: Hire; charRow: number })
     return () => { cancelled = true; game.destroy(true); };
   }, [charRow]);
 
-  const anyUi = !!(menu || dialog);
+  const anyUi = !!(menu || dialog || shop);
 
   return (
     <div className="game-stage">
       <div ref={host} className="game-host" />
-      <div className="sd-panel hud-name">{hire.name} · {COMPANY.name}</div>
+      <div className="hud-top">
+        <div className="sd-panel hud-name">{hire.name} · {COMPANY.name}</div>
+        <div className="sd-panel hud-credits" title="Credits"><Coin size={20} /><span>{credits}</span></div>
+        <div className="credit-pops">
+          {popups.map(p => (
+            <div key={p.id} className="credit-pop" style={{ animationDelay: `${p.delay}ms` }}>
+              <span>+{p.delta}</span><Coin size={22} />
+            </div>
+          ))}
+        </div>
+      </div>
       {hover && !anyUi && (
         <div className="tooltip" style={{ left: hover.x, top: hover.y }}>
-          <span className="t-name">{hover.course.name}</span>
-          <div className="sd-bar"><i style={{ width: `${hover.course.completion}%` }} /></div>
-          <span className="t-pct">{hover.course.completion}% complete</span>
+          {hover.course ? (
+            <>
+              <span className="t-name">{hover.course.name}</span>
+              <div className="sd-bar"><i style={{ width: `${hover.course.completion}%` }} /></div>
+              <span className="t-pct">{hover.course.completion}% complete · <Coin size={12} /> {courseReward(hover.course)}</span>
+            </>
+          ) : (
+            <>
+              <span className="t-name">{SHOP_NAME}</span>
+              <span className="t-pct">Redeem your credits for rewards</span>
+            </>
+          )}
         </div>
       )}
       {hint && !anyUi && <div className="sd-panel hint">{hint} — E / tap</div>}
       {dialog && <NpcDialog npc={dialog} onClose={closeOverlay} />}
       {menu && <CourseMenu course={menu} onClose={closeOverlay} />}
+      {shop && <ShopMenu credits={credits} onClose={closeOverlay} />}
       <Joystick />
       <button className="act-btn" onPointerDown={() => { input.interact = true; }}>A</button>
     </div>

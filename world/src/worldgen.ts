@@ -15,7 +15,7 @@
 //   * generateWorld(courses, seed, opts) -> WorldSpec (deterministic per seed)
 //
 // Layout (top -> bottom): forest edge, raised plateau with the town hall,
-// plaza + fountain; a cliff wall with stairs; the cobbled main street with
+// plaza + fountain, the rewards shop beside the plaza; a cliff wall with stairs; the cobbled main street with
 // one fenced/cluttered farm lot per course on alternating sides; then a
 // lake + big crop field; forest all around. Map height grows with course count.
 import type { Course } from './config';
@@ -43,6 +43,7 @@ const hash2 = (x: number, y: number) => ((x * 73856093) ^ (y * 19349663)) >>> 0;
 export interface BuildingDef { w: number; h: number; door: number; solidH?: number }
 export const BUILDINGS: Record<string, BuildingDef> = {
   b_townhall:   { w: 13, h: 10, door: 6, solidH: 6 },  // Pelican Town community center
+  b_store:      { w: 12, h: 10, door: 5, solidH: 5 },  // JojaMart = rewards shop (never a course)
   b_shop:       { w: 9, h: 9, door: 5 },               // Pierre's General Store
   b_saloon:     { w: 7, h: 9, door: 5 },               // Stardrop Saloon
   b_clinic:     { w: 6, h: 9, door: 3 },               // Harvey's clinic
@@ -139,6 +140,7 @@ export interface BuildingSpec {
   w: number; h: number;          // sprite size in tiles (hover box)
   doorX: number; doorY: number;  // tile in front of the door
   townHall?: boolean;
+  shop?: boolean;                // the rewards shop (fixed landmark, not a course)
 }
 export interface PlacedProp {
   key: string; x: number; y: number;      // base tile
@@ -565,9 +567,19 @@ export function generateWorld(courses: Course[], seed = 20261024, opts: WorldOpt
     b.trailV(sx, PLATEAU - 4, PLATEAU - 1);
     b.trail(sx, PLATEAU - 4, toX, PLATEAU - 6, PLATEAU - 3);
   }
-  // a pond on one (seeded) side of the plateau — before scenery so nothing lands in it
+  // a pond on one (seeded) side of the plateau — before scenery so nothing lands in it;
+  // the rewards shop takes the other side, joined to the plaza by a cobble walk
   {
     const left = rnd() < 0.5;
+    const sd = BUILDINGS.b_store;
+    const shop = b.building('b_store', left ? CX + 13 : CX - 12 - sd.w, hall.y);
+    shop.shop = true;
+    const px0 = left ? CX + 10 : shop.doorX - 1, px1 = left ? shop.doorX + 1 : CX - 10;
+    b.fill(px0, shop.doorY, px1, shop.doorY + 1, Ter.Paved);
+    b.reserveRect(px0, shop.doorY, px1, shop.doorY + 2);
+    // lamp + sign on the far side of the door from the walk
+    b.place('lamp', left ? shop.x + sd.w - 1 : shop.x, shop.doorY, { force: true });
+    b.place('sign', left ? shop.doorX + 3 : shop.doorX - 3, shop.doorY, { force: true });
     const px = left ? fd + 8 : W - 1 - fd - 8;
     b.lake(px, 12, 5.5, 3.2);
     b.place('log', px + (left ? 6 : -7), 15, { on: [Ter.Grass, Ter.Dirt] });
@@ -749,7 +761,7 @@ function ensureReachable(b: Builder, bl: Uint8Array, spawn: { x: number; y: numb
   };
   const s = spawn.y * W + spawn.x;
   for (const bd of b.buildings) {
-    if (!bd.course && !bd.townHall) continue;
+    if (!bd.course && !bd.townHall && !bd.shop) continue;
     const d = bd.doorY * W + bd.doorX;
     if (bfs(c => !bl[c], s)[d] !== -2) continue;
     const prev = bfs(c => !b.hard[c] || c === d, s);
