@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { NextRequest, type NextFetchEvent } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { proxy } from "@/proxy";
@@ -38,7 +39,7 @@ describe("landing page", () => {
   });
 
   it("gives every gameplay <video> a poster, both formats and lightweight preload", () => {
-    const videos = [...html.matchAll(/<video\b[^>]*>[\s\S]*?<\/video>/g)].map((m) => m[0]).filter((v) => v.includes("assets/media/"));
+    const videos = [...html.matchAll(/<video\b[^>]*>[\s\S]*?<\/video>/g)].map((m) => m[0]).filter((v) => v.includes("assets/media/") && !v.includes('id="promo-video"'));
     expect(videos.length).toBeGreaterThanOrEqual(8);
     for (const v of videos) {
       expect(v).toMatch(/\sposter="assets\/media\/[\w-]+\.jpg"/);
@@ -47,6 +48,16 @@ describe("landing page", () => {
       expect(v).toMatch(/type="video\/webm"/);
       expect(v).toMatch(/type="video\/mp4"/);
     }
+  });
+
+  it("'Orthogonal in motion' plays our promo video (click to play with sound), not a YouTube embed", () => {
+    const promo = html.match(/<video id="promo-video"[^>]*>/)?.[0] ?? "";
+    expect(promo).toMatch(/src="assets\/media\/orthogonal-promo\.mp4"/);
+    expect(promo).toMatch(/poster="assets\/media\/orthogonal-promo\.jpg"/);
+    expect(promo).toMatch(/\scontrols\b/);
+    expect(promo).not.toMatch(/\sautoplay\b/);
+    expect(html).not.toMatch(/youtube(-nocookie)?\.com\/embed/);
+    expect(existsSync(join("public", "assets", "media", "orthogonal-promo.mp4"))).toBe(true);
   });
 });
 
