@@ -2,9 +2,13 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { env, gatewayEnabled } from "@/lib/env";
+import { mubitConfigFromEnv } from "@/llm/env";
+import { MubitClient, type MubitMessage } from "@/llm/mubit";
 
-// The only place an Anthropic client is created. Calls go through the Mubit gateway when it is
-// enabled and fall back to the direct Anthropic API if the gateway fails and a direct key exists.
+// Legacy studio LLM entry point (Anthropic-shaped params). The `gateway` route is Mubit's
+// OpenAI-compatible gateway via the one adapter, src/llm/mubit.ts — gpt-* models only; the gateway
+// serves no Claude, so Mubit keys are never sent to an /anthropic path. `direct` is the optional
+// paid Anthropic fallback and is used only when ANTHROPIC_API_KEY is set.
 
 export type Route = "gateway" | "direct";
 
@@ -12,28 +16,31 @@ export interface CallLog {
   (level: "info" | "warn" | "error", message: string, data?: Record<string, unknown>): void | Promise<void>;
 }
 
-const clients = new Map<Route, Anthropic>();
+let direct: Anthropic | undefined;
+let mubit: MubitClient | undefined;
 
-export function anthropicClient(route: Route): Anthropic {
-  const existing = clients.get(route);
-  if (existing) return existing;
-  // Mubit rejects calls that carry a second credential.
-  delete process.env.ANTHROPIC_AUTH_TOKEN;
+/** The direct Anthropic client (paid fallback). There is no Anthropic client for the Mubit gateway. */
+export function anthropicClient(route: Route = "direct"): Anthropic {
+  if (route !== "direct") throw new Error("The Mubit gateway serves gpt-* models only — use the Mubit adapter (src/llm/mubit.ts)");
   const e = env();
-  const client =
-    route === "gateway"
-      ? new Anthropic({ apiKey: e.MUBIT_API_KEY, authToken: null, baseURL: `${e.MUBIT_ENDPOINT.replace(/\/$/, "")}/anthropic`, maxRetries: 1 })
-      : new Anthropic({ apiKey: e.ANTHROPIC_API_KEY, authToken: null, baseURL: "https://api.anthropic.com", maxRetries: 2 });
-  clients.set(route, client);
-  return client;
+  if (!e.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not set");
+  direct ??= new Anthropic({ apiKey: e.ANTHROPIC_API_KEY, authToken: null, baseURL: "https://api.anthropic.com", maxRetries: 2 });
+  return direct;
+}
+
+function mubitClient(): MubitClient {
+  const config = mubitConfigFromEnv();
+  if (!config) throw new Error("MUBIT_API_KEY is not set");
+  mubit ??= new MubitClient(config);
+  return mubit;
 }
 
 export function routes(): Route[] {
   const e = env();
   const out: Route[] = [];
-  if (gatewayEnabled(e) && e.MUBIT_API_KEY) out.push("gateway");
+  if (gatewayEnabled(e) && mubitConfigFromEnv()) out.push("gateway");
   if (e.ANTHROPIC_API_KEY) out.push("direct");
-  if (out.length === 0) throw new Error("No model credentials: set MUBIT_API_KEY or ANTHROPIC_API_KEY");
+  if (out.length === 0) throw new Error("No model credentials: set MUBIT_API_KEY (or the optional ANTHROPIC_API_KEY)");
   return out;
 }
 
@@ -48,24 +55,51 @@ export interface CallContext {
   log?: CallLog;
 }
 
-/** Applies the project metadata and effort setting every call must carry. */
+/** Applies the project metadata and effort setting every direct Anthropic call must carry. */
 function withDefaults<P extends CreateParams>(params: P, ctx: CallContext) {
   const e = env();
   return {
     ...params,
-    model: params.model ?? e.ANTHROPIC_MODEL,
+    model: params.model && params.model.startsWith("claude") ? params.model : e.ANTHROPIC_MODEL,
     metadata: { user_id: `project:${ctx.projectId}` },
     output_config: { effort: e.ANTHROPIC_EFFORT, ...(params.output_config ?? {}) },
   };
 }
 
-async function withFallback<T>(ctx: CallContext, fn: (client: Anthropic, route: Route) => Promise<T>): Promise<{ value: T; route: Route; ms: number }> {
+/** Anthropic-shaped system/messages → the Mubit adapter's messages (text + images). */
+function toMubit(params: CreateParams): { system: string; messages: MubitMessage[] } {
+  const system = typeof params.system === "string" ? params.system : (params.system ?? []).map((b) => b.text).join("\n");
+  const messages: MubitMessage[] = params.messages.map((m): MubitMessage => {
+    const role = m.role === "assistant" ? "assistant" : "user";
+    if (typeof m.content === "string") return { role, content: m.content };
+    const text = m.content.map((b) => (b.type === "text" ? b.text : b.type === "tool_result" ? JSON.stringify(b.content) : "")).filter(Boolean).join("\n");
+    const images = m.content.flatMap((b) => (b.type === "image" && b.source.type === "base64" ? [`data:${b.source.media_type};base64,${b.source.data}`] : b.type === "image" && b.source.type === "url" ? [b.source.url] : []));
+    return role === "user" && images.length ? { role: "user", content: text, images } : { role, content: text };
+  });
+  return { system, messages };
+}
+
+/** A Mubit text result in the Anthropic message shape the studio code reads. */
+function asMessage(r: { text: string; model: string; requestId: string | null; usage: { input: number; output: number } }): Anthropic.Message {
+  return {
+    id: r.requestId ?? "mubit",
+    type: "message",
+    role: "assistant",
+    model: r.model,
+    content: [{ type: "text", text: r.text, citations: null }],
+    stop_reason: "end_turn",
+    stop_sequence: null,
+    usage: { input_tokens: r.usage.input, output_tokens: r.usage.output },
+  } as unknown as Anthropic.Message;
+}
+
+async function withFallback<T>(ctx: CallContext, fn: (route: Route) => Promise<T>): Promise<{ value: T; route: Route; ms: number }> {
   const list = routes();
   let lastErr: unknown;
   for (const route of list) {
     const t0 = Date.now();
     try {
-      const value = await fn(anthropicClient(route), route);
+      const value = await fn(route);
       return { value, route, ms: Date.now() - t0 };
     } catch (err) {
       lastErr = err;
@@ -102,7 +136,11 @@ export function textOf(msg: Anthropic.Message): string {
 }
 
 export async function complete(params: CreateParams, ctx: CallContext) {
-  const { value, route, ms } = await withFallback(ctx, (c) => c.messages.create(withDefaults(params, ctx)));
+  const { value, route, ms } = await withFallback(ctx, async (route) => {
+    if (route === "direct") return anthropicClient().messages.create(withDefaults(params, ctx));
+    const { system, messages } = toMubit(params);
+    return asMessage(await mubitClient().text({ task: ctx.task, system, user: messages, maxTokens: params.max_tokens }));
+  });
   await ctx.log?.("info", `Model call ${ctx.task} via ${route}`, { ms, usage: value.usage, stop: value.stop_reason });
   return { message: value, text: textOf(value), route, ms };
 }
@@ -127,6 +165,28 @@ export async function completeJson<S extends z.ZodType>(
   },
 ): Promise<{ data: z.infer<S>; route: Route; attempts: number }> {
   const retries = ctx.retries ?? 2;
+  if (routes()[0] === "gateway") {
+    try {
+      const { system, messages } = toMubit(params);
+      const t0 = Date.now();
+      const r = await mubitClient().json({
+        task: ctx.task,
+        system,
+        user: messages,
+        schema: schema as z.ZodType<z.infer<S>>,
+        validate: ctx.validate,
+        retries,
+        // Tool/prompted modes carried big schemas; JSON mode needs the schema spelled out for those.
+        jsonSchema: ctx.mode === "tool" || ctx.mode === "prompted" ? (ctx.jsonSchema ?? z.toJSONSchema(schema)) : undefined,
+        onAttempt: ({ attempt, errors, usage }) =>
+          ctx.log?.(errors.length ? "warn" : "info", `Model call ${ctx.task} via gateway (attempt ${attempt})`, { ms: Date.now() - t0, usage, errors: errors.slice(0, 10) }),
+      });
+      return { data: r.value, route: "gateway", attempts: r.attempts };
+    } catch (err) {
+      if (!routes().includes("direct")) throw err;
+      await ctx.log?.("warn", "Mubit gateway call failed, falling back to direct Anthropic", { task: ctx.task, error: String(err) });
+    }
+  }
   const prompted = ctx.mode === "prompted";
   const viaTool = ctx.mode === "tool";
   const toolDef = viaTool
@@ -143,8 +203,9 @@ export async function completeJson<S extends z.ZodType>(
   }
   let lastErrors: string[] = [];
   for (let attempt = 0; attempt <= retries; attempt++) {
-    const { value: msg, route, ms } = await withFallback(ctx, (c) =>
-      c.messages.create(
+    const route: Route = "direct";
+    const t0 = Date.now();
+    const msg = await anthropicClient().messages.create(
         withDefaults(
           viaTool
             ? { ...params, messages, tools: [toolDef!], tool_choice: { type: "auto" } }
@@ -153,8 +214,8 @@ export async function completeJson<S extends z.ZodType>(
               : { ...params, messages, output_config: { format: zodOutputFormat(schema) } },
           ctx,
         ),
-      ),
     );
+    const ms = Date.now() - t0;
     const toolUse = msg.content.find((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
     const raw = viaTool ? (toolUse ? JSON.stringify(toolUse.input) : "") : textOf(msg);
     let errors: string[] = [];
@@ -195,17 +256,20 @@ export async function completeJson<S extends z.ZodType>(
  * through the Mubit gateway when enabled, with the effort setting and the project session id.
  */
 export async function chatModel(projectId: string) {
-  const { createAnthropic } = await import("@ai-sdk/anthropic");
   const e = env();
   const route = routes()[0];
-  delete process.env.ANTHROPIC_AUTH_TOKEN;
-  const provider =
-    route === "gateway"
-      ? createAnthropic({ apiKey: e.MUBIT_API_KEY, baseURL: `${e.MUBIT_ENDPOINT.replace(/\/$/, "")}/anthropic/v1` })
-      : createAnthropic({ apiKey: e.ANTHROPIC_API_KEY, baseURL: "https://api.anthropic.com/v1" });
+  if (route === "gateway") {
+    // Streaming chat through the Mubit gateway's OpenAI-compatible API (gpt-* only).
+    const { createOpenAI } = await import("@ai-sdk/openai");
+    const config = mubitConfigFromEnv()!;
+    const provider = createOpenAI({ apiKey: config.apiKey, baseURL: config.baseURL, headers: { [config.taskHeader]: "studio.chat" } });
+    return { route, model: provider.chat(config.model!), providerOptions: { openai: { user: `project:${projectId}` } } as Record<string, Record<string, string>> };
+  }
+  const { createAnthropic } = await import("@ai-sdk/anthropic");
+  const provider = createAnthropic({ apiKey: e.ANTHROPIC_API_KEY, baseURL: "https://api.anthropic.com/v1" });
   return {
     route,
     model: provider(e.ANTHROPIC_MODEL),
-    providerOptions: { anthropic: { effort: e.ANTHROPIC_EFFORT, metadata: { userId: `project:${projectId}` } } },
+    providerOptions: { anthropic: { effort: e.ANTHROPIC_EFFORT, metadata: { userId: `project:${projectId}` } } } as Record<string, Record<string, string | Record<string, string>>>,
   };
 }

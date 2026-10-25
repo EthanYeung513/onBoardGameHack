@@ -1,10 +1,10 @@
-import OpenAI from "openai";
+import type OpenAI from "openai";
 import type { z } from "zod";
-import { providerEnv } from "./env";
+import { mubitConfigFromEnv } from "@/llm/env";
+import { MubitClient } from "@/llm/mubit";
 
-// Every LLM call in the pipeline: Mubit's OpenAI-compatible gateway, JSON mode, Zod-validated.
-// Validation failures go back to the model with the error (bounded retries), never to the UI.
-// With no key, `json()` uses the caller's labelled offline stand-in — or throws ProviderOffline.
+// The worker's LLM: a thin wrapper over the one Mubit adapter (src/llm/mubit.ts). With no key it
+// uses the caller's labelled offline stand-in, or throws ProviderOffline (503, never faked).
 
 export class ProviderOffline extends Error {
   readonly code = 503;
@@ -21,6 +21,8 @@ export interface JsonRequest<T> {
   /** Everything that varies goes here. */
   user: string;
   schema: z.ZodType<T>;
+  /** Extra rule checks fed back to the model as validation errors. */
+  validate?: (value: T) => string[];
   /** Deterministic stand-in used when the provider is unconfigured; results must be labelled offline. */
   offline?: () => T;
   model?: string;
@@ -31,6 +33,8 @@ export interface JsonResult<T> {
   value: T;
   mode: "live" | "offline";
   model: string;
+  /** Mubit request id of the accepted call (for feedback/corrections); null offline. */
+  requestId: string | null;
 }
 
 export interface Llm {
@@ -38,46 +42,19 @@ export interface Llm {
   json<T>(req: JsonRequest<T>): Promise<JsonResult<T>>;
 }
 
-export function createLlm(client?: Pick<OpenAI, "chat">): Llm {
-  const env = providerEnv();
-  const openai = client ?? (env.live ? new OpenAI({ apiKey: env.mubitKey, baseURL: env.baseURL, maxRetries: 2 }) : null);
+/** `openai` injects a fake transport in tests; production always builds MubitClient from env. */
+export function createLlm(openai?: OpenAI): Llm {
+  const config = mubitConfigFromEnv();
+  const mubit = config ? new MubitClient(config, openai) : null;
   return {
-    live: Boolean(openai),
+    live: Boolean(mubit),
     async json<T>(req: JsonRequest<T>): Promise<JsonResult<T>> {
-      if (!openai) {
+      if (!mubit) {
         if (!req.offline) throw new ProviderOffline("The LLM provider");
-        return { value: req.schema.parse(req.offline()), mode: "offline", model: "offline-stand-in" };
+        return { value: req.schema.parse(req.offline()), mode: "offline", model: "offline-stand-in", requestId: null };
       }
-      const model = req.model ?? env.model;
-      const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-        { role: "system", content: req.system },
-        { role: "user", content: req.user },
-      ];
-      const attempts = (req.retries ?? 2) + 1;
-      let lastError = "";
-      for (let i = 0; i < attempts; i++) {
-        const res = await openai.chat.completions.create(
-          { model, messages, response_format: { type: "json_object" } },
-          { headers: { [env.taskHeader]: req.task } },
-        );
-        const content = res.choices[0]?.message?.content ?? "";
-        let parsed: unknown;
-        try {
-          parsed = JSON.parse(content);
-        } catch {
-          lastError = "Response was not valid JSON.";
-        }
-        if (parsed !== undefined) {
-          const result = req.schema.safeParse(parsed);
-          if (result.success) return { value: result.data, mode: "live", model: res.model ?? model };
-          lastError = result.error.issues
-            .slice(0, 10)
-            .map((iss) => `${iss.path.join(".") || "(root)"}: ${iss.message}`)
-            .join("; ");
-        }
-        messages.push({ role: "assistant", content }, { role: "user", content: `That JSON failed validation: ${lastError}. Return corrected JSON only.` });
-      }
-      throw new Error(`${req.task}: model output failed validation after ${attempts} attempts (${lastError})`);
+      const r = await mubit.json({ task: req.task, system: req.system, user: req.user, schema: req.schema, validate: req.validate, model: req.model, retries: req.retries });
+      return { value: r.value, mode: "live", model: r.model, requestId: r.requestId };
     },
   };
 }

@@ -29,13 +29,14 @@ describe("providers", () => {
   const schema = z.object({ answer: z.number() });
 
   it("feeds validation errors back to the model and returns the corrected JSON", async () => {
-    const create = vi
-      .fn()
-      .mockResolvedValueOnce({ model: "gpt-x", choices: [{ message: { content: '{"answer":"four"}' } }] })
-      .mockResolvedValueOnce({ model: "gpt-x", choices: [{ message: { content: '{"answer":4}' } }] });
+    vi.stubEnv("MUBIT_API_KEY", "test-key");
+    const reply = (content: string) => ({ withResponse: async () => ({ data: { model: "gpt-x", choices: [{ message: { content } }] }, response: new Response(null, { headers: { "x-mubit-request-id": "req-1" } }) }) });
+    const create = vi.fn().mockReturnValueOnce(reply('{"answer":"four"}')).mockReturnValueOnce(reply('{"answer":4}'));
     const llm = createLlm({ chat: { completions: { create } } } as never);
     const r = await llm.json({ task: "t", system: "s", user: "u", schema });
-    expect(r).toEqual({ value: { answer: 4 }, mode: "live", model: "gpt-x" });
+    vi.unstubAllEnvs();
+    expect(r).toEqual({ value: { answer: 4 }, mode: "live", model: "gpt-x", requestId: "req-1" });
+    expect(create.mock.calls[0][1].headers).toEqual({ "X-Mubit-Task": "t" });
     expect(create.mock.calls[1][0].messages.at(-1).content).toMatch(/answer: .*number/i);
   });
 

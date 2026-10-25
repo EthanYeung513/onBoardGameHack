@@ -1,9 +1,10 @@
-import OpenAI from "openai";
+import type OpenAI from "openai";
 import { EMBEDDING_DIMS } from "@convex/schema";
-import { providerEnv } from "./env";
+import { mubitConfigFromEnv } from "@/llm/env";
+import { MubitClient } from "@/llm/mubit";
 
-// Embeddings: Mubit `text-embedding-3-large` at 1536 dims, or a hashed bag-of-words stand-in of the
-// same width when offline (good enough for near-duplicate detection, labelled `offline`).
+// Embeddings through the Mubit adapter: `MUBIT_EMBED_MODEL` (text-embedding-3-large) at 1536 dims,
+// or a hashed bag-of-words stand-in of the same width when offline (labelled `offline`).
 
 export interface Embedder {
   readonly mode: "live" | "offline";
@@ -28,20 +29,19 @@ export function hashedEmbedding(text: string, dims = EMBEDDING_DIMS): number[] {
   return v.map((x) => x / norm);
 }
 
-export function createEmbedder(client?: Pick<OpenAI, "embeddings">): Embedder {
-  const env = providerEnv();
-  const openai = client ?? (env.live ? new OpenAI({ apiKey: env.mubitKey, baseURL: env.baseURL, maxRetries: 2 }) : null);
-  if (!openai) return { mode: "offline", embed: async (texts) => texts.map((t) => hashedEmbedding(t)) };
+export function createEmbedder(openai?: OpenAI): Embedder {
+  const config = mubitConfigFromEnv();
+  if (!config?.embedModel) return { mode: "offline", embed: async (texts) => texts.map((t) => hashedEmbedding(t)) };
+  const mubit = new MubitClient(config, openai);
   return {
     mode: "live",
     async embed(texts) {
       const out: number[][] = [];
       for (let i = 0; i < texts.length; i += 64) {
         const batch = texts.slice(i, i + 64).map((t) => t.slice(0, 24_000) || " ");
-        const res = await openai.embeddings.create({ model: env.embedModel, input: batch, dimensions: EMBEDDING_DIMS });
-        for (const d of res.data) {
-          if (d.embedding.length !== EMBEDDING_DIMS) throw new Error(`Embedding width ${d.embedding.length} ≠ ${EMBEDDING_DIMS}`);
-          out.push(d.embedding);
+        for (const v of await mubit.embed(batch, { dimensions: EMBEDDING_DIMS })) {
+          if (v.length !== EMBEDDING_DIMS) throw new Error(`Embedding width ${v.length} ≠ ${EMBEDDING_DIMS}`);
+          out.push(v);
         }
       }
       return out;
