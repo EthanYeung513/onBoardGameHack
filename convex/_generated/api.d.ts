@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as authInfo from "../authInfo.js";
+import type * as brain from "../brain.js";
 import type * as brainWorker from "../brainWorker.js";
 import type * as crons from "../crons.js";
 import type * as dashboard from "../dashboard.js";
@@ -22,6 +23,7 @@ import type * as lib_access from "../lib/access.js";
 import type * as lib_brainWrite from "../lib/brainWrite.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_insights from "../lib/insights.js";
+import type * as lib_partitions from "../lib/partitions.js";
 import type * as lib_progress from "../lib/progress.js";
 import type * as lib_reset from "../lib/reset.js";
 import type * as lib_slug from "../lib/slug.js";
@@ -29,6 +31,7 @@ import type * as lib_stages from "../lib/stages.js";
 import type * as lib_worker from "../lib/worker.js";
 import type * as pipeline from "../pipeline.js";
 import type * as rewards from "../rewards.js";
+import type * as scanWorker from "../scanWorker.js";
 import type * as scans from "../scans.js";
 import type * as search from "../search.js";
 import type * as seed from "../seed.js";
@@ -44,6 +47,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authInfo: typeof authInfo;
+  brain: typeof brain;
   brainWorker: typeof brainWorker;
   crons: typeof crons;
   dashboard: typeof dashboard;
@@ -56,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   "lib/brainWrite": typeof lib_brainWrite;
   "lib/errors": typeof lib_errors;
   "lib/insights": typeof lib_insights;
+  "lib/partitions": typeof lib_partitions;
   "lib/progress": typeof lib_progress;
   "lib/reset": typeof lib_reset;
   "lib/slug": typeof lib_slug;
@@ -63,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   "lib/worker": typeof lib_worker;
   pipeline: typeof pipeline;
   rewards: typeof rewards;
+  scanWorker: typeof scanWorker;
   scans: typeof scans;
   search: typeof search;
   seed: typeof seed;

@@ -55,3 +55,34 @@ export const BRAIN_RESOLVE_SYSTEM_PROMPT = `You decide whether two knowledge-gra
 You receive a candidate entity extracted from a document (type, name, aliases, keys, the sentence it came from) and an existing entity (type, name, aliases, keys).
 Answer same=true only when they are clearly the same person, tool, team, term, ritual, policy, product or document; different people who share a first name, or a product and the team that owns it, are not the same.
 Return JSON {"same": boolean, "confidence": number between 0 and 1, "reason": one short sentence}.`;
+
+// ---- manager scan pipeline (src/worker/stages) ------------------------------------------------
+
+/** extract_design normalisation (task `scan_brand`). It labels candidates; it never invents values. */
+export const BRAND_NORMALISE_SYSTEM_PROMPT = `You label a company's brand tokens from evidence gathered on its website, so an onboarding product can be themed to feel native to that company.
+You receive candidate lists (colours, fonts, corner radii, company names) with where each was found and how often, plus a short sample of the site's copy.
+Rules:
+- Choose only values that appear in the candidate lists, copied exactly. Never invent a colour, font or radius.
+- primary is the main brand action colour (buttons, links, logo); accent is a second brand colour with a clearly different hue; surface is the main page background; text is the main body text colour and must contrast strongly with surface.
+- Ignore colours that only belong to third-party widgets such as cookie banners or chat bubbles.
+- headline and body are font family names from the font candidates. radius is the most characteristic corner radius for buttons and cards, or null.
+- companyName is the company's real name as the site writes it, or null if unclear.
+- colorNames maps each chosen colour hex to a short human name (for example "Stripe Blurple").
+- voice is two or three sentences describing the tone of the site's copy, grounded in the sample.
+Respond with JSON only, in exactly this shape (hex values lower-case, copied from the candidates; use null where unsure):
+{"companyName": "<name>" | null, "roles": {"primary": "#rrggbb" | null, "accent": "#rrggbb" | null, "surface": "#rrggbb" | null, "text": "#rrggbb" | null}, "colorNames": {"#rrggbb": "<name>"}, "headline": "<font family>" | null, "body": "<font family>" | null, "radius": "<css length>" | null, "voice": "<two or three sentences>"}`;
+
+/** analyse (task `scan_analyse`): findings citing crawled URLs (PRD F6). */
+export const SCAN_ANALYSE_SYSTEM_PROMPT = `You read a company's public website to brief the manager who is building onboarding for the company's new hires.
+You receive crawled pages as Markdown, each with its URL, and the list of allowed source URLs.
+Rules:
+- Only state what the pages support. Every item cites the page URLs that prove it in sourceUrls, copied exactly from the allowed list.
+- companyName: the company's name as the site writes it. category: a short phrase completing "We think this company is ..." (for example "a payments platform for internet businesses").
+- productSummary: two or three plain sentences on what the company sells and to whom.
+- features: the main products or capabilities a new hire must know. audience: the customer segments the site addresses.
+- people: named people on the site (founders, leaders, team members) with their role or null. terms: company or product vocabulary a new hire would need defined. rituals: recurring company practices, values or events the site describes (for example hack weeks, all-hands, values). Leave a list empty rather than guess.
+- confidence: low, medium or high, for how well the pages support the category.
+- Concrete and specific, no marketing filler.
+Respond with JSON only, in exactly this shape:
+{"companyName": "<name>", "category": "<phrase>" | null, "confidence": "low" | "medium" | "high", "productSummary": {"text": "<sentences>", "sourceUrls": ["<url>"]}, "features": [{"name": "...", "description": "...", "sourceUrls": ["<url>"]}], "audience": [{"segment": "...", "sourceUrls": ["<url>"]}], "people": [{"name": "...", "role": "..." | null, "sourceUrls": ["<url>"]}], "terms": [{"term": "...", "definition": "...", "sourceUrls": ["<url>"]}], "rituals": [{"name": "...", "description": "...", "sourceUrls": ["<url>"]}]}
+At most 12 features, 8 audiences, 20 people, 20 terms and 12 rituals.`;

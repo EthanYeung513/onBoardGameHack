@@ -72,12 +72,31 @@ brand_profiles {
   palette:   { name, hex, role: 'primary'|'accent'|'surface'|'text' }[],
   typography:{ heading: FontSpec, body: FontSpec, notes: string },
   logo_refs: { kind: 'mark'|'wordmark'|'favicon', url, format }[],
-  voice:     string                           // tone of voice summary
+  voice:     string,                          // tone of voice summary
+  radius?:   string, quality?: 'full'|'partial'|'offline',
+  candidates?: BrandCandidates                // every value seen + evidence (src/lib/brand/candidates.ts)
 }
 ```
 
 Consumers read `tokens_version`; editing a token marks dependent courses
 `stale`. The dashboard/editor resolve all colours through these tokens.
+A new profile per scan gets the space's next `tokens_version`, becomes
+`spaces.brandProfileId` and flags existing courses `needsRefresh`.
+
+`candidates` = `{ source, palette, radius, headline, body, companyName, logos,
+description, picked, labelledBy }`; each candidate is `{ value, count,
+evidence: string[], hints: {role, by: 'site'|'css'|'model'}[] }`. The final
+tokens come from **one swappable function**, `pickBrandTokens(candidates)` in
+`src/lib/brand/pick.ts` (heuristic today; the brand-learning service routes it
+through the learned Mubit recommender — same input/output). The model pass
+(task `scan_brand`) only labels candidates; it never introduces new values.
+
+`analyse` → `scans.findings` (`StoredFindings`, `src/lib/schemas/scan-findings.ts`):
+`{ companyName, category|null, confidence, productSummary{text,sourceUrls},
+features[], audience[], people[], terms[], rituals[], mode, model, generatedAt,
+label? }` — every item cites crawled URLs (validated). `seed_brain` reads the
+candidate people/terms/rituals from here. Crawl pages are also ingested as
+`page` items of the space's `website` connector (externalId = URL).
 
 ## Connector contract
 
