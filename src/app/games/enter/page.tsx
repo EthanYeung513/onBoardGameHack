@@ -1,9 +1,21 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db/client";
+import { companyMetadata } from "@/brand";
 import { getLlm } from "@/llm";
-import { generateGameForPack } from "@/services/games";
+import { companyForPack, generateGameForPack } from "@/services/games";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ pack?: string }>;
+}): Promise<Metadata> {
+  const { pack } = await searchParams;
+  const company = pack ? await companyForPack(await getDb(), pack).catch(() => null) : null;
+  return companyMetadata(company);
+}
 
 /**
  * The building's door: /games/enter?pack=<courseId>[&player=<name>][&exit=<url>].

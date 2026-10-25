@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Playground } from "./Playground";
 
-export const metadata = { title: "Game playground · GymQuest" };
+export const metadata = { title: "Game playground" };
 
 export default function PlaygroundPage() {
   return (

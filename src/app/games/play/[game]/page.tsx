@@ -1,11 +1,23 @@
+import type { Metadata } from "next";
 import { getDb } from "@/db/client";
+import { companyMetadata } from "@/brand";
 import { findGame } from "@/games/core/instantiate";
 import { GameShell } from "@/games/core/GameShell";
 import type { GameId } from "@/games/core/types";
 import { getLlm } from "@/llm";
-import { generateGameForPack } from "@/services/games";
+import { companyForPack, generateGameForPack } from "@/services/games";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ pack?: string }>;
+}): Promise<Metadata> {
+  const { pack } = await searchParams;
+  const company = pack ? await companyForPack(await getDb(), pack).catch(() => null) : null;
+  return companyMetadata(company);
+}
 
 /**
  * The inside of a Stardew building: /games/play/<game>?pack=<course id>[&player=<name>][&exit=<url>].

@@ -1,10 +1,22 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getDb } from "@/db/client";
+import { companyMetadata } from "@/brand";
 import { findGame } from "@/games/core/instantiate";
 import { getLlm } from "@/llm";
-import { generateGameForPack } from "@/services/games";
+import { companyForPack, generateGameForPack } from "@/services/games";
 import type { GameId } from "@/games/core/types";
 import { GameShell } from "@/games/core/GameShell";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ pack?: string }>;
+}): Promise<Metadata> {
+  const { pack } = await searchParams;
+  const company = pack ? await companyForPack(await getDb(), pack).catch(() => null) : null;
+  return companyMetadata(company);
+}
 
 export default async function GameSamplePage({
   params,

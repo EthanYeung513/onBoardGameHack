@@ -5,7 +5,7 @@ import "./globals.css";
 const pixel = Press_Start_2P({ weight: "400", subsets: ["latin"], variable: "--font-pixel-face" });
 
 export const metadata: Metadata = {
-  title: "GymQuest",
+  title: { default: "Orthogonal", template: "%s · Orthogonal" },
   description: "Onboarding for any role, played as a game. Every expert correction becomes a model update.",
 };
 

@@ -130,7 +130,7 @@ export function PlayApp() {
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <Link href="/" className="font-pixel text-xs">
-            GymQuest
+            Orthogonal
           </Link>
           <p className="font-semibold">
             {world.learner.name} · {world.learner.role} · {world.company.name}

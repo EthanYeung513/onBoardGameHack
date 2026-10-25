@@ -11,9 +11,9 @@ const OFFICE_BG = "/games/ace-attorney/fey-co.-office-entrance.png";
 
 /** The shell's own labels per game: the real game's name, and a mascot line for its menu. */
 const GAME_BRAND: Record<GameId, string> = {
-  battle: "a GymQuest battle",
-  "word-match": "a GymQuest arcade",
-  dilemma: "a GymQuest confrontation",
+  battle: "an Orthogonal battle",
+  "word-match": "an Orthogonal arcade",
+  dilemma: "an Orthogonal confrontation",
 };
 
 function accuracy(result: GameResult): number {

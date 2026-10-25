@@ -20,6 +20,19 @@ export interface GameForPack {
   requestId: string | null;
 }
 
+/** The company a course belongs to — used for page branding (title, extracted-logo favicon). */
+export async function companyForPack(
+  db: DB,
+  packId: string,
+): Promise<{ id: string; name: string; slug: string } | null> {
+  const [row] = await db
+    .select({ id: t.companies.id, name: t.companies.name, slug: t.companies.slug })
+    .from(t.packs)
+    .innerJoin(t.companies, eq(t.packs.companyId, t.companies.id))
+    .where(eq(t.packs.id, packId));
+  return row ?? null;
+}
+
 /**
  * Turns a course (a content pack: its docs and their current sections) into a playable game.
  * The spec is regenerated on every call, so editing the course's docs changes the game's dialogue.

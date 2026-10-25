@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { catalog } from "@/games/catalog";
 
-export const metadata = { title: "Games · GymQuest" };
+export const metadata = { title: "Games" };
 
 export default function GamesPage() {
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
       <div>
         <Link href="/" className="font-pixel text-xs">
-          GymQuest
+          Orthogonal
         </Link>
         <h1 className="mt-2 text-3xl font-bold">Game library</h1>
         <p className="text-ink/70">
