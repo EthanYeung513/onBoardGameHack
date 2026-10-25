@@ -157,14 +157,18 @@ export const addChunks = workerMutation({
   },
 });
 
-/** After a full sync: items this connector didn't touch since `before` were removed upstream. */
+/**
+ * After a full sync: items this connector didn't touch since `before` were removed upstream.
+ * `prefix` limits the sweep to one fully enumerated scope (one repo's docs, one Slack channel-day).
+ */
 export const sweepRemoved = workerMutation({
-  args: { spaceId: v.id("spaces"), connectorId: v.id("connectors"), before: v.number() },
-  handler: async (ctx, { spaceId, connectorId, before }) => {
+  args: { spaceId: v.id("spaces"), connectorId: v.id("connectors"), before: v.number(), prefix: v.optional(v.string()) },
+  handler: async (ctx, { spaceId, connectorId, before, prefix }) => {
     const items = await ctx.db.query("source_items").withIndex("by_connector", (q) => q.eq("connectorId", connectorId)).collect();
     let removed = 0;
     for (const item of items) {
       if (item.removedAt || item.fetchedAt >= before || item.spaceId !== spaceId) continue;
+      if (prefix !== undefined && !item.externalId.startsWith(prefix)) continue;
       await ctx.db.patch(item._id, { removedAt: Date.now() });
       await ctx.db.insert("diff_events", { spaceId, kind: "removed", sourceItemId: item._id, summary: `Removed ${item.kind}: ${item.title}` });
       await retireChunks(ctx, item._id, -1);

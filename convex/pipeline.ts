@@ -131,6 +131,10 @@ export const finish = workerMutation({
         await ctx.db.patch(jobId, { status: "failed", attempt, error: outcome.message, finishedAt: now });
         await logEvent(ctx, job, "error", `${label} failed after ${attempt} attempts: ${outcome.message}`);
         await setScanOutcome(ctx, job, "failed", outcome.message);
+        if (job.connectorId && job.stage === "sync_connector") {
+          await ctx.db.patch(job.connectorId, { status: "error", error: outcome.message });
+          await ctx.db.insert("audit_events", { spaceId: job.spaceId, actor: "system:sync", kind: "connector.sync_failed", payload: { connectorId: job.connectorId, jobId, error: outcome.message } });
+        }
       }
       return { lost: false };
     }

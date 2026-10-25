@@ -11,6 +11,8 @@
 import type * as auth from "../auth.js";
 import type * as authInfo from "../authInfo.js";
 import type * as brainWorker from "../brainWorker.js";
+import type * as connectorAuth from "../connectorAuth.js";
+import type * as connectors from "../connectors.js";
 import type * as crons from "../crons.js";
 import type * as editor from "../editor.js";
 import type * as facts from "../facts.js";
@@ -18,6 +20,7 @@ import type * as http from "../http.js";
 import type * as ingest from "../ingest.js";
 import type * as lib_access from "../lib/access.js";
 import type * as lib_brainWrite from "../lib/brainWrite.js";
+import type * as lib_connectors from "../lib/connectors.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_slug from "../lib/slug.js";
 import type * as lib_stages from "../lib/stages.js";
@@ -39,6 +42,8 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authInfo: typeof authInfo;
   brainWorker: typeof brainWorker;
+  connectorAuth: typeof connectorAuth;
+  connectors: typeof connectors;
   crons: typeof crons;
   editor: typeof editor;
   facts: typeof facts;
@@ -46,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   ingest: typeof ingest;
   "lib/access": typeof lib_access;
   "lib/brainWrite": typeof lib_brainWrite;
+  "lib/connectors": typeof lib_connectors;
   "lib/errors": typeof lib_errors;
   "lib/slug": typeof lib_slug;
   "lib/stages": typeof lib_stages;

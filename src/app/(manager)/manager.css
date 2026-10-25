@@ -179,7 +179,7 @@
 .ob .kpi .s { font-size: 12px; color: var(--muted); }
 .ob .kpi .v b { color: var(--brand); font-weight: 500; }
 .ob .panel { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; margin-bottom: 16px; }
-.ob .panel h3 { font-size: 17px; letter-spacing: -0.01em; margin-bottom: 14px; }
+.ob .panel h3 { font-size: 17px; letter-spacing: -0.01em; margin-bottom: 14px; font-weight: 700; /* UA bold in the mockup; preflight resets it */ }
 .ob .ptitle { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .ob .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .ob .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }

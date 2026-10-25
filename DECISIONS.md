@@ -291,6 +291,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (thresholds are constants in `src/worker/brain/resolve.ts`; `dedupeKey` is optional)
 - **Revisit?:** secondary hard keys scan one type per space (fine to ~thousands of entities); restored facts don't yet clear `staleStepIds` (regeneration does)
 
+### D-29: Connectors — task-queue sync stage, PAT for GitHub, Nango proxy for the rest, parsers unpdf + mammoth
+- **Task:** S6/S7/S15 (connectors → brain → course cascade)
+- **Time:** 2026-10-25T02:40Z
+- **Context:** connectors must feed `diff_events` through the one ingest path, resumably, incrementally where APIs allow, with honest cards for tools that can't connect yet. Nango has only a `github` integration configured; the mockup's Tools tab has six cards and no connect dialogs (it fakes connection with `prompt()`/a toast)
+- **Options:** per-connector bespoke stages / one `sync_connector` stage driving a JSON task queue per connector type; Nango syncs (Nango-hosted scripts) / Nango proxy (we call each provider API with the connection id)
+- **Chosen:** one stage; each connector is a `Syncer` (`start` → tasks, `run(task)` → docs/tasks/touch/sweep) persisted in the job cursor, so slices resume mid-sync. Incremental by `connector.cursor.since` (GitHub issues `since`, Jira JQL `updated >=`, Notion/Drive revision stop, GitHub blobs by sha); full re-enumeration on connect, "Sync now" and at least daily; removal sweeps only for fully enumerated scopes (`sweepRemoved` gained an optional `prefix`) and never after an item cap. GitHub uses a pasted fine-grained PAT (verified with `GET /user`, stored write-only); Slack/Jira/Notion/Drive use Nango Connect UI + the Nango proxy and go live as soon as their integration exists in Nango (cards show "Needs Nango integration setup" until then). Slack is batched per channel-day so edits/deletes are `changed`/`removed`. Files: Convex storage → `unpdf` (maintained serverless PDF.js build, no native deps) / `mammoth` raw text (DOCX) / UTF-8 (MD/TXT), ≤ 5 MB. The GitHub PAT dialog uses the mockup's own `.overlay > .modal > .field` components (styles.css) in place of the mockup's `prompt()`
+- **Why:** one resumable code path for every tool, provider code is small fixture-tested mappers, no Nango-side scripts to deploy
+- **Reversibility:** moderate (a Syncer is ~100 lines; swapping proxy for Nango syncs is per connector)
+- **Revisit?:** when a GitHub OAuth app exists (replace PAT paste), and when Nango webhooks should trigger syncs instead of the 15-min cron
+
 ## Blockers
 
 None yet.

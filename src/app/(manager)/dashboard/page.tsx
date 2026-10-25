@@ -8,6 +8,8 @@ import { Suspense, useEffect } from "react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { Logo } from "@/components/manager/Logo";
+import { brandVars } from "@/components/manager/brand";
+import { ToolsTab } from "@/components/manager/tools/ToolsTab";
 
 // Wave-1 shell: proves auth + spaces end to end. S13 replaces this with the mockup's tabbed dashboard.
 function Dashboard() {
@@ -25,6 +27,8 @@ function Dashboard() {
   }, [spaces, router]);
 
   if (!space) return <p style={{ padding: 40 }}>Loading…</p>;
+  // dashboard.html `?tab=tools` — the Tools tab (S6/S7). S13 mounts it inside the full tabbed dashboard.
+  if (params.get("tab") === "tools") return <ToolsPage spaceId={space._id} />;
   return (
     <main style={{ maxWidth: 960, margin: "0 auto", padding: "32px 24px" }}>
       <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 32 }}>
@@ -55,6 +59,17 @@ function Dashboard() {
         </Link>
       </p>
     </main>
+  );
+}
+
+function ToolsPage({ spaceId }: { spaceId: Id<"spaces"> }) {
+  const space = useQuery(api.spaces.get, { spaceId });
+  return (
+    <div className="dash" style={brandVars(space?.brand)}>
+      <main className="main">
+        <ToolsTab spaceId={spaceId} />
+      </main>
+    </div>
   );
 }
 

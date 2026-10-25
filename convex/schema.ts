@@ -254,7 +254,8 @@ export default defineSchema({
     config: v.optional(v.any()),
   })
     .index("by_space", ["spaceId"])
-    .index("by_space_type", ["spaceId", "type"]),
+    .index("by_space_type", ["spaceId", "type"])
+    .index("by_status", ["status"]),
 
   /** Write-only. Only internal functions read this table; nothing returns or logs its contents. */
   connector_credentials: defineTable({
