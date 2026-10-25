@@ -6,6 +6,7 @@ import { applyCoursePatches, stepRefreshPatches } from "@/lib/flow/course-patch"
 import { COURSE_PACKS, MAX_FACTS_PER_COURSE, MIN_FACTS_PER_COURSE, MIN_FACTS_PER_TOPIC, packFor, type CoursePack } from "@/lib/flow/course-packs";
 import { CourseStep, courseSpecSchema, type CourseSpec } from "@/lib/flow/course-spec";
 import { COURSE_STEPS_SYSTEM_PROMPT, COURSE_SYSTEM_PROMPT, COURSE_TOPIC_SYSTEM_PROMPT } from "@/lib/prompts";
+import { managerPreferences } from "@/lib/courses/recall";
 import type { StageContext, StageDefinition } from "../types";
 import { factsForCourse, selectTopicFacts } from "./course-facts";
 import { offlineCourse, offlineStepRefresh, type CourseFact } from "./course-offline";
@@ -82,6 +83,8 @@ async function buildCourse(ctx: StageContext, data: Context, pack: CoursePack, t
     voice: data.voice || "(no tone of voice extracted; plain, friendly, direct)",
     course: pack.topic ? { ...course, topic: pack.topic } : { ...course, outline: pack.lessons },
     facts: facts.map((f) => ({ id: f.id, category: f.category, text: f.text })),
+    // What Mubit learned from the manager's course edits (convex/courseLearning.ts).
+    ...(await managerPreferences(ctx)),
   });
   const res = await ctx.llm.json({
     task: pack.topic ? "generate_topic_course" : "generate_course",

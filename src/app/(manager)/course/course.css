@@ -72,3 +72,9 @@
 .ob .course-page .lesson-card .opts .why{font-weight:400;color:var(--muted)}
 .ob .course-page #ai-in .agent-mini{cursor:default}
 .ob .course-page #ai-in .send{background:#101014}
+/* Mubit course learning: what the assistant learned, and the in-flight state. */
+.ob .course-page .msg.learned{background:#fff;border:1px dashed var(--line);color:var(--muted);font-size:12px}
+.ob .course-page .msg.learned b{color:var(--ink);font-weight:600}
+.ob .course-page .msg.thinking{color:var(--muted);animation:cl-pulse 1.2s ease-in-out infinite}
+.ob .course-page #ai-in .send:disabled{opacity:.5;cursor:default}
+@keyframes cl-pulse{50%{opacity:.45}}
