@@ -1,0 +1,18 @@
+import { chromium } from "playwright-core";
+const browser = await chromium.connectOverCDP("http://localhost:29229");
+const d = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const q = await d.newPage();
+await q.goto("http://localhost:3000/games/play/battle?pack=4e09ded0-8b06-4aac-9828-77ba01c18e02", { waitUntil: "networkidle" });
+await q.waitForTimeout(3000);
+await q.screenshot({ path: "/tmp/chk-play-menu.png" });
+await q.getByRole("button", { name: /new game|continue/i }).first().click({ force: true }).catch(() => {});
+await q.waitForTimeout(1500);
+const sb = q.getByRole("button", { name: /start battle/i });
+if (await sb.count()) await sb.first().click({ force: true });
+await q.waitForTimeout(3000);
+await q.screenshot({ path: "/tmp/chk-play-game.png" });
+await q.goto("http://localhost:3000/games/battle", { waitUntil: "networkidle" });
+await q.waitForTimeout(2500);
+await q.screenshot({ path: "/tmp/chk-library.png" });
+await d.close();
+console.log("done");

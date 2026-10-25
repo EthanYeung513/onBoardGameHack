@@ -105,17 +105,23 @@ describe("offlineGenerateGame", () => {
     expect(terms).toEqual(expect.arrayContaining(["Holidays and absence", "Phishing"]));
   });
 
-  it("defaults to battle when no game is requested", () => {
-    const result = instantiateGame(offlineGenerateGame(input));
-    expect(result.ok && result.game).toBe("battle");
+  it("picks the game style from the course content when none is requested", () => {
+    const pick = (packTitle: string, heading: string, text: string) =>
+      offlineGenerateGame({ packTitle, role: null, sections: [{ doc: "Doc", heading, text }] }).game;
+    // Security/compliance content → the courtroom; a neutral course → battle; vocab → word-match.
+    expect(offlineGenerateGame(input).game).toBe("dilemma");
+    expect(pick("Gardening club intro", "1. Watering", "- Rinse the secateurs after pruning.")).toBe("battle");
+    expect(pick("Payments glossary", "1. Ledger terms", "- A payout moves money to a bank account.")).toBe(
+      "word-match",
+    );
   });
 });
 
 describe("generateGameSpec", () => {
   it("returns the validated game and spec through the llm client", async () => {
     const { game, spec, call } = await generateGameSpec(offline, "offline-baseline", input);
-    expect(game).toBe("battle");
-    expect((spec as { rounds: unknown[] }).rounds.length).toBeGreaterThanOrEqual(3);
+    expect(game).toBe("dilemma");
+    expect(spec).toBeTruthy();
     expect(call.model).toBe("offline-baseline");
   });
 
@@ -137,7 +143,7 @@ describe("generateGameSpec", () => {
     };
     const { game } = await generateGameSpec(flaky, "m", input);
     expect(calls).toBe(2);
-    expect(game).toBe("battle");
+    expect(game).toBe("dilemma");
   });
 
   it("throws GenerateGameError after a second invalid reply", async () => {

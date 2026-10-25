@@ -9,9 +9,21 @@ import { kebab, sectionRules } from "./offline-generate";
  */
 export function offlineGenerateGame(meta: unknown): { game: GameId; spec: unknown } {
   const input = meta as GenerateGameInput;
-  const game = input.game ?? "battle";
+  const game = input.game ?? pickGameFor(input);
   const spec = game === "word-match" ? wordMatch(input) : game === "dilemma" ? dilemma(input) : battle(input);
   return { game, spec };
+}
+
+/* Content-driven pick when the caller doesn't name a game: one building = one course = one style.
+   Judgment/scenario courses suit the courtroom; vocabulary-heavy courses the arcade; the rest battle. */
+const DILEMMA_HINTS = /securit|compliance|polic|conduct|ethic|customer|support|incident|escalat|phish|privacy|protect|legal|\bhr\b|people|safety/i;
+const WORD_MATCH_HINTS = /glossar|vocab|jargon|terminolog|engineering|technical|\bapi\b|systems?|tools?|platform|architect|payments|ledger|onboard/i;
+
+function pickGameFor(input: GenerateGameInput): GameId {
+  const text = [input.packTitle, ...(input.sections ?? []).map((s) => `${s.doc} ${s.heading}`)].join(" ");
+  if (DILEMMA_HINTS.test(text)) return "dilemma";
+  if (WORD_MATCH_HINTS.test(text)) return "word-match";
+  return "battle";
 }
 
 /** Words that read as unfinished when a phrase ends on them. */
