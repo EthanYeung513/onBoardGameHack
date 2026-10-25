@@ -59,7 +59,7 @@ live data.
 
 ## Design
 
-The mockup pages on `main` (`index.html`, `login.html`, `space.html`,
+The mockup pages (tag `archive/main-mockup`, the original `main`; `main` is now the product) (`index.html`, `login.html`, `space.html`,
 `editor.html`, `dashboard.html`, `brain.html`, `styles.css`, `state.js`) are the
 visual spec. Match their layouts, copy tone and component shapes. Product
 surfaces resolve colours through brand tokens extracted per space

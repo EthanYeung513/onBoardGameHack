@@ -27,7 +27,7 @@ npm run test:e2e     # playwright suites in e2e/
 
 - Every UI PR: screenshot (before/after when it's a visual change) attached in
   the PR description. Flows: a short recording.
-- The mockup pages on `main` are the visual spec — screenshot the mockup and
+- The mockup pages (tag `archive/main-mockup`, the original `main`) are the visual spec — screenshot the mockup and
   your page side by side when re-implementing one.
 - Check mobile width and both light/dark where the surface supports themes.
 - If the journey needs auth, use the seeded demo account rather than inventing
