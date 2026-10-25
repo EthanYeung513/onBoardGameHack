@@ -42,7 +42,7 @@ function useToast() {
   return [toast, show] as const;
 }
 
-export function Editor({ spaceId, data, assets, options }: Props) {
+export function Editor({ spaceId, data, assets, options, initialPanel = "assets" }: Props & { initialPanel?: "assets" | "design" }) {
   const router = useRouter();
   const applyPatch = useMutation(courseFns.applyPatch);
   const regenerateSteps = useMutation(courseFns.regenerateSteps);
@@ -50,7 +50,7 @@ export function Editor({ spaceId, data, assets, options }: Props) {
   const [toast, showToast] = useToast();
   const [cur, setCur] = useState(0);
   const [mobile, setMobile] = useState(false);
-  const [tab, setTab] = useState<"assets" | "design">("assets");
+  const [tab, setTab] = useState<"assets" | "design">(initialPanel);
   const [picked, setPicked] = useState<EditorAsset | null>(null);
   const [refreshing, setRefreshing] = useState<Set<string>>(new Set());
   const [picks, setPicks] = useState<Partial<DesignValues>>({});

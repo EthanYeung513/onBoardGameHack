@@ -10,3 +10,9 @@
    svg is display:block (mockup icons sit inline in text) and headings inherit their weight. */
 .ob .dash svg.icn, .ob #ai-fab svg.icn, .ob #ai-pop svg.icn { display: inline-block; }
 .ob .dash h3, .ob .dash h4 { font-weight: bold; }
+
+/* Next-step banner: back to a running scan, or on to the brand/design pick. */
+.ob .next-step { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 16px; margin-bottom: 18px; border: 1px solid var(--line); border-radius: 12px; background: #fafafa; font-size: 14px; }
+.ob .next-step .btn { margin-left: auto; padding: 8px 14px; }
+.ob .next-step .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--brand); }
+.ob .next-step .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--brand); animation: rot 0.8s linear infinite; }

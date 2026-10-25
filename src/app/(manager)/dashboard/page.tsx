@@ -17,6 +17,7 @@ import { SettingsTab } from "@/components/manager/dashboard/SettingsTab";
 import { TABS, type Space, type Tab } from "@/components/manager/dashboard/shared";
 import { TeamTab } from "@/components/manager/dashboard/TeamTab";
 import { ToolsTab } from "@/components/manager/dashboard/ToolsTab";
+import { NextStepBanner } from "@/components/manager/dashboard/NextStepBanner";
 import { Icon } from "@/components/manager/icons";
 import "./dashboard.css";
 
@@ -110,6 +111,7 @@ function DashboardView({ space, managerName }: { space: Space; managerName: stri
         </aside>
 
         <main className="main">
+          <NextStepBanner spaceId={space._id} />
           <section id="tab-overview" hidden={tab !== "overview"}>
             <OverviewTab {...props} managerName={managerName} brandPill={B.style ? `${B.style} · ${B.host}` : B.host} />
           </section>

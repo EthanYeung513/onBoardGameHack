@@ -24,6 +24,8 @@ function NewSpace() {
   const spaces = useQuery(api.spaces.mine, isAuthenticated && rescan && !spaceParam ? {} : "skip");
   const rescanSpace = spaceParam ?? spaces?.[0]?._id ?? null;
   const latest = useQuery(api.scans.latest, spaceParam && !scanParam && !rescan ? { spaceId: spaceParam } : "skip");
+  // Re-attach: a bare /space/new (reload, back button, login) while a scan is running shows it.
+  const inFlight = useQuery(api.scans.inFlight, isAuthenticated && !spaceParam && !rescan ? {} : "skip");
   const startScan = useMutation(api.scans.start);
   const viewer = useQuery(api.users.viewer);
   const createSpace = useMutation(api.spaces.create);
@@ -39,6 +41,10 @@ function NewSpace() {
   const [busy, setBusy] = useState(false);
 
   const showScan = (spaceId: Id<"spaces">, scanId: Id<"scans">) => router.replace(`/space/new?space=${spaceId}&scan=${scanId}`);
+
+  useEffect(() => {
+    if (inFlight) router.replace(`/space/new?space=${inFlight.spaceId}&scan=${inFlight.scanId}`);
+  }, [inFlight, router]);
 
   // Re-scan: start a new scan for the current space; no space yet → the form (mockup behaviour).
   useEffect(() => {
@@ -80,6 +86,7 @@ function NewSpace() {
   const noSpaceToRescan = rescan && !spaceParam && spaces?.length === 0;
   const formStep = noSpaceToRescan ? "info" : step;
   if ((rescan && step === "welcome" && !noSpaceToRescan) || (spaceParam && !scanParam && latest === undefined)) return null;
+  if (!spaceParam && !rescan && isAuthenticated && (inFlight === undefined || inFlight)) return null; // checking / re-attaching
 
   return (
     <div className="split">
