@@ -118,6 +118,18 @@ write-only table only internal Convex functions touch; connector code
 never logs or returns credential material. Sync runs as `sync_connector`
 pipeline stages, resumable by `cursor`.
 
+Implementation (D-29): `src/worker/stages/sync_connector.ts` drives a `Syncer` per type
+(`src/worker/connectors/*`); external ids are prefixed by tool (`github:<repo>:doc:<path>`,
+`slack:<channel>:<YYYY-MM-DD>`, `jira:<KEY>`, `notion:<id>`, `drive:<id>`, `files:<name>`).
+A sync with any added/changed/removed item finishes with `next: [seed_brain, cascade]`.
+Convex side (`convex/connectors.ts`, `convex/connectorAuth.ts`): `connectors.list` (safe view, no
+`authRef`), `syncNow`, `disconnect`, `generateUploadUrl` + `addFiles`, `cancelAuth`;
+`connectorAuth.connectGithub`, `nangoStatus`, `nangoSession`, `nangoConnected`; worker-only
+`credential`, `knownItems`, `touchItems`, `setSyncState`, `fileUrl`, `fileDone`; cron
+`connectors.scheduleSyncs` (every minute: ready connectors past their interval → `stale` +
+`sync_connector`; website → daily re-scan). `ingest.sweepRemoved` takes an optional `prefix`.
+Tools-tab controls: `src/components/manager/tools/registry.ts` (`TOOL_REGISTRY`, `TOOL_CARDS`).
+
 ## Brain contract
 
 ```ts
