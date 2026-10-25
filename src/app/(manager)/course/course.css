@@ -71,3 +71,4 @@
 .ob .course-page .lesson-card .opts li.ok{font-weight:600}
 .ob .course-page .lesson-card .opts .why{font-weight:400;color:var(--muted)}
 .ob .course-page #ai-in .agent-mini{cursor:default}
+.ob .course-page #ai-in .send{background:#101014}
