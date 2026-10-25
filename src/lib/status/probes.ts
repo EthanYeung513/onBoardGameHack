@@ -263,16 +263,16 @@ const sentry: Probe = {
 };
 
 const anthropic: Probe = {
-  name: "Anthropic (optional)",
+  name: "Anthropic (emergency only)",
   env: ["ANTHROPIC_API_KEY"],
   optional: true,
   async run(ctx) {
     const key = pick(ctx.env, "ANTHROPIC_API_KEY");
-    if (!key) throw new Skip("ANTHROPIC_API_KEY not set — paid fallback unused; Mubit serves all LLM calls");
+    if (!key) throw new Skip("ANTHROPIC_API_KEY not set: fine, every LLM call goes through the Mubit gateway");
     const { res, json } = await getJson(ctx, "https://api.anthropic.com/v1/models?limit=5", { headers: { "x-api-key": key, "anthropic-version": "2023-06-01" } });
     if (!res.ok) throw httpError("Anthropic /models", res, json);
     const ids = ((json?.data as Array<{ id: string }>) ?? []).map((m) => m.id);
-    return `key valid (no tokens spent), e.g. ${ids.slice(0, 2).join(", ") || "no models"}`;
+    return `key valid (no tokens spent), e.g. ${ids.slice(0, 2).join(", ") || "no models"}; used only if MUBIT_GATEWAY_ENABLED=false`;
   },
 };
 
