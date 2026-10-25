@@ -240,6 +240,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** moderate (stages are plain functions; moving light ones into Convex actions is local)
 - **Revisit?:** if Modal cold starts hurt demos — keep one warm worker
 
+### D-30: One Mubit adapter for every LLM + embedding call
+- **Task:** Mubit integrity (product owner, judge-visible)
+- **Time:** 2026-10-25T01:00Z
+- **Context:** the legacy studio client sent `MUBIT_API_KEY` to `MUBIT_ENDPOINT/anthropic` with a `claude-*` default, but the gateway serves only gpt-* + text-embedding-3-* (verified live). The new worker built its own OpenAI client
+- **Options:** A) patch each caller / B) make `src/llm/mubit.ts` the only gateway client (`json` with Zod retries + task header + request id, `text`, `embed(dimensions)`), and wrap it everywhere
+- **Chosen:** B. Worker providers wrap `MubitClient`; the legacy client's `gateway` route now calls `MubitClient` (Anthropic-shaped params converted, images as data URLs) and its streaming chat uses `@ai-sdk/openai` against the gateway; direct Anthropic remains only as the explicit paid fallback when `ANTHROPIC_API_KEY` is set. Defaults: `gpt-5.4-mini`, `text-embedding-3-large`. JSON mode appends a fixed "Respond with a single JSON object only." when a system prompt doesn't mention JSON (gateway requirement). `tests/mubit-integrity.test.ts` fails the build if any other file talks to the gateway or sends a Mubit key to an Anthropic path
+- **Why:** judges inspect the adapters; Mubit learns per task only if every call is tagged and routed through it
+- **Reversibility:** easy
+- **Revisit?:** retire `src/lib/llm/client.ts` with the legacy studio
+
 ## Blockers
 
 None yet.
