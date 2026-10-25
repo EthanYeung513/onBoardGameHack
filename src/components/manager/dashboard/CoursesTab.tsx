@@ -35,7 +35,9 @@ export function CoursesTab({ space, toast }: TabProps) {
   // D-36: courses whose content changed since the last push (detected company changes).
   const pending = usePendingUpdates(space._id);
   const changedIds = new Set<string>((pending?.changed ?? []).map((c) => c.courseId));
-  const building = space.deployState === "building";
+  // Building only while a deploy job is really in flight (a failed or stalled push re-enables it).
+  const deployStatus = useQuery(api.deploy.status, { spaceId: space._id });
+  const building = deployStatus?.building ?? false;
   const deployUrl = space.deployUrl;
   const published = Boolean(deployUrl);
   const origin = typeof window === "undefined" ? "" : window.location.origin;
@@ -115,6 +117,11 @@ export function CoursesTab({ space, toast }: TabProps) {
           <button className="btn btn-primary" id="pub-btn" onClick={() => void publish()} disabled={building}>
             {building ? "Publishing…" : published ? "Republish" : "Publish world"} <Icon name="globe" size={15} />
           </button>
+          {!building && deployStatus?.error && (
+            <span className="pub-error" role="status">
+              {deployStatus.error}
+            </span>
+          )}
         </div>
         <div className="grid2" id="course-cards">
           {courses && courses.length === 0 && (

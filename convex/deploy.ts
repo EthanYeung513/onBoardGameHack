@@ -73,6 +73,24 @@ async function onboardingInput(ctx: QueryCtx, space: Doc<"spaces">) {
   };
 }
 
+async function openDeployJob(ctx: QueryCtx, spaceId: Id<"spaces">) {
+  return await ctx.db
+    .query("jobs")
+    .withIndex("by_space", (q) => q.eq("spaceId", spaceId))
+    .filter((q) => q.and(q.eq(q.field("stage"), "deploy"), q.or(q.eq(q.field("status"), "queued"), q.eq(q.field("status"), "running"))))
+    .first();
+}
+
+/** The Publish button's state: building only while a deploy job is actually queued or running. */
+export const status = query({
+  args: { spaceId: v.id("spaces") },
+  handler: async (ctx, { spaceId }) => {
+    const { space } = await requireRole(ctx, spaceId, MANAGERS);
+    const open = await openDeployJob(ctx, spaceId);
+    return { building: Boolean(open), error: space.deployState === "error" ? (space.deployError ?? "The last publish failed") : null };
+  },
+});
+
 /** The manager's Generate push: (re)deploy this company's onboarding world. */
 export const deployOnboarding = mutation({
   args: { spaceId: v.id("spaces") },
@@ -80,7 +98,9 @@ export const deployOnboarding = mutation({
     const { userId, space } = await requireRole(ctx, spaceId, MANAGERS);
     const course = await ctx.db.query("courses").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).first();
     if (!course) fail(422, "Generate at least one course before publishing the onboarding world");
-    if (space.deployState === "building") return { queued: false };
+    // A "building" flag with no deploy job left (failed, stalled, never claimed) must not lock
+    // the button: only an open job means a push is really in flight.
+    if (space.deployState === "building" && (await openDeployJob(ctx, spaceId))) return { queued: false };
     await ctx.db.patch(spaceId, { deployState: "building", deployError: undefined });
     await enqueue(ctx, { spaceId }, "deploy", {});
     await audit(ctx, spaceId, `user:${userId}`, "deploy.requested", { previousUrl: space.deployUrl ?? null });
@@ -158,6 +178,6 @@ export const pendingUpdates = query({
       .filter((c) => (snapshot ? published.get(c.packType) !== c.version : (c.newStepIds?.length ?? 0) > 0))
       .map((c) => ({ courseId: c._id, title: c.title, newSteps: c.newStepIds?.length ?? 0, isNew: snapshot ? !published.has(c.packType) : false }));
     const refreshing = courses.filter((c) => c.needsRefresh).length;
-    return { changed, refreshing, deployedAt: space.deployedAt, building: space.deployState === "building" };
+    return { changed, refreshing, deployedAt: space.deployedAt, building: Boolean(await openDeployJob(ctx, spaceId)) };
   },
 });
