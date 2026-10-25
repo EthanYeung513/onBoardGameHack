@@ -38,6 +38,7 @@
     "@auth/core": "^0.41.1",
     "@codesandbox/sandpack-react": "^2.20.0",
     "@convex-dev/auth": "^0.0.96",
+    "@cosmos.gl/graph": "^3.5.1",
     "@electric-sql/pglite": "^0.5.11",
     "@mubit-ai/sdk": "^0.13.2",
     "@supabase/ssr": "^0.12.7",

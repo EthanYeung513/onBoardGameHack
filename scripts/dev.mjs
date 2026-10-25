@@ -164,7 +164,8 @@ const children = [
   spawn(npx, ["convex", "dev"], { stdio: ["ignore", "inherit", "inherit"], env: cliEnv, cwd: root }),
   spawn(npx, ["next", "dev", "-p", port], { stdio: "inherit", env: process.env, cwd: root }),
   // The pipeline worker (scan stages, connector syncs, the drift cascade) — on Modal in production.
-  spawn("node", [path.join(root, "scripts", "run-ts.mjs"), "src/worker/main.ts"], { stdio: "inherit", env: cliEnv, cwd: root }),
+  // dembrandt (rendered-page brand extraction) runs on the worker's local Chromium; DEMBRANDT_ENABLED=0 opts out.
+  spawn("node", [path.join(root, "scripts", "run-ts.mjs"), "src/worker/main.ts"], { stdio: "inherit", env: { DEMBRANDT_ENABLED: "true", ...cliEnv }, cwd: root }),
 ];
 console.log(`
   Orthogonal is starting:

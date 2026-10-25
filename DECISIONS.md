@@ -261,6 +261,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (mapping is one pure function, `src/components/manager/scanSteps.ts`)
 - **Revisit?:** if the crawl stage reports its own sub-steps, map "Reading public pages" back to crawl progress
 
+### D-23: Dashboard aggregates — progress from attempts, honest disabled controls, invites by link
+- **Task:** S13 (dashboard.html on real data, F23–F30)
+- **Time:** 2026-10-25T03:00Z
+- **Context:** the mockup derives everything from `localStorage` (`seedDemoHires`, `h.games`, fixed insights/gaps). There is no attempts contract yet, course generation (S11) and publish (S14) land elsewhere, and only GitHub has a Nango integration
+- **Options:** A) wait for those contracts / B) define progress over `attempts` now, keep unbuilt controls in place but disabled with tooltips
+- **Chosen:** B. A course is done for a hire when they reached its `done` step or attempted every scored CourseSpec step; scores are 0–100 (0–1 scaled) averaged per course; on-track = complete hires / hires (0% with no hires, not the mockup's 100%). Knowledge gaps = categories (except "Other") with < 3 approved facts. AI FAB insights are fixed rules (`convex/lib/insights.ts`), no LLM. `gen-btn`/`pub-btn` are disabled with "coming online" tooltips; Connect buttons come from `src/components/manager/tools/registry.ts` and stay disabled ("Coming soon" / "Needs Nango integration setup") until a connector registers `connect`. Invites return `/join/<slug>?invite=<token>` and copy it (no email until S14). Rewards "Send to a hire" records a fulfilled redemption; removing a reward deactivates it. `spaces.reset` is owner-only, deletes content in 400-row batches via the scheduler, keeps the space, members and audit trail. Settings adds a "Profile & brain" panel (manager name, auto-approve threshold) that the mockup lacks (F29 asks for the profile)
+- **Why:** zero fabricated data, every visible control either works or says why not
+- **Reversibility:** easy (rules live in `convex/lib/progress.ts` / `insights.ts`)
+- **Revisit?:** when the game world fixes the attempts contract, and when S11/S14 land (enable the buttons)
+
 ### D-31: Google sign-in live; Apple dropped; login note removed
 - **Task:** auth steering (Nicole 2026-10-25)
 - **Time:** 2026-10-25T02:10Z
@@ -300,6 +310,27 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Why:** the evidence survives any provider change and drives both the offline ranker and the Mubit prompt; nothing blocks the UI; every skipped/failed Mubit step is visible in `audit_events`
 - **Reversibility:** easy (`FEATURE_VERSION` gates stored features; ranker hyper-parameters are `RANKER_DEFAULTS`)
 - **Revisit?:** replay on 14 real sites (`npm run eval:brand`): new company 59% → 63% first-time-right, returning company 100%; the hyper-parameters were picked on that same replay (small N). Switch feedback to Mubit's real endpoint once confirmed
+
+### D-21: Scan stages — evidence-first brand tokens, one swappable picker, website pages ingested
+- **Task:** S4 (scan stages crawl → extract_design → analyse, F4–F6)
+- **Time:** 2026-10-25T02:30Z
+- **Context:** the legacy stages are Supabase-bound; extract_design let the model write the token set; the brand-learning service needs every alternative with evidence and one place to swap the decision; the drift cascade needs website pages as source items
+- **Options:** A) port legacy stages as-is (model writes tokens) / B) keep all candidates with evidence on `brand_profiles.candidates`, model only labels candidates (Zod-validated: chosen hexes must be candidates), final choice in `pickBrandTokens(candidates)`
+- **Chosen:** B. Crawl keeps the legacy discovery/ranking/fetch/browser-fallback/screenshot logic; its cursor lists finished URLs (resume skips them); each page → `crawl_pages` (upsert scan+url) and `ingestDocument` into the `website` connector; a clean full crawl calls `sweepRemoved` (pages that 404/410'd count as gone, transient failures skip the sweep so nothing is falsely marked removed). dembrandt runs on the worker's local Chromium (`npm run dev` sets `DEMBRANDT_ENABLED=true` for the worker) plus the HTML/CSS evidence; logos/favicons/screenshots are copied into Convex storage. Quality: full (dembrandt + live model) / partial (HTML/CSS + live model) / offline (no model: evidence-only pick, voice labelled stand-in). The space name is refined from the site's company name only while it is still the host-derived default. Prompts spell out the JSON shape (the gateway's JSON mode doesn't see the Zod schema)
+- **Why:** no invented palettes; the learning agent swaps one function; website content flows through the same drift cascade as tools
+- **Reversibility:** easy
+- **Revisit?:** dembrandt's first run auto-installs its own Playwright Chromium (1.63) and Playwright GC can delete other versions in the shared cache — pin one Playwright version repo-wide; URL ranking favours `/guides`-style docs over about/careers on big sitemaps (stripe.com)
+
+||||||| 568fe07
+### D-24: Brain page — cosmos.gl draws brain.html's partition picture; links drawn, not sprung
+- **Task:** S10 (brain page, F18/F35)
+- **Time:** 2026-10-25T02:30Z
+- **Context:** brain.html is a seeded-random canvas: white company hub, one labelled anchor per partition (People, Glossary, Tools, Rituals, Docs & History), members scattered around their anchor, faint cluster-coloured links. A free force layout over the real graph pulls cross-linked entities together and loses that picture. The mockup has no side panel, export or identity card; the brief and product owner require a provenance panel, GEXF export, visible stale facts and the space's extracted identity
+- **Options:** A) free force layout / B) seeded per-partition positions from `brain.graph` (mockup spread), hub + anchors pinned, link spring 0 so only repulsion/collision tidy overlaps
+- **Chosen:** B. Cluster = majority category of an entity's visible facts, else its type; partition colours are product chrome in `convex/lib/partitions.ts` (mockup's five, plus Policy/Product/Other shown only when non-empty). Merged entities fold into their canonical node; rejected facts never leave `convex/brain.ts`. Stale facts: node dimmed + red outline + "· stale" label; panel lists them first as "stale — source changed in <connector>". Additions from the live query fade in at their seeded spot without re-running the layout. Added (not in the mockup, required): provenance panel and Identity card in the legend's chrome, "Export GEXF" link in the caption; caption is "live graph · updated …" instead of "mock graph"
+- **Why:** keeps the mockup's look while every node, count and colour is real data
+- **Reversibility:** easy (layout is `src/components/brain/layout.ts`; turning link spring on is one config value)
+- **Revisit?:** for >2k entities (labels overlay and per-entity mention counts are O(n))
 
 ## Blockers
 

@@ -1,0 +1,12 @@
+/* dashboard.html's inline <style> (main), scoped under .ob. Everything else comes from manager.css. */
+.ob #ai-fab { position: fixed; right: 26px; bottom: 26px; width: 56px; height: 56px; border-radius: 50%; background: var(--brand, #2E98FF); color: #fff; font-size: 22px; border: 0; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.3); z-index: 40; transition: transform .15s; }
+.ob #ai-fab:hover { transform: scale(1.07); }
+.ob #ai-pop { position: fixed; right: 26px; bottom: 94px; width: min(380px, calc(100vw - 40px)); background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.22); z-index: 40; animation: pop .18s ease; }
+@keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.ob #ai-pop ul { list-style: none; max-height: 280px; overflow-y: auto; }
+@media (max-width: 900px) { .ob .side .logo #brand-name { display: none; } }
+
+/* The app's Tailwind preflight resets what the mockup relies on browser defaults for:
+   svg is display:block (mockup icons sit inline in text) and headings inherit their weight. */
+.ob .dash svg.icn, .ob #ai-fab svg.icn, .ob #ai-pop svg.icn { display: inline-block; }
+.ob .dash h3, .ob .dash h4 { font-weight: bold; }

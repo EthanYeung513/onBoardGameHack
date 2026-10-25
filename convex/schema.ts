@@ -204,7 +204,9 @@ export default defineSchema({
     candidates: v.optional(v.any()),
     /** Scan-time learned recommendation (src/lib/brand/types.ts StoredRecommendation, D-27). */
     recommendation: v.optional(v.any()),
-  }).index("by_space", ["spaceId"]),
+  })
+    .index("by_space", ["spaceId"])
+    .index("by_scan", ["scanId"]),
 
   /** F37 / D-27: every Design-tab pick, with the evidence the brand ranker and Mubit learn from. */
   brand_decisions: defineTable({
