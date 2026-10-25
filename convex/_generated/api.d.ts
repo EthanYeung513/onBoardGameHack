@@ -18,6 +18,7 @@ import type * as connectorAuth from "../connectorAuth.js";
 import type * as connectors from "../connectors.js";
 import type * as crons from "../crons.js";
 import type * as dashboard from "../dashboard.js";
+import type * as deploy from "../deploy.js";
 import type * as editor from "../editor.js";
 import type * as facts from "../facts.js";
 import type * as hires from "../hires.js";
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   connectors: typeof connectors;
   crons: typeof crons;
   dashboard: typeof dashboard;
+  deploy: typeof deploy;
   editor: typeof editor;
   facts: typeof facts;
   hires: typeof hires;

@@ -339,3 +339,7 @@
 .ob .split .left { padding: 0; }
 .ob .split .left video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .ob .split .left .logo { position: absolute; top: 40px; left: 40px; z-index: 2; }
+
+/* ---------- Generate → deploy: QR in the Courses tab publish panel (D-33) ---------- */
+.ob .deploy-qr { display: inline-block; margin: 0 0 12px; }
+.ob .deploy-qr svg { display: block; width: 168px; height: 168px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
