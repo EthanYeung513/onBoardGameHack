@@ -105,13 +105,18 @@
   }
 }
 
-/* Play fills the whole viewport, like the real game in a building. */
+/* Play fills the whole viewport, like the real game in a building. The top strip holds the Menu button. */
 .play {
   display: flex;
   height: 100dvh;
+  padding-top: 48px;
   justify-content: center;
   /* Anything taller than the screen (a phone's word board, the results list) scrolls instead of being cut off. */
   overflow-y: auto;
+}
+/* A run parked behind the menu (the hire left mid-run) stays mounted but out of sight. */
+.play[hidden] {
+  display: none;
 }
 .play > * {
   flex: 1;
@@ -126,13 +131,74 @@
    cap resolves to 100% anyway, so the game keeps filling the screen. */
 /* Battle: the 3:2 top screen plus ~330px of status bar and DS bottom screen. */
 .play.battle > * {
-  max-width: min(100%, calc((100dvh - 330px) * 1.5));
+  max-width: min(100%, calc((100dvh - 378px) * 1.5));
 }
 .play.dilemma > * {
-  max-width: min(100%, calc(100dvh * 1.45));
+  max-width: min(100%, calc((100dvh - 48px) * 1.45));
 }
 .play.word-match > * {
-  max-width: min(100%, calc(100dvh * 1.15));
+  max-width: min(100%, calc((100dvh - 48px) * 1.15));
+}
+
+/* Menu button: always in the top-left corner during play (mouse, touch, or ESC on a keyboard). */
+.play > .menuButton {
+  position: fixed;
+  top: 6px;
+  left: 8px;
+  z-index: 40;
+  flex: none;
+  max-width: none;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 36px;
+  padding: 0.3rem 0.85rem;
+  border-radius: 8px;
+  border: 2px solid rgb(255 255 255 / 55%);
+  background: rgb(10 12 30 / 72%);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.play > .menuButton:hover,
+.play > .menuButton:focus-visible {
+  border-color: #fff;
+  background: rgb(10 12 30 / 92%);
+}
+
+/* Pause menu: Resume or Leave the building, over the frozen game. */
+.play > .pause {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  max-width: none;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 62%);
+}
+.pausePanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  max-width: 92vw;
+  border-radius: 12px;
+  border: 2px solid rgb(255 255 255 / 35%);
+  background: rgb(10 15 36 / 92%);
+  color: #fff;
+  text-align: center;
+}
+.pauseTitle {
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  line-height: 1.15;
+  max-width: 18ch;
 }
 
 /* ── Battle: a Pokémon-style title screen ─────────────────────────────── */

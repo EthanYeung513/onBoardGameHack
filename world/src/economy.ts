@@ -1,7 +1,8 @@
 // Credits economy: hires earn credits for onboarding progress and spend them
 // in the rewards shop. State lives in localStorage, every key prefixed with
-// the company's namespace (`ob:<host>:`, WORLD.storageNs) so two companies
-// served from one origin never share progress:
+// the hire's namespace (`ob:<host>:<email>:`, WORLD.storageNs, set by
+// signInHire) so two companies served from one origin, or two hires on one
+// device, never share progress, credits or game saves:
 //
 //   credits   number               current balance
 //   awarded   string[]             course ids already paid out (no double-pay)
@@ -31,6 +32,20 @@ export interface ShopItem {
 export interface Redemption { id: string; name: string; cost: number; at: string }
 
 const ns = () => WORLD?.storageNs ?? 'ob:';
+
+/** One identity per work email: case and surrounding spaces don't make a new hire. */
+export const normaliseEmail = (email: string) => email.trim().toLowerCase();
+
+/**
+ * A hire signed in on the world's login: from here every key (credits, progress, purchases, game
+ * saves) is theirs alone. Another email starts from zero; the same email picks up where it left off.
+ */
+export function signInHire(email: string, courses: Course[]) {
+  WORLD.storageNs = `${WORLD.companyNs}${encodeURIComponent(normaliseEmail(email))}:`;
+  for (const c of courses) c.completion = 0;
+  applyDevParams();
+  applyProgress(courses);
+}
 const K = {
   get credits() { return `${ns()}credits`; },
   get awarded() { return `${ns()}awarded`; },

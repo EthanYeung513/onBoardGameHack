@@ -75,7 +75,7 @@ function HpBox({ name, level, hp, player, exp }: { name: string; level: number; 
   );
 }
 
-export function BattleGame({ spec, onComplete, instant = false }: GameProps<BattleSpec>) {
+export function BattleGame({ spec, onComplete, instant = false, paused = false }: GameProps<BattleSpec>) {
   const [phase, setPhase] = useState<Phase>("title");
   const [battle, setBattle] = useState<BattleState>(() => createBattle(spec));
   const [queue, setQueue] = useState<Msg[]>([]);
@@ -230,11 +230,11 @@ export function BattleGame({ spec, onComplete, instant = false }: GameProps<Batt
 
   // Auto-advance once the text is out and the effect has played, like the games' timed text.
   useEffect(() => {
-    if (instant || phase !== "talk" || !typer.done) return;
+    if (instant || paused || phase !== "talk" || !typer.done) return;
     const wait = Math.max(0, busyUntil.current - Date.now()) + HOLD_MS;
     const id = setTimeout(advance, wait);
     return () => clearTimeout(id);
-  }, [instant, phase, typer.done, advance]);
+  }, [instant, paused, phase, typer.done, advance]);
 
   const start = () => {
     startedAt.current = Date.now();
@@ -298,13 +298,14 @@ export function BattleGame({ spec, onComplete, instant = false }: GameProps<Batt
     });
 
   // Keyboard: Space/Enter/Z advance, 1-4 pick a move.
-  const keys = useRef({ advance, choose, phase });
+  const keys = useRef({ advance, choose, phase, paused });
   useEffect(() => {
-    keys.current = { advance, choose, phase };
+    keys.current = { advance, choose, phase, paused };
   });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const k = keys.current;
+      if (k.paused) return;
       if (k.phase === "talk" && [" ", "Enter", "z", "Z"].includes(e.key)) {
         e.preventDefault();
         k.advance();

@@ -52,6 +52,7 @@ import type * as search from "../search.js";
 import type * as seed from "../seed.js";
 import type * as spaces from "../spaces.js";
 import type * as users from "../users.js";
+import type * as world from "../world.js";
 
 import type {
   ApiFromModules,
@@ -104,6 +105,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   spaces: typeof spaces;
   users: typeof users;
+  world: typeof world;
 }>;
 
 /**
