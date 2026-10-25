@@ -62,7 +62,7 @@ export const pending = workerQuery({
 });
 
 export const claim = workerMutation({
-  /** `scanOnly`: a lane reserved for scans, so a fresh scan never waits behind background work. */
+  /** `scanOnly`: a lane reserved for scans and deploys, so neither waits behind background work. */
   args: { workerId: v.string(), stages: v.array(stageName), scanOnly: v.optional(v.boolean()) },
   handler: async (ctx, { workerId, stages, scanOnly }) => {
     const now = Date.now();
@@ -70,7 +70,8 @@ export const claim = workerMutation({
     const ready = await queued().take(50);
     // A manager watching a scan beats background enrichment: scan jobs are claimed first. The
     // newest jobs are checked too, since a long background backlog can push a fresh scan past 50.
-    const scanJob = (jobs: Doc<"jobs">[]) => jobs.find((j) => j.scanId && stages.includes(j.stage));
+    // Priority work a manager is waiting on: the scan, and Generate's deploy (link + QR in seconds).
+    const scanJob = (jobs: Doc<"jobs">[]) => jobs.find((j) => (j.scanId || j.stage === "deploy") && stages.includes(j.stage));
     const job = scanJob(ready) ?? scanJob(await queued().order("desc").take(20)) ?? (scanOnly ? undefined : ready.find((j) => stages.includes(j.stage)));
     if (!job) return null;
     await ctx.db.patch(job._id, { status: "running", workerId, heartbeatAt: now, startedAt: job.startedAt ?? now, error: undefined });
