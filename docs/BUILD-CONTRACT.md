@@ -232,3 +232,13 @@ How it is wired (S8, D-25):
   space's `brand_profiles` — never a hard-coded company colour.
 - Long operations show live `job_events` lines, not spinners alone.
 - Offline stand-ins are labelled wherever data is simulated.
+
+## Generate → deploy contract (D-33)
+
+`api.deploy.deployOnboarding({spaceId})` (managers) queues a `deploy` job; the worker writes
+`spaces.deployUrl` (absolute Vercel URL, or `/o/<slug>` for the labelled stand-in),
+`deployMode`, `deployState`, `deployedAt`, `deployError`. The deployed world is
+`templates/onboarding/*` + generated `onboarding.js` (`src/lib/onboarding/content.ts`
+`buildOnboardingContent` → `OB.*` overrides). Anything that renders the share link/QR reads
+`space.deployUrl`; never construct deploy URLs elsewhere.
+

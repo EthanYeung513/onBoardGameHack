@@ -13,6 +13,7 @@ export const STAGE_LABELS: Record<StageName, string> = {
   generate_courses: "Drafting onboarding courses",
   sync_connector: "Syncing tool",
   cascade: "Updating what changed",
+  deploy: "Deploying the onboarding world",
   ready: "Calibrating dashboard to your brand",
 };
 
