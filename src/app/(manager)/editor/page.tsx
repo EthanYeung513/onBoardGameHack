@@ -29,7 +29,8 @@ function EditorRoute() {
   }, [spaceId, router]);
 
   if (!spaceId || !data) return <div className="ed" />;
-  return <Editor spaceId={spaceId} data={data} assets={assets} options={options} />;
+  // `panel=design`: arriving from the scan (or the dashboard's "Pick your design"), open the Design tab.
+  return <Editor spaceId={spaceId} data={data} assets={assets} options={options} initialPanel={params.get("panel") === "design" ? "design" : "assets"} />;
 }
 
 export default function EditorPage() {

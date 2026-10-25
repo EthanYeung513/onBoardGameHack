@@ -47,7 +47,7 @@ export function ScanStep({ spaceId, scanId }: { spaceId: Id<"spaces">; scanId: I
   // Mockup: bar fills, then `location.href = 'editor.html'` 900 ms later.
   useEffect(() => {
     if (phase !== "succeeded") return;
-    const t = setTimeout(() => router.push(`/editor?space=${spaceId}`), 900);
+    const t = setTimeout(() => router.push(`/editor?space=${spaceId}&panel=design`), 900);
     return () => clearTimeout(t);
   }, [phase, router, spaceId]);
 
