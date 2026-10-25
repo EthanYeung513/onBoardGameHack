@@ -271,6 +271,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy
 - **Revisit?:** no
 
+### D-28: Editor = editor.html on a read model; writes go through the owners' mutations
+- **Task:** S12 (editor + Design tab)
+- **Time:** 2026-10-25T01:40Z
+- **Context:** the editor needs course specs, step-level staleness with the changed source, scraped assets and learned brand recommendations; `convex/courses.ts` (D-26) and `convex/brand.ts` (D-27) were being built in parallel
+- **Options:** A) wait for both modules / B) own a read-only `convex/editor.ts` (load + assets) and call `courses.applyPatch|regenerateSteps` and `brand.options|decide` through typed references in `src/components/editor/contracts.ts`
+- **Chosen:** B. Staleness is derived from the spec's `teaches_fact_ids` (fact `stale`) ∪ `courses.staleStepIds`, each step listing up to 3 changed sources (connector type + title). `brand.options` is read with `useQueries` so a missing module degrades to the mockup controls bound to `brand_profiles` instead of crashing; failed writes show the mockup toast, never raw errors. Headline = heading font family when brand learning is live, the mockup's three presets otherwise
+- **Why:** ship the screen without blocking on, or duplicating, other agents' write paths
+- **Reversibility:** easy (swap the references for `api.courses.*`/`api.brand.*` once merged)
+- **Revisit?:** when both modules are on the base branch — replace the references; course switcher if the dashboard doesn't link `&course=`
+
 ## Blockers
 
 None yet.

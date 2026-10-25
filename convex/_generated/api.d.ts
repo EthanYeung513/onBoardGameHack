@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as authInfo from "../authInfo.js";
 import type * as crons from "../crons.js";
+import type * as editor from "../editor.js";
 import type * as http from "../http.js";
 import type * as ingest from "../ingest.js";
 import type * as lib_access from "../lib/access.js";
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authInfo: typeof authInfo;
   crons: typeof crons;
+  editor: typeof editor;
   http: typeof http;
   ingest: typeof ingest;
   "lib/access": typeof lib_access;

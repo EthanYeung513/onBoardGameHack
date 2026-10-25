@@ -393,6 +393,8 @@ export default defineSchema({
     status: courseStatus,
     needsRefresh: v.boolean(),
     version: v.number(),
+    /** F36 step-level drift: ids of CourseSpec steps whose facts went stale; cleared on regeneration. */
+    staleStepIds: v.optional(v.array(v.string())),
   })
     .index("by_space", ["spaceId"])
     .index("by_space_pack", ["spaceId", "packType"]),
@@ -402,6 +404,8 @@ export default defineSchema({
     spaceId: v.id("spaces"),
     courseId: v.id("courses"),
     factId: v.id("facts"),
+    /** The CourseSpec step teaching the fact (step-level refresh, F36). */
+    stepId: v.optional(v.string()),
   })
     .index("by_course", ["courseId"])
     .index("by_fact", ["factId"]),
