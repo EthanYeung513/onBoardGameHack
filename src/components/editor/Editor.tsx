@@ -59,6 +59,7 @@ export function Editor({ spaceId, data, assets, options, initialPanel = "assets"
   const { space, brand, course } = data;
   const steps: SpecStep[] = Array.isArray(course?.spec?.steps) ? course.spec.steps : [];
   const stale = course?.staleSteps ?? {};
+  const fresh = new Set<string>(course?.newStepIds ?? []);
   // Headline = the heading font family once brand learning is live; the mockup's presets otherwise.
   const design = currentDesign(brand, picks, options?.fields.headline?.current ?? (options ? brand?.typography.heading.family : undefined));
   const step = steps[Math.min(cur, steps.length - 1)];
@@ -131,7 +132,7 @@ export function Editor({ spaceId, data, assets, options, initialPanel = "assets"
       </div>
       <div className="wrap">
         <div className="steps">
-          <StepsList steps={steps} cur={cur} stale={stale} refreshing={refreshingNow} onPick={setCur} onRefresh={(id) => void onRefresh(id)} />
+          <StepsList steps={steps} cur={cur} stale={stale} fresh={fresh} refreshing={refreshingNow} onPick={setCur} onRefresh={(id) => void onRefresh(id)} />
         </div>
         <div className="center">
           {step && stale[step.id] && (

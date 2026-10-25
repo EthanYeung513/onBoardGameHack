@@ -472,9 +472,21 @@ export default defineSchema({
     publishedVersion: v.optional(v.number()),
     /** F36 step-level drift: ids of CourseSpec steps whose facts went stale; cleared on regeneration. */
     staleStepIds: v.optional(v.array(v.string())),
+    /** D-36: steps rewritten because the company changed (detected drift), shown with a "New"
+     * badge until the manager republishes the world ("Update courses"). */
+    newStepIds: v.optional(v.array(v.string())),
   })
     .index("by_space", ["spaceId"])
     .index("by_space_pack", ["spaceId", "packType"]),
+
+  /** D-36: what the hire's world serves. Taken at every Generate/Update courses push; content that
+   * changes afterwards (detected drift, refreshed steps) waits for the manager's next push. */
+  world_snapshots: defineTable({
+    spaceId: v.id("spaces"),
+    /** The world input (convex/deploy.ts onboardingInput) as it was at the push. */
+    input: v.any(),
+    at: v.number(),
+  }).index("by_space", ["spaceId"]),
 
   /** Join table: which course teaches which fact (F36 lookup). */
   course_facts: defineTable({

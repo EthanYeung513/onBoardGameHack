@@ -27,12 +27,14 @@ type Props = {
   steps: SpecStep[];
   cur: number;
   stale: Record<string, StaleSource[]>;
+  /** D-36: steps rewritten because the company changed, shown "New" until the next push. */
+  fresh?: ReadonlySet<string>;
   refreshing: Set<string>;
   onPick: (i: number) => void;
   onRefresh: (stepId: string) => void;
 };
 
-export function StepsList({ steps, cur, stale, refreshing, onPick, onRefresh }: Props) {
+export function StepsList({ steps, cur, stale, fresh, refreshing, onPick, onRefresh }: Props) {
   return (
     <>
       {steps.map((s, i) => {
@@ -41,7 +43,14 @@ export function StepsList({ steps, cur, stale, refreshing, onPick, onRefresh }: 
           <div key={s.id} className={`step${i === cur ? " on" : ""}`} onClick={() => onPick(i)}>
             <span className="num">{i + 1}</span>
             <div>
-              <div className="tt">{s.title}</div>
+              <div className="tt">
+                {s.title}
+                {fresh?.has(s.id) && (
+                  <span className="new-pill" title="Rewritten because your company changed. Not live for hires until you update courses.">
+                    New
+                  </span>
+                )}
+              </div>
               <div className="ss">{KIND_LABEL[s.kind] ?? s.kind} · +20 XP</div>
               {sources && (
                 <div className="stale" data-testid={`stale-${s.id}`}>

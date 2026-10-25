@@ -2,7 +2,8 @@ import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { fail } from "./lib/errors";
-import { workerMutation } from "./lib/worker";
+import { enqueue } from "./pipeline";
+import { workerMutation, workerQuery } from "./lib/worker";
 import { connectorType, sourceKind } from "./schema";
 
 // The one write path for every source — website pages, files, GitHub, Slack… (BUILD-CONTRACT
@@ -177,4 +178,24 @@ export const sweepRemoved = workerMutation({
     }
     return { removed };
   },
+});
+
+// ---- demo tooling (scripts/demo-company-change.ts) -----------------------------------------
+
+/** The newest crawled copy of a website page containing `contains`, with the website connector. */
+export const findCrawledPage = workerQuery({
+  args: { spaceId: v.id("spaces"), contains: v.string() },
+  handler: async (ctx, { spaceId, contains }) => {
+    const connector = await ctx.db.query("connectors").withIndex("by_space_type", (q) => q.eq("spaceId", spaceId).eq("type", "website")).first();
+    const pages = await ctx.db.query("crawl_pages").withIndex("by_space_url", (q) => q.eq("spaceId", spaceId)).take(2000);
+    const page = pages.filter((p) => p.text.includes(contains)).sort((a, b) => b.fetchedAt - a.fetchedAt)[0];
+    if (!connector || !page) return null;
+    return { connectorId: connector._id, url: page.url, title: page.title ?? page.url, text: page.text };
+  },
+});
+
+/** Queue the space's drift cascade (what every source sync does when it finishes). */
+export const queueCascade = workerMutation({
+  args: { spaceId: v.id("spaces") },
+  handler: async (ctx, { spaceId }) => ({ jobId: await enqueue(ctx, { spaceId }, "cascade") }),
 });

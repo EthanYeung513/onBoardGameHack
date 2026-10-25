@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@convex/_generated/api";
 import { DeployQr, absoluteUrl } from "@/components/manager/DeployPanel";
+import { UpdateCoursesButton, usePendingUpdates } from "./UpdateCourses";
 import { Icon } from "@/components/manager/icons";
 import type { TabProps } from "./shared";
 
@@ -31,6 +32,9 @@ export function CoursesTab({ space, toast }: TabProps) {
       setGenStatus(err instanceof ConvexError ? (err.data as { message: string }).message : "Couldn't start generation. Please try again.");
     }
   };
+  // D-36: courses whose content changed since the last push (detected company changes).
+  const pending = usePendingUpdates(space._id);
+  const changedIds = new Set<string>((pending?.changed ?? []).map((c) => c.courseId));
   const building = space.deployState === "building";
   const deployUrl = space.deployUrl;
   const published = Boolean(deployUrl);
@@ -75,9 +79,12 @@ export function CoursesTab({ space, toast }: TabProps) {
         </div>
       </div>
       <div className="panel" id="publish-panel" hidden={!published}>
-        <h3>
-          World published <Icon name="globe" />
-        </h3>
+        <div className="ptitle">
+          <h3>
+            World published <Icon name="globe" />
+          </h3>
+          <UpdateCoursesButton spaceId={space._id} onDone={toast} />
+        </div>
         <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 10 }}>
           Share this link with new hires.
         </p>
@@ -126,14 +133,20 @@ export function CoursesTab({ space, toast }: TabProps) {
               <div className="ci">
                 <Icon name={c.icon} size={30} />
               </div>
-              <h4>{c.title}</h4>
+              <h4>
+                {c.title}
+                {(c.newSteps > 0 || changedIds.has(c._id)) && <span className="pill new" title="Rewritten because your company changed. Not live for hires until you update courses.">New</span>}
+              </h4>
               <div className="cb">
                 <Icon name="building" size={13} /> {c.building} · {c.game} game
               </div>
               {c.desc && <p>{c.desc}</p>}
               <ul>
                 {c.lessons.map((l, i) => (
-                  <li key={i}>{l}</li>
+                  <li key={i}>
+                    {l}
+                    {c.newLessons.includes(l) && <span className="pill new">New</span>}
+                  </li>
                 ))}
               </ul>
               {c.needsRefresh ? (

@@ -52,6 +52,9 @@ export async function syncCourseFacts(ctx: MutationCtx, course: Pick<Doc<"course
  * A regenerated course that is live gets its published content rebuilt (F36, BUILD-CONTRACT drift
  * contract): the game handoff reads `publishedSpec`/`publishedVersion`. Returns the patch fields.
  */
+/** D-36: who requests a course refresh after Mubit's loop detects a company change. */
+export const DRIFT_ACTOR = "system:drift";
+
 export async function republishIfLive(ctx: MutationCtx, course: Doc<"courses">, spec: CourseSpec, version: number, actor: string) {
   if (course.status !== "published") return {};
   await ctx.db.insert("audit_events", {

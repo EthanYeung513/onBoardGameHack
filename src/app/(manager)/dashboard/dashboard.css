@@ -40,3 +40,6 @@
 .ob .theme-bold .kpi, .ob .theme-bold .panel, .ob .theme-bold .next-step { background: color-mix(in srgb, #fff 12%, var(--paper)); border-color: rgba(255,255,255,.16); }
 .ob .theme-bold #ai-fab { background: var(--accent); }
 .ob .theme-gradient .dash { background: linear-gradient(140deg, color-mix(in srgb, var(--brand) 12%, var(--paper, #f6f6f8)), var(--paper, #f6f6f8) 55%, color-mix(in srgb, var(--accent) 10%, var(--paper, #f6f6f8))); background-attachment: fixed; }
+/* D-36: content rewritten because the company changed, not yet pushed to hires. */
+.ob .pill.new { margin-left: 8px; background: color-mix(in srgb, var(--accent) 16%, #fff); color: color-mix(in srgb, var(--accent) 70%, #000); border: 1px solid color-mix(in srgb, var(--accent) 40%, #fff); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px; vertical-align: middle; }
+.ob .ptitle #update-courses { margin-left: auto; }

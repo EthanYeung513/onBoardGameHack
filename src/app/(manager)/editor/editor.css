@@ -110,3 +110,4 @@
 .ob .ed .logo-prev img { max-height: 44px; max-width: 140px; object-fit: contain; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
 .ob .ed .logo-prev img.on-dark { background: #16161a; border-color: #2a2a30; }
 .ob .ed .logo-prev .val { flex-basis: 100%; }
+.ob .ed .new-pill{margin-left:6px;background:var(--brand,#2f6bff);color:#fff;font-size:10px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap;vertical-align:middle}

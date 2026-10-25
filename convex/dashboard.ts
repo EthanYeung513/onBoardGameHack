@@ -47,7 +47,7 @@ export const overview = query({
 });
 
 function describeCourse(course: Doc<"courses">) {
-  const spec = (course.spec ?? {}) as { description?: string; desc?: string; steps?: { kind?: string; title?: string; body?: string }[] };
+  const spec = (course.spec ?? {}) as { description?: string; desc?: string; steps?: { id?: string; kind?: string; title?: string; body?: string }[] };
   const steps = Array.isArray(spec.steps) ? spec.steps : [];
   const welcome = steps.find((s) => s.kind === "welcome");
   const staleStepIds = course.staleStepIds ?? [];
@@ -60,6 +60,9 @@ function describeCourse(course: Doc<"courses">) {
     status: course.status,
     needsRefresh: course.needsRefresh,
     staleSteps: staleStepIds.length,
+    /** D-36: steps rewritten for a detected company change, not yet pushed to hires ("New"). */
+    newSteps: (course.newStepIds ?? []).length,
+    newLessons: steps.filter((s) => s.id && (course.newStepIds ?? []).includes(s.id) && s.title).map((s) => s.title as string),
     desc: spec.description ?? spec.desc ?? welcome?.body ?? "",
     lessons: steps.filter((s) => s.kind && !["welcome", "done"].includes(s.kind) && s.title).map((s) => s.title as string),
     steps: scoredStepCount(course.spec),

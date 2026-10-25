@@ -83,6 +83,8 @@ export const load = query({
             needsRefresh: course.needsRefresh,
             spec: course.spec,
             staleSteps: await staleSteps(ctx, course),
+            /** D-36: steps rewritten for a detected company change, not yet pushed to hires. */
+            newStepIds: course.newStepIds ?? [],
           }
         : null,
       generating: await generation(ctx, spaceId),

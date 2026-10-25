@@ -5,8 +5,9 @@ import type { CoursePatch } from "../src/lib/flow/course-patch";
 import { PACK_TYPES } from "../src/lib/flow/course-packs";
 import type { CourseSpec } from "../src/lib/flow/course-spec";
 import { audit, MANAGERS, requireRole } from "./lib/access";
-import { patchForSpace, syncCourseFacts } from "./lib/courses";
+import { DRIFT_ACTOR, patchForSpace, syncCourseFacts } from "./lib/courses";
 import { fail } from "./lib/errors";
+import { workerMutation } from "./lib/worker";
 
 // Manager-facing course functions (F36 + the dashboard/editor read side). Generation itself is the
 // `generate_courses` worker stage; these enqueue it on the manager's confirm and apply validated
@@ -173,5 +174,26 @@ export const applyPatch = mutation({
     await syncCourseFacts(ctx, course, r.spec);
     await audit(ctx, course.spaceId, `user:${userId}`, "course.patched", { courseId, fromVersion: version, toVersion: next, summary: r.summary ?? "" });
     return { version: next };
+  },
+});
+
+/**
+ * D-36: after the drift cascade lands a company change, rewrite just the stale steps of every
+ * affected course in the background (the "New" badges); nothing reaches hires until the manager
+ * clicks "Update courses". Called by the cascade stage when it finishes.
+ */
+export const refreshAfterDrift = workerMutation({
+  args: { spaceId: v.id("spaces") },
+  handler: async (ctx, { spaceId }) => {
+    const courses = await ctx.db.query("courses").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).collect();
+    let queued = 0;
+    for (const c of courses) {
+      const stepIds = c.staleStepIds ?? [];
+      if (c.status === "archived" || !c.needsRefresh || !stepIds.length) continue;
+      await requestCourseJob(ctx, spaceId, { packType: c.packType, stepIds, requestedBy: DRIFT_ACTOR });
+      await audit(ctx, spaceId, DRIFT_ACTOR, "course.refresh_queued", { courseId: c._id, course: c.title, stepIds });
+      queued++;
+    }
+    return { queued };
   },
 });

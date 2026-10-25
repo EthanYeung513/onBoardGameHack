@@ -16,12 +16,12 @@ export interface WorldInput {
   space: { name: string; host: string; mode?: "live" | "offline" };
   brand: { primary?: string; accent?: string; surface?: string; text?: string; headingFont?: string; bodyFont?: string; logoUrl?: string | null } | null;
   courses: { packType: string; title: string; desc?: string; building?: string; spec: unknown; staleSteps?: number }[];
-  facts: { text: string; category: string; entityName?: string; entityType?: string }[];
+  facts: { id?: string; text: string; category: string; entityName?: string; entityType?: string }[];
   rewards: { name: string; costCoins: number }[];
   generatedAt: number;
 }
 
-type Step = { id: string; kind: string; title: string; body?: string; options?: { label: string; correct?: boolean; why?: string }[] };
+type Step = { id: string; kind: string; title: string; body?: string; options?: { label: string; correct?: boolean; why?: string }[]; teaches_fact_ids?: string[] };
 type Fact = WorldInput["facts"][number];
 
 const steps = (spec: unknown): Step[] => {
@@ -187,11 +187,15 @@ export function preferredGames(course: WorldInput["courses"][number]): GameId[] 
   return ["battle", "word-match", "dilemma"];
 }
 
-/** Facts a course teaches (its steps cite them), else every fact in its categories, else all. */
+/** Facts a course teaches: the ones its steps cite first (so a refreshed step's new fact reaches
+ * the game), then facts naming things the course mentions, else the whole brain. */
 function courseFacts(course: WorldInput["courses"][number], facts: Fact[]): Fact[] {
+  const cited = new Set(steps(course.spec).flatMap((s) => s.teaches_fact_ids ?? []));
+  const taught = facts.filter((f) => f.id && cited.has(f.id));
   const text = steps(course.spec).map((s) => `${s.title} ${s.body ?? ""}`).join(" ").toLowerCase();
-  const mentioned = facts.filter((f) => f.entityName && text.includes(f.entityName.toLowerCase()));
-  return mentioned.length >= 4 ? mentioned : facts;
+  const mentioned = facts.filter((f) => !taught.includes(f) && f.entityName && text.includes(f.entityName.toLowerCase()));
+  const own = [...taught, ...mentioned];
+  return own.length >= 4 ? own : facts;
 }
 
 function npcsFrom(facts: Fact[]): WorldNpc[] {

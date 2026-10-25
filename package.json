@@ -18,6 +18,7 @@
     "db:seed": "node scripts/convex-seed.mjs",
     "db:seed:legacy": "tsx scripts/seed.ts",
     "demo:reset": "tsx scripts/demo-reset.ts",
+    "demo:change": "node scripts/run-ts.mjs scripts/demo-company-change.ts",
     "eval": "tsx scripts/eval.ts",
     "eval:brand": "node scripts/run-ts.mjs scripts/eval-brand.ts",
     "eval:brand:record": "node scripts/run-ts.mjs scripts/brand-record.ts",

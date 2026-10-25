@@ -16,7 +16,18 @@ async function onboardingInput(ctx: QueryCtx, space: Doc<"spaces">) {
   const brand = space.brandProfileId ? await ctx.db.get(space.brandProfileId) : null;
   const pick = (role: string) => brand?.palette.find((p) => p.role === role)?.hex;
   const courses = (await ctx.db.query("courses").withIndex("by_space", (q) => q.eq("spaceId", space._id)).collect()).filter((c) => c.status !== "archived");
-  const approved = await ctx.db.query("facts").withIndex("by_space_status", (q) => q.eq("spaceId", space._id).eq("status", "approved")).take(200);
+  // Facts the courses teach first (a refreshed step's new fact must reach the world), then the
+  // newest approved ones, up to 200.
+  const cited: Doc<"facts">[] = [];
+  for (const c of courses) {
+    for (const cf of await ctx.db.query("course_facts").withIndex("by_course", (q) => q.eq("courseId", c._id)).collect()) {
+      if (cited.some((f) => f._id === cf.factId)) continue;
+      const f = await ctx.db.get(cf.factId);
+      if (f?.status === "approved") cited.push(f);
+    }
+  }
+  const newest = await ctx.db.query("facts").withIndex("by_space_status", (q) => q.eq("spaceId", space._id).eq("status", "approved")).order("desc").take(200);
+  const approved = [...cited, ...newest.filter((f) => !cited.some((c) => c._id === f._id))].slice(0, 200);
   const rejected = await ctx.db.query("facts").withIndex("by_space_status", (q) => q.eq("spaceId", space._id).eq("status", "rejected")).take(20);
   const entityCache = new Map<Id<"entities">, Doc<"entities"> | null>();
   const facts = await Promise.all(
@@ -26,7 +37,7 @@ async function onboardingInput(ctx: QueryCtx, space: Doc<"spaces">) {
         if (!entityCache.has(f.entityId)) entityCache.set(f.entityId, await ctx.db.get(f.entityId));
         e = entityCache.get(f.entityId) ?? null;
       }
-      return { text: f.text, category: f.category, entityName: e?.name, entityType: e?.type };
+      return { id: f._id as string, text: f.text, category: f.category, entityName: e?.name, entityType: e?.type };
     }),
   );
   const rewards = (await ctx.db.query("rewards").withIndex("by_space", (q) => q.eq("spaceId", space._id)).collect()).filter((r) => r.active);
@@ -44,8 +55,7 @@ async function onboardingInput(ctx: QueryCtx, space: Doc<"spaces">) {
           logoUrl: brand.logoRefs.find((l) => l.kind !== "favicon")?.url ?? null,
         }
       : null,
-    // The current spec (not a publish snapshot): when the brain changes and a course refreshes,
-    // the hire's world follows on its next load (the Mubit continuous-learning loop, end to end).
+    // The current spec; the hire's world serves a snapshot of this taken at each push (D-36).
     courses: courses.map((c) => ({
       packType: c.packType,
       title: c.title,
@@ -55,6 +65,7 @@ async function onboardingInput(ctx: QueryCtx, space: Doc<"spaces">) {
       spec: c.spec,
       desc: typeof (c.spec as { desc?: unknown })?.desc === "string" ? (c.spec as { desc: string }).desc : undefined,
       staleSteps: c.staleStepIds?.length ?? 0,
+      version: c.version,
     })),
     facts,
     rejected: rejected.map((f) => ({ text: f.text, category: f.category })),
@@ -99,7 +110,15 @@ export const recordDeploy = workerMutation({
     const space = await ctx.db.get(spaceId);
     if (!space) return fail(404, "Space not found");
     if (ok) {
-      await ctx.db.patch(spaceId, { deployState: "ready", deployMode: mode, deployUrl: url, deployProjectId: projectId, deployedAt: Date.now(), deployError: undefined, publishedAt: space.publishedAt ?? Date.now() });
+      const at = Date.now();
+      await ctx.db.patch(spaceId, { deployState: "ready", deployMode: mode, deployUrl: url, deployProjectId: projectId, deployedAt: at, deployError: undefined, publishedAt: space.publishedAt ?? at });
+      // D-36: the hire's world now serves exactly this content until the manager's next push, and
+      // the "New" badges (changes the manager has now published) clear.
+      for (const old of await ctx.db.query("world_snapshots").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).collect()) await ctx.db.delete(old._id);
+      await ctx.db.insert("world_snapshots", { spaceId, input: await onboardingInput(ctx, space), at });
+      for (const c of await ctx.db.query("courses").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).collect()) {
+        if (c.newStepIds?.length) await ctx.db.patch(c._id, { newStepIds: [] });
+      }
     } else {
       await ctx.db.patch(spaceId, { deployState: "error", deployError: error });
     }
@@ -113,6 +132,32 @@ export const published = query({
   handler: async (ctx, { slug }) => {
     const space = await ctx.db.query("spaces").withIndex("by_slug", (q) => q.eq("slug", slug)).first();
     if (!space || !space.deployedAt) return null;
-    return { input: await onboardingInput(ctx, space), mode: space.deployMode ?? "stand-in", deployedAt: space.deployedAt };
+    // The content as of the manager's last push (D-36); spaces published before snapshots existed
+    // fall back to the live content.
+    const snapshot = await ctx.db.query("world_snapshots").withIndex("by_space", (q) => q.eq("spaceId", space._id)).first();
+    return { input: snapshot?.input ?? (await onboardingInput(ctx, space)), mode: space.deployMode ?? "stand-in", deployedAt: space.deployedAt };
+  },
+});
+
+/**
+ * D-36 "Update courses": what changed since the manager's last push. Mubit's loop detects company
+ * changes (connector drift → stale facts → refreshed course steps); the manager sees what is new
+ * and decides when the hire's world gets it. Null when the space isn't published yet.
+ */
+export const pendingUpdates = query({
+  args: { spaceId: v.id("spaces") },
+  handler: async (ctx, { spaceId }) => {
+    const { space } = await requireRole(ctx, spaceId, MANAGERS);
+    if (!space.deployedAt) return null;
+    const snapshot = await ctx.db.query("world_snapshots").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).first();
+    const published = new Map<string, number | undefined>(
+      ((snapshot?.input as { courses?: { packType: string; version?: number }[] } | undefined)?.courses ?? []).map((c) => [c.packType, c.version]),
+    );
+    const courses = (await ctx.db.query("courses").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).collect()).filter((c) => c.status !== "archived");
+    const changed = courses
+      .filter((c) => (snapshot ? published.get(c.packType) !== c.version : (c.newStepIds?.length ?? 0) > 0))
+      .map((c) => ({ courseId: c._id, title: c.title, newSteps: c.newStepIds?.length ?? 0, isNew: snapshot ? !published.has(c.packType) : false }));
+    const refreshing = courses.filter((c) => c.needsRefresh).length;
+    return { changed, refreshing, deployedAt: space.deployedAt, building: space.deployState === "building" };
   },
 });
