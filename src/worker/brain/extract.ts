@@ -22,14 +22,25 @@ export function extractionUserMessage(chunk: Pick<PendingChunk, "text" | "title"
   ].join("\n\n");
 }
 
-export async function extractChunk(ctx: ExtractCtx, chunk: PendingChunk, rejected: string[], actor = "agent:seed_brain") {
-  const res = await ctx.llm.json({
+/** The model call alone — safe to run for several chunks in parallel (no writes). */
+export function llmExtract(ctx: Pick<ExtractCtx, "llm" | "space">, chunk: PendingChunk, rejected: string[]) {
+  return ctx.llm.json({
     task: "brain_extract",
     system: BRAIN_EXTRACT_SYSTEM_PROMPT,
     user: extractionUserMessage(chunk, rejected, ctx.space.name),
     schema: ExtractionBatch,
     offline: () => offlineExtract(chunk.text),
   });
+}
+
+export type Extraction = Awaited<ReturnType<typeof llmExtract>>;
+
+export async function extractChunk(ctx: ExtractCtx, chunk: PendingChunk, rejected: string[], actor = "agent:seed_brain") {
+  return resolveAndCommit(ctx, chunk, await llmExtract(ctx, chunk, rejected), actor);
+}
+
+/** F15 resolution + commit. Run sequentially: resolution reads entities the previous commit wrote. */
+export async function resolveAndCommit(ctx: ExtractCtx, chunk: PendingChunk, res: Extraction, actor = "agent:seed_brain") {
   const batch = res.value;
   const { entities, indexOf } = dedupeBatch(batch.entities);
   const resolved = await resolveEntities(ctx, entities, chunk.text);
