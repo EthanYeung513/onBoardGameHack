@@ -21,6 +21,7 @@ const http = new ConvexHttpClient(url);
 const convex: WorkerConvex = {
   query: (fn, args) => http.query(fn, { ...args, secret } as never),
   mutation: (fn, args) => http.mutation(fn, { ...args, secret } as never),
+  action: (fn, args) => http.action(fn, { ...args, secret } as never),
 };
 const workerId = `${hostname()}:${process.pid}`;
 const llm = createLlm();

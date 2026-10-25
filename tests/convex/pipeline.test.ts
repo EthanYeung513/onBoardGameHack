@@ -81,4 +81,20 @@ describe("pipeline jobs", () => {
     expect(again!.job.cursor).toEqual({ done: ["a"] });
     expect((await t.mutation(api.pipeline.finish, { secret, workerId: "w1", jobId: c!.job._id, outcome: { kind: "done" } })).lost).toBe(true);
   });
+
+  it("`next` adds jobs alongside the scan chain, and the cascade is queued once per space (not per scan)", async () => {
+    const { t, mgr, spaceId } = await setup();
+    const scanId = await mgr.mutation(api.scans.start, { spaceId });
+    const all = ["crawl", "extract_design", "analyse", "seed_brain"] as const;
+    for (const stage of all) {
+      const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: [stage] });
+      const next = stage === "seed_brain" ? [{ stage: "cascade" as const }] : undefined;
+      await t.mutation(api.pipeline.finish, { secret, workerId: "w", jobId: c!.job._id, outcome: { kind: "done", next } });
+    }
+    const jobs = await t.run((ctx) => ctx.db.query("jobs").collect());
+    expect(jobs.find((j) => j.stage === "generate_courses")).toMatchObject({ status: "queued", scanId });
+    const cascade = jobs.find((j) => j.stage === "cascade")!;
+    expect(cascade.status).toBe("queued");
+    expect(cascade.scanId ?? cascade.connectorId).toBeUndefined();
+  });
 });

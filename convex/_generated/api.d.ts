@@ -10,17 +10,21 @@
 
 import type * as auth from "../auth.js";
 import type * as authInfo from "../authInfo.js";
+import type * as brainWorker from "../brainWorker.js";
 import type * as crons from "../crons.js";
 import type * as editor from "../editor.js";
+import type * as facts from "../facts.js";
 import type * as http from "../http.js";
 import type * as ingest from "../ingest.js";
 import type * as lib_access from "../lib/access.js";
+import type * as lib_brainWrite from "../lib/brainWrite.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_slug from "../lib/slug.js";
 import type * as lib_stages from "../lib/stages.js";
 import type * as lib_worker from "../lib/worker.js";
 import type * as pipeline from "../pipeline.js";
 import type * as scans from "../scans.js";
+import type * as search from "../search.js";
 import type * as seed from "../seed.js";
 import type * as spaces from "../spaces.js";
 import type * as users from "../users.js";
@@ -34,17 +38,21 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   authInfo: typeof authInfo;
+  brainWorker: typeof brainWorker;
   crons: typeof crons;
   editor: typeof editor;
+  facts: typeof facts;
   http: typeof http;
   ingest: typeof ingest;
   "lib/access": typeof lib_access;
+  "lib/brainWrite": typeof lib_brainWrite;
   "lib/errors": typeof lib_errors;
   "lib/slug": typeof lib_slug;
   "lib/stages": typeof lib_stages;
   "lib/worker": typeof lib_worker;
   pipeline: typeof pipeline;
   scans: typeof scans;
+  search: typeof search;
   seed: typeof seed;
   spaces: typeof spaces;
   users: typeof users;

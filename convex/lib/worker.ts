@@ -1,6 +1,6 @@
-import { customMutation, customQuery } from "convex-helpers/server/customFunctions";
+import { customAction, customMutation, customQuery } from "convex-helpers/server/customFunctions";
 import { v } from "convex/values";
-import { mutation, query } from "../_generated/server";
+import { action, mutation, query } from "../_generated/server";
 import { fail } from "./errors";
 
 // The pipeline worker (src/worker, Node — locally via `npm run dev`, in production on Modal) talks
@@ -25,3 +25,5 @@ const workerArgs = {
 
 export const workerQuery = customQuery(query, workerArgs);
 export const workerMutation = customMutation(mutation, workerArgs);
+/** Worker actions: only for what queries/mutations can't do (vector search). */
+export const workerAction = customAction(action, workerArgs);

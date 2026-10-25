@@ -475,10 +475,10 @@ Phases in dependency order; each ends in something demoable. Backlog format
 - [ ] Sync pipeline stage, cursors, status machine, disconnect
 
 **Phase 4 — brain**
-- [ ] `entities`, `edges`, `facts`, `entity_mentions` schema
-- [ ] Extraction prompt + validation; resolution (keys → embedding → LLM)
+- [x] `entities`, `edges`, `facts`, `entity_mentions` schema
+- [x] Extraction prompt + validation; resolution (keys → embedding → LLM)
 - [ ] Review UI; brain search API; cosmos.gl brain page; GEXF export
-- [ ] Stale-fact marking on source changes; `diff_events` cascade (F34/F35)
+- [x] Stale-fact marking on source changes; `diff_events` cascade (F34/F35)
 
 **Phase 5 — courses + editor**
 - [ ] `CourseSpec` schema + validation; `generate_courses` stage

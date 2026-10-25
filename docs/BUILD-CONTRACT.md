@@ -157,6 +157,35 @@ sync/re-scan code must honour this cascade instead of inventing another one:
 - The cascade is per-space and resumable like any other job — a crashed
   mid-cascade run resumes from the last `diff_events` row processed.
 
+How it is wired (S8, D-25):
+
+- **Source stages end with `syncDone(summary)`** (`src/worker/ingest.ts`) →
+  `{ done: true, next: [{ stage: "cascade" }] }`. `pipeline.finish` queues
+  `cascade` per **space** (no scan/connector on the job), deduped while one is
+  queued/running; `next` adds jobs *alongside* the scan chain, never replaces it.
+  `seed_brain` also ends with `next: [cascade]`.
+- **`seed_brain`** extracts every `doc_chunks` row without `extractedAt`
+  (`brainWorker.pendingChunks` → `ctx.llm.json` task `brain_extract` →
+  resolution → `brainWorker.commitChunk`, one chunk per transaction, idempotent).
+  Facts dedupe on (entity, `facts.dedupeKey`); a match that is `stale` is
+  restored (`fact.refreshed`); a match with a `rejected` fact is suppressed.
+- **`cascade`** walks unprocessed `diff_events` oldest first: `added`/`changed`
+  → extracts the item's current chunks, then `brainWorker.settleDiff` restores
+  stale facts whose cited passage is unchanged and audits the rest
+  `fact.still_stale` (they surface for review); `removed` → nothing to extract.
+  `processedAt` marks each finished event; the job cursor keeps `lastId` + totals.
+  Website pages and connector items (GitHub, Slack, Jira, Notion, Drive, files)
+  take the same path.
+- **Step-level (F38):** `course_facts.stepId` (written by course generation)
+  names the CourseSpec step teaching a fact. `markItemStale` adds those ids to
+  `courses.staleStepIds` (and sets `needsRefresh`); regeneration clears them.
+  Audit rows: `fact.stale` and `course.step_stale` carry `source {connectorType,
+  kind, title}`, and `course.step_stale.payload.chain` reads
+  `slack “#payments” → fact “…” → course “…” → step s3`.
+- Brain review (`convex/facts.ts`: `list`, `approve`, `edit`, `reject`, `add`)
+  takes the fact's `version` (409 when stale). Search: `search.search` action
+  (BM25 + vector + 1-hop), `GET /api/brain/search?space=&q=` embeds the query.
+
 ## API conventions
 
 - Data routes are Convex functions; member-only ones assert `space_members`
