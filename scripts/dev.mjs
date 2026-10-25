@@ -177,10 +177,25 @@ const group = { detached: true };
 const children = [
   spawn(npx, ["convex", "dev"], { stdio: ["ignore", "inherit", "inherit"], env: cliEnv, cwd: root, ...group }),
   spawn(npx, ["next", "dev", "-p", port], { stdio: "inherit", env: process.env, cwd: root, ...group }),
-  // The pipeline worker (scan stages, connector syncs, the drift cascade) — on Modal in production.
-  // dembrandt (rendered-page brand extraction) runs on the worker's local Chromium; DEMBRANDT_ENABLED=0 opts out.
-  spawn("node", [path.join(root, "scripts", "run-ts.mjs"), "src/worker/main.ts"], { stdio: "inherit", env: { DEMBRANDT_ENABLED: "true", ...cliEnv }, cwd: root, ...group }),
 ];
+// The pipeline worker (scan stages, connector syncs, the drift cascade) — on Modal in production.
+// dembrandt (rendered-page brand extraction) runs on the worker's local Chromium; DEMBRANDT_ENABLED=0 opts out.
+// Supervised: if it exits it is restarted with backoff, so scans never wait on a dead worker.
+const startWorker = () => spawn("node", [path.join(root, "scripts", "run-ts.mjs"), "src/worker/main.ts"], { stdio: "inherit", env: { DEMBRANDT_ENABLED: "true", ...cliEnv }, cwd: root, ...group });
+let worker = startWorker();
+let workerRestarts = 0;
+const superviseWorker = () =>
+  worker.on("exit", (code, signal) => {
+    if (stopping) return;
+    const delay = Math.min(30_000, 1000 * 2 ** Math.min(workerRestarts++, 5));
+    console.error(`dev: pipeline worker exited (${signal ?? `code ${code}`}) — restarting in ${delay / 1000}s`);
+    setTimeout(() => {
+      if (stopping) return;
+      worker = startWorker();
+      superviseWorker();
+    }, delay);
+  });
+superviseWorker();
 console.log(`
   Orthogonal is starting:
     App          http://localhost:${port}            (landing)
@@ -194,7 +209,7 @@ let stopping = false;
 const stop = () => {
   if (stopping) return;
   stopping = true;
-  for (const c of children) {
+  for (const c of [...children, worker]) {
     try {
       process.kill(-c.pid, "SIGINT");
     } catch {}
@@ -203,4 +218,5 @@ const stop = () => {
 process.on("SIGINT", stop);
 process.on("SIGTERM", stop);
 process.on("exit", stop);
-for (const c of children) c.on("exit", (code) => { stop(); process.exitCode = code ?? 0; });
+// Convex or Next exiting ends the dev session (e.g. the web port is taken) — loudly, never half-up.
+for (const c of children) c.on("exit", (code) => { if (!stopping) console.error(`dev: ${c.spawnargs.slice(1, 3).join(" ")} exited (code ${code}) — stopping`); stop(); process.exitCode = code ?? 0; });
