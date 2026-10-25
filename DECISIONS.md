@@ -291,6 +291,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (thresholds are constants in `src/worker/brain/resolve.ts`; `dedupeKey` is optional)
 - **Revisit?:** secondary hard keys scan one type per space (fine to ~thousands of entities); restored facts don't yet clear `staleStepIds` (regeneration does)
 
+### D-21: Scan stages — evidence-first brand tokens, one swappable picker, website pages ingested
+- **Task:** S4 (scan stages crawl → extract_design → analyse, F4–F6)
+- **Time:** 2026-10-25T02:30Z
+- **Context:** the legacy stages are Supabase-bound; extract_design let the model write the token set; the brand-learning service needs every alternative with evidence and one place to swap the decision; the drift cascade needs website pages as source items
+- **Options:** A) port legacy stages as-is (model writes tokens) / B) keep all candidates with evidence on `brand_profiles.candidates`, model only labels candidates (Zod-validated: chosen hexes must be candidates), final choice in `pickBrandTokens(candidates)`
+- **Chosen:** B. Crawl keeps the legacy discovery/ranking/fetch/browser-fallback/screenshot logic; its cursor lists finished URLs (resume skips them); each page → `crawl_pages` (upsert scan+url) and `ingestDocument` into the `website` connector; a clean full crawl calls `sweepRemoved` (pages that 404/410'd count as gone, transient failures skip the sweep so nothing is falsely marked removed). dembrandt runs on the worker's local Chromium (`npm run dev` sets `DEMBRANDT_ENABLED=true` for the worker) plus the HTML/CSS evidence; logos/favicons/screenshots are copied into Convex storage. Quality: full (dembrandt + live model) / partial (HTML/CSS + live model) / offline (no model: evidence-only pick, voice labelled stand-in). The space name is refined from the site's company name only while it is still the host-derived default. Prompts spell out the JSON shape (the gateway's JSON mode doesn't see the Zod schema)
+- **Why:** no invented palettes; the learning agent swaps one function; website content flows through the same drift cascade as tools
+- **Reversibility:** easy
+- **Revisit?:** dembrandt's first run auto-installs its own Playwright Chromium (1.63) and Playwright GC can delete other versions in the shared cache — pin one Playwright version repo-wide; URL ranking favours `/guides`-style docs over about/careers on big sitemaps (stripe.com)
+
 ## Blockers
 
 None yet.

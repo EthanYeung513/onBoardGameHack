@@ -23,6 +23,7 @@ import type * as lib_slug from "../lib/slug.js";
 import type * as lib_stages from "../lib/stages.js";
 import type * as lib_worker from "../lib/worker.js";
 import type * as pipeline from "../pipeline.js";
+import type * as scanWorker from "../scanWorker.js";
 import type * as scans from "../scans.js";
 import type * as search from "../search.js";
 import type * as seed from "../seed.js";
@@ -51,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   "lib/stages": typeof lib_stages;
   "lib/worker": typeof lib_worker;
   pipeline: typeof pipeline;
+  scanWorker: typeof scanWorker;
   scans: typeof scans;
   search: typeof search;
   seed: typeof seed;
