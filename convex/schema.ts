@@ -450,6 +450,12 @@ export default defineSchema({
     status: courseStatus,
     needsRefresh: v.boolean(),
     version: v.number(),
+    /** "offline" when the labelled stand-in built the spec instead of the model (D-26). */
+    mode: v.optional(v.union(v.literal("live"), v.literal("offline"))),
+    /** What hires play once published: the spec + version stamped at publish, rebuilt when a
+     * published course regenerates (F36, audit `course.republished`). Edits to `spec` don't touch it. */
+    publishedSpec: v.optional(v.any()),
+    publishedVersion: v.optional(v.number()),
     /** F36 step-level drift: ids of CourseSpec steps whose facts went stale; cleared on regeneration. */
     staleStepIds: v.optional(v.array(v.string())),
   })

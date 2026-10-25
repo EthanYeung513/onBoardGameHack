@@ -9,16 +9,28 @@ import { DeployQr, absoluteUrl } from "@/components/manager/DeployPanel";
 import { Icon } from "@/components/manager/icons";
 import type { TabProps } from "./shared";
 
-// Course generation (S11) lands in its own PR: its control stays exactly as designed, disabled with
-// an honest tooltip. Publish = Generate → deploy (D-33): #pub-btn deploys this company's own
-// onboarding world (its own Vercel project, or the labelled stand-in at /o/<slug>/).
-export const GEN_PENDING = "Course generation is coming online";
+// "Generate course" queues the default packs the space is missing (generate_courses stage, real
+// Mubit). Free-text topics need the assistant (F22, postponed) — the input is kept as designed.
+// Publish = Generate → deploy (D-33): #pub-btn deploys this company's own onboarding world (its own
+// Vercel project, or the labelled stand-in at /o/<slug>).
+export const TOPIC_PENDING = "Custom topics arrive with the course assistant — this generates the standard courses from your brain";
 
 export function CoursesTab({ space, toast }: TabProps) {
   const courses = useQuery(api.dashboard.courses, { spaceId: space._id });
   const router = useRouter();
   const [topic, setTopic] = useState("");
   const deploy = useMutation(api.deploy.deployOnboarding);
+  const generate = useMutation(api.courses.generate);
+  const [genStatus, setGenStatus] = useState<string | null>(null);
+  const runGenerate = async () => {
+    setGenStatus(null);
+    try {
+      const { queued } = await generate({ spaceId: space._id });
+      setGenStatus(queued.length ? `Generating ${queued.length} course${queued.length === 1 ? "" : "s"} from your brain…` : "All standard courses exist — open one to regenerate it.");
+    } catch (err) {
+      setGenStatus(err instanceof ConvexError ? (err.data as { message: string }).message : "Couldn't start generation. Please try again.");
+    }
+  };
   const building = space.deployState === "building";
   const deployUrl = space.deployUrl;
   const published = Boolean(deployUrl);
@@ -51,16 +63,15 @@ export function CoursesTab({ space, toast }: TabProps) {
             onChange={(e) => setTopic(e.target.value)}
             style={{ flex: 1, minWidth: 220, padding: "10px 12px", border: "1px solid var(--line)", borderRadius: 8, fontSize: 13 }}
             placeholder="e.g. Security best practices"
-            onKeyDown={(e) => e.key === "Enter" && toast(GEN_PENDING)}
+            title={TOPIC_PENDING}
+            onKeyDown={(e) => e.key === "Enter" && void runGenerate()}
           />
-          <span title={GEN_PENDING} style={{ display: "inline-flex" }}>
-            <button className="btn btn-dark" id="gen-btn" disabled title={GEN_PENDING}>
-              <Icon name="sparkle" /> Generate course
-            </button>
-          </span>
+          <button className="btn btn-dark" id="gen-btn" onClick={() => void runGenerate()} title={TOPIC_PENDING}>
+            <Icon name="sparkle" /> Generate course
+          </button>
         </div>
         <div id="gen-status" style={{ fontSize: 13, color: "var(--muted)", marginTop: 10 }}>
-          {space.deployState === "error" && space.deployError ? `Last publish failed: ${space.deployError}` : null}
+          {genStatus ?? (space.deployState === "error" && space.deployError ? `Last publish failed: ${space.deployError}` : null)}
         </div>
       </div>
       <div className="panel" id="publish-panel" hidden={!published}>

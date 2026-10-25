@@ -1,25 +1,15 @@
-import { makeFunctionReference } from "convex/server";
 import { api } from "@convex/_generated/api";
-import type { Id } from "@convex/_generated/dataModel";
 
-// INTEGRATION POINT (D-28). The editor's writes belong to two parallel agents whose Convex modules
-// were not merged when the editor shipped:
-//   - convex/courses.ts (course generation, D-26): applyPatch, regenerateSteps
-//   - convex/brand.ts   (brand learning,   D-27): options, decide
-// These typed references are the agreed contracts (docs/BUILD-CONTRACT.md "Course contract",
-// brand addendum). Once both modules are on the base branch, replace each reference with
-// `api.courses.*` / `api.brand.*` from `@convex/_generated/api` — call sites don't change.
-// Until then calls fail honestly (a toast, or the Design tab without recommendations), never faked.
+// The editor's writes go through the owners' Convex modules (D-28): `api.courses` (D-26) and
+// `api.brand` (D-27).
 
 export type CoursePatch = { op: "set" | "add" | "remove"; path: string; value?: unknown };
 
 export const courseFns = {
   /** 409 when `version` is stale, 422 when the patched spec fails CourseSpec validation. */
-  applyPatch: makeFunctionReference<"mutation", { courseId: Id<"courses">; version: number; patches: CoursePatch[] }, unknown>(
-    "courses:applyPatch",
-  ),
+  applyPatch: api.courses.applyPatch,
   /** Manager-confirmed regeneration of the steps flagged stale (F36); clears them on completion. */
-  regenerateSteps: makeFunctionReference<"mutation", { courseId: Id<"courses">; stepIds: string[] }, unknown>("courses:regenerateSteps"),
+  regenerateSteps: api.courses.regenerateSteps,
 };
 
 export const BRAND_FIELDS = ["primary", "accent", "radius", "headline"] as const;

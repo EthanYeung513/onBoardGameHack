@@ -157,18 +157,35 @@ Gephi; `GET /api/brain/search` returns results with citations.
 
 ## Course contract
 
-`CourseSpec` (in `src/lib/flow/` next to FlowSpec):
+`CourseSpec` (`src/lib/flow/course-spec.ts`, next to FlowSpec):
 
 ```ts
-{ title, icon, building, game: 'quiz'|'inbox'|'road'|'scenario',
+{ title, icon, building, game: 'quiz'|'inbox'|'road'|'scenario', desc?,
   steps: Step[] }
-Step = { kind: 'welcome'|'fields'|'lesson'|'quiz'|'scenario'|'checklist'|'done',
-         title, body?, options?, teaches_fact_ids: uuid[] }
+Step = { id /* stable slug, unique per course */,
+         kind: 'welcome'|'fields'|'lesson'|'quiz'|'scenario'|'checklist'|'done',
+         title, body?, options?: { label, correct?, why? }[], teaches_fact_ids: Id<'facts'>[] }
 ```
 
-Validation: Zod + cross-field rules; every `lesson|quiz|scenario` step must
-cite ≥1 `approved` fact. Assistant edits are validated patches
-(`{op:'set'|'add'|'remove', path, value}`) — same rules as generation.
+Validation: Zod + cross-field rules (`courseSpecErrors`): welcome first and only first, done
+last and only last, unique step ids, every `lesson|quiz|scenario` step cites ≥1 fact that is
+`approved` in the space (no other fact may be cited); quiz/scenario 2–5 options with exactly one
+`correct`; checklist 2–8 / fields 1–6 label-only options; welcome/lesson/done no options.
+Assistant edits are validated patches (`src/lib/flow/course-patch.ts`,
+`{op:'set'|'add'|'remove', path: JSON pointer, value}`) — same rules as generation.
+
+Generation: `generate_courses` stage (`src/worker/stages/generate-courses.ts`), one course per
+pack (`src/lib/flow/course-packs.ts` = the mockup's four `COURSES`), upsert key
+`(spaceId, packType)`, `course_facts {courseId, factId, stepId}` rows per teaching step. A scan
+keeps existing courses; job cursor `{targets?: {packType, stepIds?}[], done?: packType[]}` —
+no `targets` = scan (all packs), a target without `stepIds` = full rebuild, with `stepIds` =
+rewrite only those steps. Packs with < 2 approved facts are skipped with a `warn` job event.
+
+Manager API (`convex/courses.ts`): `list(spaceId)`, `get(courseId)`, `regenerate(courseId)`,
+`regenerateSteps(courseId, stepIds)` (enqueue, manager confirm only), `applyPatch(courseId,
+version, patches)` (409 stale version, 422 invalid). Published courses: hires play
+`publishedSpec`/`publishedVersion`; a regeneration of a published course rebuilds them and
+audits `course.republished`; manual edits leave them until the next publish.
 
 ## Drift and self-adaptation contract (F34–F36)
 
@@ -182,7 +199,8 @@ sync/re-scan code must honour this cascade instead of inventing another one:
   `stale` and queues re-extraction; `added` queues extraction directly.
   Re-extraction re-runs resolution; outcomes land in `audit_events`.
 - A fact going `stale` flags every `CourseSpec` step listing it in
-  `teaches_fact_ids` → course row gets `needs_refresh=true`. Courses
+  `teaches_fact_ids` (via `course_facts.stepId`) → course row gets `needs_refresh=true` and the
+  step ids in `staleStepIds`; audit rows carry source (connector type + title) → fact → course → steps. Courses
   regenerate only on manager confirm; published `/s/:slug` content rebuilds
   from the new spec after regeneration.
 - The cascade is per-space and resumable like any other job — a crashed
