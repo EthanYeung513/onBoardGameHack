@@ -54,7 +54,7 @@ export interface HtmlEvidence {
   cssVariables?: Record<string, string>;
   fonts?: { value: string; count: number }[];
   radii?: { value: string; count: number }[];
-  logoCandidates?: { src: string; alt: string }[];
+  logoCandidates?: { src: string; alt: string; evidence?: string }[];
   icons?: string[];
 }
 
@@ -181,7 +181,7 @@ export function buildCandidates(html: HtmlEvidence, dembrandt?: Raw | null): Bra
   if (fromTitle) names.add(fromTitle, 1, "page title");
   for (const l of html.logoCandidates ?? []) {
     if (logos.some((x) => x.src === l.src)) continue;
-    logos.push({ kind: "mark", src: l.src, evidence: `<img> ${l.alt ? `alt="${l.alt.slice(0, 40)}"` : "named logo"}` });
+    logos.push({ kind: "mark", src: l.src, evidence: l.evidence ? `${l.evidence}${l.alt ? ` (alt "${l.alt.slice(0, 40)}")` : ""}` : `<img> ${l.alt ? `alt="${l.alt.slice(0, 40)}"` : "named logo"}` });
   }
   const icon = html.icons?.[0];
   if (icon && !logos.some((x) => x.kind === "favicon")) logos.push({ kind: "favicon", src: icon, evidence: '<link rel="icon">' });

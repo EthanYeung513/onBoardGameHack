@@ -1,3 +1,4 @@
+import { findLogoCandidates } from "./logo";
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
@@ -132,7 +133,8 @@ export async function htmlCssEvidence(url: string): Promise<Record<string, unkno
     fonts: top(fonts, 8),
     googleFonts: parsed.stylesheets.filter((s) => s.includes("fonts.googleapis.com")),
     radii: top(radii, 8),
-    logoCandidates: parsed.images.filter((i) => /logo|brand|wordmark/i.test(`${i.src} ${i.alt}`)).slice(0, 5),
+    // Ranked: home link in the header first; logo walls and photos penalised (src/lib/design/logo.ts).
+    logoCandidates: findLogoCandidates(page.text, page.finalUrl, { siteName: parsed.meta["og:site_name"] ?? parsed.meta["application-name"] ?? null }),
     icons: parsed.icons.slice(0, 4),
   };
 }

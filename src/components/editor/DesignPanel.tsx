@@ -15,6 +15,8 @@ type Props = {
   onPreview: (field: BrandField, value: string) => void;
   /** A committed pick — recorded through brand.decide. */
   onPick: (field: BrandField, value: string) => void;
+  /** The logo the scan found on the company's site (stored copy), if any. */
+  logo?: { url: string; label: string } | null;
 };
 
 const HEX = /^#[0-9a-f]{6}$/i;
@@ -54,7 +56,7 @@ function Recs({ field, opts, current, onPick }: { field: BrandField; opts: Brand
   );
 }
 
-export function DesignPanel({ options, design, onPreview, onPick }: Props) {
+export function DesignPanel({ options, design, onPreview, onPick, logo }: Props) {
   const f = options?.fields ?? {};
   // With brand learning the headline is the heading font (its candidates); without it, the mockup's presets.
   const headlineChoices = orderedChoices(f.headline).map((c) => c.value);
@@ -78,6 +80,21 @@ export function DesignPanel({ options, design, onPreview, onPick }: Props) {
 
   return (
     <>
+      <div className="dctl">
+        <label>Logo</label>
+        {logo ? (
+          <div className="logo-prev">
+            {/* Light and dark chips: logos made for dark headers (white wordmarks) stay legible. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logo.url} alt="Your company logo on a light background, found on your site" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logo.url} alt="" aria-hidden className="on-dark" />
+            <span className="val">{logo.label} · found on your site</span>
+          </div>
+        ) : (
+          <span className="val">No logo found on your site yet — re-scan or check Assets.</span>
+        )}
+      </div>
       {colorCtl("primary", "Primary color")}
       {colorCtl("accent", "Accent color")}
       <div className="dctl">

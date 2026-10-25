@@ -104,3 +104,9 @@
 .ob .ed .rec .rv{white-space:nowrap}
 .ob .ed .rec .badge{margin-left:auto;white-space:nowrap}
 .ob .ed .toast{background:#fff;color:#171717;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+
+/* Design tab: the logo the scan found on the company's site. */
+.ob .ed .logo-prev { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ob .ed .logo-prev img { max-height: 44px; max-width: 140px; object-fit: contain; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.ob .ed .logo-prev img.on-dark { background: #16161a; border-color: #2a2a30; }
+.ob .ed .logo-prev .val { flex-basis: 100%; }
