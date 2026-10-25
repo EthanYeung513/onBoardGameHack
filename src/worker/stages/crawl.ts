@@ -32,6 +32,7 @@ export interface CrawlCursor {
   shots: string[];
   /** Re-scan diff (content hashes): what ingest saw this crawl. */
   changes?: { added: number; changed: number; unchanged: number };
+  homeChange?: PageChange;
 }
 
 export interface CrawlDeps {
@@ -94,6 +95,7 @@ async function discoverPhase(ctx: StageContext, deps: CrawlDeps): Promise<SliceR
   if (home.fetchMethod === "browser") c.browserUsed++;
   c.changes = { added: 0, changed: 0, unchanged: 0 };
   if (homeChange !== "empty") c.changes[homeChange]++;
+  c.homeChange = homeChange;
   c.done.push(root);
 
   const types = [...new Set(c.urls.map((u) => u.pageType).filter((t) => t !== "home" && t !== "other"))].slice(0, 4);
@@ -183,7 +185,8 @@ async function finishPhase(ctx: StageContext, c: CrawlCursor): Promise<SliceResu
     ({ removed } = await ctx.convex.mutation(api.ingest.sweepRemoved, { spaceId: ctx.space._id, connectorId: c.connectorId, before: c.startedAt }));
     if (removed) await ctx.event("info", `${removed} page${removed > 1 ? "s" : ""} gone since the last scan`, { removed });
   }
-  const pages = await ctx.convex.mutation(api.scanWorker.finishCrawl, { scanId: ctx.scan!._id, connectorId: c.connectorId, removed });
+  const changes = c.changes ? { ...c.changes, home: c.homeChange } : undefined;
+  const pages = await ctx.convex.mutation(api.scanWorker.finishCrawl, { scanId: ctx.scan!._id, connectorId: c.connectorId, removed, changes });
   return { done: true, summary: `${pages} pages read from ${new URL(ctx.scan!.url).host}` };
 }
 

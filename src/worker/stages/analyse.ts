@@ -55,6 +55,16 @@ export const analyseStage: StageDefinition = {
     const scan = ctx.scan;
     if (!scan) throw new Error("analyse needs a scan");
     if (scan.findings) return { done: true, summary: "findings already written for this scan" };
+    // Cheap re-scan: nothing on the site changed since the last scan → reuse its analysis.
+    const ch = scan.changes;
+    if (ch && ch.added + ch.changed + ch.removed === 0) {
+      const prev = await ctx.convex.query(api.scanWorker.previousScan, { spaceId: ctx.space._id, scanId: scan._id });
+      if (prev) {
+        await ctx.convex.mutation(api.scanWorker.saveFindings, { scanId: scan._id, findings: { ...(prev.findings as object), reusedFrom: prev.scanId } });
+        await ctx.event("info", `No page changed since the last scan — reused its company analysis (no model call)`, { step: "analyse", reused: true });
+        return { done: true, summary: "unchanged since last scan — analysis reused" };
+      }
+    }
     const all = await ctx.convex.query(api.scanWorker.listCrawlPages, { scanId: scan._id, maxChars: PAGE_CHARS });
     const pages = all.filter((p) => p.text.trim().length > 0);
     if (!pages.length) throw new Error("No pages were read, so there is nothing to analyse");
