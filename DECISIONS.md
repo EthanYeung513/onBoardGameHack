@@ -261,6 +261,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (mapping is one pure function, `src/components/manager/scanSteps.ts`)
 - **Revisit?:** if the crawl stage reports its own sub-steps, map "Reading public pages" back to crawl progress
 
+### D-23: Dashboard aggregates — progress from attempts, honest disabled controls, invites by link
+- **Task:** S13 (dashboard.html on real data, F23–F30)
+- **Time:** 2026-10-25T03:00Z
+- **Context:** the mockup derives everything from `localStorage` (`seedDemoHires`, `h.games`, fixed insights/gaps). There is no attempts contract yet, course generation (S11) and publish (S14) land elsewhere, and only GitHub has a Nango integration
+- **Options:** A) wait for those contracts / B) define progress over `attempts` now, keep unbuilt controls in place but disabled with tooltips
+- **Chosen:** B. A course is done for a hire when they reached its `done` step or attempted every scored CourseSpec step; scores are 0–100 (0–1 scaled) averaged per course; on-track = complete hires / hires (0% with no hires, not the mockup's 100%). Knowledge gaps = categories (except "Other") with < 3 approved facts. AI FAB insights are fixed rules (`convex/lib/insights.ts`), no LLM. `gen-btn`/`pub-btn` are disabled with "coming online" tooltips; Connect buttons come from `src/components/manager/tools/registry.ts` and stay disabled ("Coming soon" / "Needs Nango integration setup") until a connector registers `connect`. Invites return `/join/<slug>?invite=<token>` and copy it (no email until S14). Rewards "Send to a hire" records a fulfilled redemption; removing a reward deactivates it. `spaces.reset` is owner-only, deletes content in 400-row batches via the scheduler, keeps the space, members and audit trail. Settings adds a "Profile & brain" panel (manager name, auto-approve threshold) that the mockup lacks (F29 asks for the profile)
+- **Why:** zero fabricated data, every visible control either works or says why not
+- **Reversibility:** easy (rules live in `convex/lib/progress.ts` / `insights.ts`)
+- **Revisit?:** when the game world fixes the attempts contract, and when S11/S14 land (enable the buttons)
+
 ### D-31: Google sign-in live; Apple dropped; login note removed
 - **Task:** auth steering (Nicole 2026-10-25)
 - **Time:** 2026-10-25T02:10Z

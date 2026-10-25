@@ -1,7 +1,9 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { audit, MANAGERS, requireRole, requireUser } from "./lib/access";
 import { fail } from "./lib/errors";
+import { resetBatch } from "./lib/reset";
 import { normalizeHost, slugify } from "./lib/slug";
 
 const DEFAULT_AUTO_APPROVE = 0.9;
@@ -88,5 +90,31 @@ export const update = mutation({
     }
     await ctx.db.patch(spaceId, patch);
     await audit(ctx, spaceId, `user:${userId}`, "space.updated", patch);
+  },
+});
+
+/**
+ * Settings danger zone (F29): owner-only wipe of the space's content — scans, brand, brain,
+ * connectors, courses, hires, rewards. The space, its members and its audit trail stay; the
+ * space returns to `created` so it can be re-scanned. Large spaces finish in scheduled batches.
+ */
+export const reset = mutation({
+  args: { spaceId: v.id("spaces") },
+  handler: async (ctx, { spaceId }) => {
+    const { userId } = await requireRole(ctx, spaceId, ["owner"]);
+    await ctx.db.patch(spaceId, { status: "created", brandProfileId: undefined, publishedAt: undefined, mode: undefined });
+    const { done, deleted } = await resetBatch(ctx, spaceId);
+    if (!done) await ctx.scheduler.runAfter(0, internal.spaces.resetContinue, { spaceId, actor: `user:${userId}` });
+    await audit(ctx, spaceId, `user:${userId}`, "space.reset", { deleted, done });
+    return { done };
+  },
+});
+
+export const resetContinue = internalMutation({
+  args: { spaceId: v.id("spaces"), actor: v.string() },
+  handler: async (ctx, { spaceId, actor }) => {
+    const { done, deleted } = await resetBatch(ctx, spaceId);
+    if (!done) await ctx.scheduler.runAfter(0, internal.spaces.resetContinue, { spaceId, actor });
+    else await audit(ctx, spaceId, actor, "space.reset.finished", { deleted });
   },
 });
