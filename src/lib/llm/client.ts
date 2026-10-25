@@ -7,8 +7,10 @@ import { MubitClient, type MubitMessage } from "@/llm/mubit";
 
 // Legacy studio LLM entry point (Anthropic-shaped params). The `gateway` route is Mubit's
 // OpenAI-compatible gateway via the one adapter, src/llm/mubit.ts — gpt-* models only; the gateway
-// serves no Claude, so Mubit keys are never sent to an /anthropic path. `direct` is the optional
-// paid Anthropic fallback and is used only when ANTHROPIC_API_KEY is set.
+// serves no Claude, so Mubit keys are never sent to an /anthropic path. Every call goes through the
+// gateway when MUBIT_API_KEY is set (Nicole: "lets use the gateway for now": all inference lands in
+// the Mubit project, which is what trains its adapters). `direct` Anthropic is an emergency switch
+// only: MUBIT_GATEWAY_ENABLED=false plus ANTHROPIC_API_KEY. It is never an automatic fallback.
 
 export type Route = "gateway" | "direct";
 
@@ -35,13 +37,12 @@ function mubitClient(): MubitClient {
   return mubit;
 }
 
+/** Exactly one route: the gateway, or direct Anthropic only when the gateway is switched off on purpose. */
 export function routes(): Route[] {
   const e = env();
-  const out: Route[] = [];
-  if (gatewayEnabled(e) && mubitConfigFromEnv()) out.push("gateway");
-  if (e.ANTHROPIC_API_KEY) out.push("direct");
-  if (out.length === 0) throw new Error("No model credentials: set MUBIT_API_KEY (or the optional ANTHROPIC_API_KEY)");
-  return out;
+  if (gatewayEnabled(e) && mubitConfigFromEnv()) return ["gateway"];
+  if (e.MUBIT_GATEWAY_ENABLED === false && e.ANTHROPIC_API_KEY) return ["direct"];
+  throw new Error("No model route: set MUBIT_API_KEY (all calls go through the Mubit gateway)");
 }
 
 type CreateParams = Omit<Anthropic.MessageCreateParamsNonStreaming, "model" | "metadata" | "output_config"> & {
@@ -166,26 +167,22 @@ export async function completeJson<S extends z.ZodType>(
 ): Promise<{ data: z.infer<S>; route: Route; attempts: number }> {
   const retries = ctx.retries ?? 2;
   if (routes()[0] === "gateway") {
-    try {
-      const { system, messages } = toMubit(params);
-      const t0 = Date.now();
-      const r = await mubitClient().json({
-        task: ctx.task,
-        system,
-        user: messages,
-        schema: schema as z.ZodType<z.infer<S>>,
-        validate: ctx.validate,
-        retries,
-        // Tool/prompted modes carried big schemas; JSON mode needs the schema spelled out for those.
-        jsonSchema: ctx.mode === "tool" || ctx.mode === "prompted" ? (ctx.jsonSchema ?? z.toJSONSchema(schema)) : undefined,
-        onAttempt: ({ attempt, errors, usage }) =>
-          ctx.log?.(errors.length ? "warn" : "info", `Model call ${ctx.task} via gateway (attempt ${attempt})`, { ms: Date.now() - t0, usage, errors: errors.slice(0, 10) }),
-      });
-      return { data: r.value, route: "gateway", attempts: r.attempts };
-    } catch (err) {
-      if (!routes().includes("direct")) throw err;
-      await ctx.log?.("warn", "Mubit gateway call failed, falling back to direct Anthropic", { task: ctx.task, error: String(err) });
-    }
+    const { system, messages } = toMubit(params);
+    const t0 = Date.now();
+    const r = await mubitClient().json({
+      task: ctx.task,
+      system,
+      user: messages,
+      schema: schema as z.ZodType<z.infer<S>>,
+      validate: ctx.validate,
+      retries,
+      // Tool/prompted modes carried big schemas; JSON mode needs the schema spelled out for those.
+      jsonSchema: ctx.mode === "tool" || ctx.mode === "prompted" ? (ctx.jsonSchema ?? z.toJSONSchema(schema)) : undefined,
+      onAttempt: ({ attempt, errors, usage }) =>
+        ctx.log?.(errors.length ? "warn" : "info", `Model call ${ctx.task} via gateway (attempt ${attempt})`, { ms: Date.now() - t0, usage, errors: errors.slice(0, 10) }),
+    });
+    // No fallback: a gateway failure is reported, never silently re-routed off Mubit.
+    return { data: r.value, route: "gateway", attempts: r.attempts };
   }
   const prompted = ctx.mode === "prompted";
   const viaTool = ctx.mode === "tool";

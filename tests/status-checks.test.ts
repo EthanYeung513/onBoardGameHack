@@ -97,7 +97,7 @@ describe("check:env", () => {
       }),
     );
     expect(rs["GitHub connector"]).toMatchObject({ status: "fail", detail: expect.stringContaining("401") });
-    expect(rs["Anthropic (optional)"].status).toBe("warn");
+    expect(rs["Anthropic (emergency only)"].status).toBe("warn");
     expect(rs["Cloudflare Browser Rendering"].status).toBe("warn"); // rate limited, not broken
     expect(exitCode(Object.values(rs))).toBe(1);
   });
