@@ -160,24 +160,47 @@ if (fnEnv.length) {
 const offline = !env.MUBIT_API_KEY || env.OFFLINE === "1";
 console.log(`convex: function env synced (${fnEnv.length} provider vars)${offline ? " — LLM/embeddings run OFFLINE stand-ins" : ""}`);
 
+// Workers left over from an earlier run of this checkout (a killed parent used to orphan them)
+// would keep claiming jobs with stale code — stop them first. Only this checkout's processes.
+for (const pid of fs.readdirSync("/proc").filter((d) => /^\d+$/.test(d) && Number(d) !== process.pid)) {
+  try {
+    const cmd = fs.readFileSync(`/proc/${pid}/cmdline`, "utf8");
+    if (cmd.includes("src/worker/main.ts") && fs.realpathSync(`/proc/${pid}/cwd`) === fs.realpathSync(root)) {
+      process.kill(Number(pid), "SIGTERM");
+      console.log(`dev: stopped a stale worker from an earlier run (pid ${pid})`);
+    }
+  } catch {}
+}
+
+// Each child runs in its own process group so stopping dev stops grandchildren (tsx, next) too.
+const group = { detached: true };
 const children = [
-  spawn(npx, ["convex", "dev"], { stdio: ["ignore", "inherit", "inherit"], env: cliEnv, cwd: root }),
-  spawn(npx, ["next", "dev", "-p", port], { stdio: "inherit", env: process.env, cwd: root }),
+  spawn(npx, ["convex", "dev"], { stdio: ["ignore", "inherit", "inherit"], env: cliEnv, cwd: root, ...group }),
+  spawn(npx, ["next", "dev", "-p", port], { stdio: "inherit", env: process.env, cwd: root, ...group }),
   // The pipeline worker (scan stages, connector syncs, the drift cascade) — on Modal in production.
   // dembrandt (rendered-page brand extraction) runs on the worker's local Chromium; DEMBRANDT_ENABLED=0 opts out.
-  spawn("node", [path.join(root, "scripts", "run-ts.mjs"), "src/worker/main.ts"], { stdio: "inherit", env: { DEMBRANDT_ENABLED: "true", ...cliEnv }, cwd: root }),
+  spawn("node", [path.join(root, "scripts", "run-ts.mjs"), "src/worker/main.ts"], { stdio: "inherit", env: { DEMBRANDT_ENABLED: "true", ...cliEnv }, cwd: root, ...group }),
 ];
 console.log(`
   Orthogonal is starting:
     App          http://localhost:${port}            (landing)
     Sign up      http://localhost:${port}/login      (email + password; no keys needed)
-    Demo scan    http://localhost:${port}/try        (public constructor)
     Convex       ${env.NEXT_PUBLIC_CONVEX_URL ?? env.CONVEX_DEPLOYMENT}
     Convex UI    http://127.0.0.1:${process.env.CONVEX_LOCAL_PORT ? Number(process.env.CONVEX_LOCAL_PORT) + 2 : 6791}               (self-hosted dashboard; admin key in .env.local)
   Worker         pipeline jobs (${offline ? "LLM/embeddings OFFLINE — labelled stand-ins" : "Mubit live"})
   Demo login:    demo@orthogonal.dev / demo-password   (seeded Acme Pay space)
 `);
-const stop = () => children.forEach((c) => c.kill("SIGINT"));
+let stopping = false;
+const stop = () => {
+  if (stopping) return;
+  stopping = true;
+  for (const c of children) {
+    try {
+      process.kill(-c.pid, "SIGINT");
+    } catch {}
+  }
+};
 process.on("SIGINT", stop);
 process.on("SIGTERM", stop);
+process.on("exit", stop);
 for (const c of children) c.on("exit", (code) => { stop(); process.exitCode = code ?? 0; });
