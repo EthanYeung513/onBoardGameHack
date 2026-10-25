@@ -1,10 +1,19 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
+import { useState } from "react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 import { Icon } from "@/components/manager/icons";
+import { FormModal, type FormField } from "./FormModal";
 import { errMsg, type TabProps } from "./shared";
+
+type Reward = { _id: Id<"rewards">; name: string; costCoins: number };
+type Dialog =
+  | { kind: "add" }
+  | { kind: "edit"; reward: Reward }
+  | { kind: "send"; reward: Reward }
+  | { kind: "remove"; reward: Reward };
 
 /** The mockup's reward icons, picked from the reward's name (rewards have no icon field). */
 export function rewardIcon(name: string): string {
@@ -25,44 +34,55 @@ export function RewardsTab({ space, toast }: TabProps) {
   const remove = useMutation(api.rewards.remove);
   const send = useMutation(api.rewards.send);
 
+  const [dialog, setDialog] = useState<Dialog | null>(null);
+
+  /** Runs a mutation from the modal: a toast on success, the error shown in the modal otherwise. */
   const run = async (fn: () => Promise<unknown>, ok: string) => {
     try {
       await fn();
       toast(ok);
+      return null;
     } catch (err) {
-      toast(errMsg(err));
+      return errMsg(err);
     }
   };
 
-  const askCost = (initial?: number) => {
-    const raw = window.prompt("Cost in coins:", initial ? String(initial) : "");
-    return raw === null ? null : Number(raw.trim());
-  };
+  const rewardFields = (r?: Reward): FormField[] => [
+    { name: "name", label: "Reward name", placeholder: "e.g. Coffee voucher — $5", initial: r?.name, required: true },
+    { name: "cost", label: "Cost in coins", type: "number", placeholder: "120", initial: r ? String(r.costCoins) : "", required: true, min: 1 },
+  ];
 
-  const add = async () => {
-    const name = window.prompt("New reward — name (e.g. Coffee voucher — $5):");
-    if (!name) return;
-    const costCoins = askCost();
-    if (costCoins === null) return;
-    await run(() => create({ spaceId: space._id, name, costCoins }), `${name} added to the shop`);
-  };
-
-  const edit = async (r: { _id: Id<"rewards">; name: string; costCoins: number }) => {
-    const name = window.prompt("Reward name:", r.name);
-    if (name === null) return;
-    const costCoins = askCost(r.costCoins);
-    if (costCoins === null) return;
-    await run(() => update({ rewardId: r._id, name, costCoins }), "Reward updated");
-  };
-
-  const gift = async (r: { _id: Id<"rewards">; name: string }) => {
-    const email = window.prompt(`Send "${r.name}" to which hire? (email)`);
-    if (!email) return;
-    await run(() => send({ rewardId: r._id, email }), `${r.name} sent to ${email}`);
-  };
+  const modal = (() => {
+    if (!dialog) return null;
+    const close = () => setDialog(null);
+    switch (dialog.kind) {
+      case "add":
+        return (
+          <FormModal title="Add reward" sub="Hires buy it with coins in the in-game shop." fields={rewardFields()} submitLabel="Add to shop" onClose={close}
+            onSubmit={(v) => run(() => create({ spaceId: space._id, name: v.name, costCoins: Number(v.cost) }), `${v.name} added to the shop`)} />
+        );
+      case "edit":
+        return (
+          <FormModal title="Edit reward" fields={rewardFields(dialog.reward)} submitLabel="Save" onClose={close}
+            onSubmit={(v) => run(() => update({ rewardId: dialog.reward._id, name: v.name, costCoins: Number(v.cost) }), "Reward updated")} />
+        );
+      case "send":
+        return (
+          <FormModal title={`Send “${dialog.reward.name}”`} sub="Gift it to a hire directly." submitLabel="Send" onClose={close}
+            fields={[{ name: "email", label: "Hire's work email", type: "email", placeholder: "name@company.com", required: true }]}
+            onSubmit={(v) => run(() => send({ rewardId: dialog.reward._id, email: v.email }), `${dialog.reward.name} sent to ${v.email}`)} />
+        );
+      case "remove":
+        return (
+          <FormModal title={`Remove “${dialog.reward.name}”?`} sub="It disappears from the shop; past redemptions keep their history." fields={[]} submitLabel="Remove" danger onClose={close}
+            onSubmit={() => run(() => remove({ rewardId: dialog.reward._id }), "Reward removed")} />
+        );
+    }
+  })();
 
   return (
     <>
+      {modal}
       <div className="top">
         <div>
           <h1>Rewards</h1>
@@ -72,7 +92,7 @@ export function RewardsTab({ space, toast }: TabProps) {
       <div className="panel">
         <div className="ptitle">
           <h3 style={{ marginBottom: 0 }}>Shop catalog</h3>
-          <button className="btn btn-ghost" onClick={() => void add()}>
+          <button className="btn btn-ghost" onClick={() => setDialog({ kind: "add" })}>
             + Add reward
           </button>
         </div>
@@ -89,16 +109,16 @@ export function RewardsTab({ space, toast }: TabProps) {
                 <b>{r.name}</b>
                 <span>{r.costCoins} coins · via in-game shop</span>
               </div>
-              <button className="btn btn-dark" onClick={() => void gift(r)}>
+              <button className="btn btn-dark" onClick={() => setDialog({ kind: "send", reward: r })}>
                 Send to a hire
               </button>
-              <button className="btn btn-ghost" style={small} onClick={() => void edit(r)}>
+              <button className="btn btn-ghost" style={small} onClick={() => setDialog({ kind: "edit", reward: r })}>
                 Edit
               </button>
               <button
                 className="btn btn-ghost"
                 style={small}
-                onClick={() => window.confirm(`Remove "${r.name}" from the shop?`) && void run(() => remove({ rewardId: r._id }), "Reward removed")}
+                onClick={() => setDialog({ kind: "remove", reward: r })}
               >
                 Remove
               </button>
@@ -110,7 +130,7 @@ export function RewardsTab({ space, toast }: TabProps) {
         <h3>Recent redemptions</h3>
         <div id="redemptions" style={{ fontSize: 13, color: "var(--muted)" }}>
           {!data?.redemptions.length
-            ? "None yet — rewards hires redeem in the game will appear here."
+            ? "None yet."
             : data.redemptions.map((r) => (
                 <div className="fact" key={r._id}>
                   <span className="cat">

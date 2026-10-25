@@ -11,12 +11,13 @@ export function TeamTab({ space, toast }: TabProps) {
   const total = data?.coursesTotal ?? 0;
   return (
     <>
+      {invite.modal}
       <div className="top">
         <div>
           <h1>Team</h1>
           <p>Hires in this space.</p>
         </div>
-        <button className="btn btn-primary" onClick={() => void invite()}>
+        <button className="btn btn-primary" onClick={invite.open}>
           + Invite
         </button>
       </div>
