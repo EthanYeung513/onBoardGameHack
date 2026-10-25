@@ -13,7 +13,7 @@ import type { TabProps } from "./shared";
 // Mubit). Free-text topics need the assistant (F22, postponed) — the input is kept as designed.
 // Publish = Generate → deploy (D-33): #pub-btn deploys this company's own onboarding world (its own
 // Vercel project, or the labelled stand-in at /o/<slug>).
-export const TOPIC_PENDING = "Custom topics arrive with the course assistant — this generates the standard courses from your brain";
+export const TOPIC_PENDING = "Custom topics arrive with the course assistant";
 
 export function CoursesTab({ space, toast }: TabProps) {
   const courses = useQuery(api.dashboard.courses, { spaceId: space._id });
@@ -26,7 +26,7 @@ export function CoursesTab({ space, toast }: TabProps) {
     setGenStatus(null);
     try {
       const { queued } = await generate({ spaceId: space._id });
-      setGenStatus(queued.length ? `Generating ${queued.length} course${queued.length === 1 ? "" : "s"} from your brain…` : "All standard courses exist — open one to regenerate it.");
+      setGenStatus(queued.length ? `Generating ${queued.length} course${queued.length === 1 ? "" : "s"} from your brain…` : "All standard courses exist.");
     } catch (err) {
       setGenStatus(err instanceof ConvexError ? (err.data as { message: string }).message : "Couldn't start generation. Please try again.");
     }
@@ -79,10 +79,10 @@ export function CoursesTab({ space, toast }: TabProps) {
           World published <Icon name="globe" />
         </h3>
         <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 10 }}>
-          Share this link with new hires — they&apos;ll log in with their company email.
+          Share this link with new hires.
         </p>
         <p style={{ fontSize: 12, color: "var(--muted)", marginBottom: 10 }}>
-          {space.deployMode === "vercel" ? "Deployed as its own Vercel project" : "Stand-in — served by Orthogonal (Vercel not configured)"}
+          {space.deployMode === "vercel" ? "Deployed as its own Vercel project" : "Stand-in (served by Orthogonal, Vercel not configured)"}
           {space.deployedAt ? ` · updated ${new Date(space.deployedAt).toLocaleString()}` : ""}
         </p>
         {playUrl && <DeployQr url={playUrl} />}
@@ -111,7 +111,7 @@ export function CoursesTab({ space, toast }: TabProps) {
         </div>
         <div className="grid2" id="course-cards">
           {courses && courses.length === 0 && (
-            <p style={{ color: "var(--muted)" }}>No courses yet — they are generated from your company brain.</p>
+            <p style={{ color: "var(--muted)" }}>No courses yet.</p>
           )}
           {courses?.map((c) => (
             <div
@@ -137,7 +137,7 @@ export function CoursesTab({ space, toast }: TabProps) {
                 ))}
               </ul>
               {c.needsRefresh ? (
-                <span className="pill inv" style={{ alignSelf: "flex-start" }} title="Brain facts this course teaches changed — regenerate to refresh it">
+                <span className="pill inv" style={{ alignSelf: "flex-start" }} title="Brain facts this course teaches changed">
                   Needs refresh{c.staleSteps > 0 ? ` · ${c.staleSteps} step${c.staleSteps === 1 ? "" : "s"}` : ""}
                 </span>
               ) : (

@@ -58,7 +58,7 @@ export function AssetsPanel({ host, assets, selected, onSelect }: Props) {
         ))}
       </div>
       {assets && all.length === 0 ? (
-        <p className="side-empty">No assets from {host} yet — they appear here once the scan has read your site.</p>
+        <p className="side-empty">No assets from {host} yet.</p>
       ) : (
         <div className="agrid">
           {shown.map((a) => (

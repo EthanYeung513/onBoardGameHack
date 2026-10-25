@@ -14,7 +14,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
       <div style={{ padding: 40, fontFamily: "system-ui" }}>
         <h1 style={{ fontSize: 22, marginBottom: 8 }}>Convex is not configured</h1>
         <p>
-          Set <code>NEXT_PUBLIC_CONVEX_URL</code> in <code>.env.local</code> — run <code>npm run dev</code>, which boots the
+          Set <code>NEXT_PUBLIC_CONVEX_URL</code> in <code>.env.local</code>. Run <code>npm run dev</code>, which boots the
           local Convex backend and fills it in.
         </p>
       </div>

@@ -1,6 +1,8 @@
+import { stripEmDashDeep } from "@/lib/emdash";
+
 // Turns a space's real content into the `OB.*` overrides the mockup's hire-facing world reads
 // (templates/onboarding: state.js + game.js). Pure and defensive: CourseSpec steps are read by
-// kind; nothing is invented — a mini-game with no real content falls back to another game that
+// kind; nothing is invented: a mini-game with no real content falls back to another game that
 // has content, and the world is labelled when it was generated offline.
 
 export interface OnboardingInput {
@@ -103,7 +105,7 @@ export function buildOnboardingContent(input: OnboardingInput) {
 
   const inbox = [
     ...input.facts.map((f) => ({ text: f.text, save: true, why: `${f.category}: this is how things work at ${company}.` })),
-    ...input.rejected.map((f) => ({ text: f.text, save: false, why: `Not true at ${company} — your manager ruled it out.` })),
+    ...input.rejected.map((f) => ({ text: f.text, save: false, why: `Not true at ${company}. Your manager ruled it out.` })),
   ].slice(0, 12);
   const road = quiz.map((q) => {
     const wrong = q.a.findIndex((_, i) => i !== q.correct);
@@ -124,7 +126,9 @@ export function buildOnboardingContent(input: OnboardingInput) {
 
   const rewards = input.rewards.slice(0, 6).map((r, i) => ({ id: `r${i + 1}`, name: r.name, cost: r.costCoins, icon: "gift", emoji: "🎁" }));
 
-  return {
+  // Em-dash rule (src/lib/emdash.ts) on everything the hire reads, including courses and facts
+  // generated before the rule existed.
+  return stripEmDashDeep({
     company,
     host: input.space.host,
     offline: input.space.mode === "offline",
@@ -144,7 +148,7 @@ export function buildOnboardingContent(input: OnboardingInput) {
     BRAIN_FACTS: input.facts.map((f) => ({ cat: f.category, text: f.text })),
     REWARDS: rewards,
     playable: courses.length > 0 && Boolean(fallback),
-  };
+  });
 }
 
 export type OnboardingContent = ReturnType<typeof buildOnboardingContent>;
@@ -170,7 +174,7 @@ export function onboardingScript(content: OnboardingContent, meta: { generatedAt
   });
   if (D.offline || ${JSON.stringify(meta.mode === "stand-in")}) {
     var b = document.createElement("div");
-    b.textContent = ${JSON.stringify(meta.mode === "stand-in" ? "Preview build (stand-in) — served by Orthogonal, not yet deployed to its own Vercel project" : "")} + (D.offline ? " · content generated offline (stand-in)" : "");
+    b.textContent = ${JSON.stringify(meta.mode === "stand-in" ? "Preview build (stand-in), served by Orthogonal and not yet deployed to its own Vercel project" : "")} + (D.offline ? " · content generated offline (stand-in)" : "");
     b.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:99;padding:6px 10px;font:12px system-ui;background:#fff3cd;color:#664d03;text-align:center";
     document.addEventListener("DOMContentLoaded", function () { document.body.appendChild(b); });
   }

@@ -44,7 +44,7 @@ export function channelDayDocs(channel: { id: string; name: string }, messages: 
       kind: "message" as const,
       externalId: `slack:${channel.id}:${day}`,
       url: `https://slack.com/app_redirect?channel=${channel.id}`,
-      title: `#${channel.name} — ${day}`,
+      title: `#${channel.name} · ${day}`,
       text: `# #${channel.name} on ${day}\n\n${lines.join("\n")}`,
       meta: { channel: channel.id, channelName: channel.name, day, messages: msgs.length },
     };
@@ -65,12 +65,12 @@ export const slackSyncer: Syncer = {
       const channels = list.channels.filter((c) => !c.is_archived);
       const readable = channels.filter((c) => c.is_member).slice(0, SLACK_CAPS.channels);
       const skipped = channels.filter((c) => !c.is_member).length;
-      if (skipped) await env.event("info", `Slack: ${skipped} public channel${skipped === 1 ? "" : "s"} skipped — invite the app to read history`);
+      if (skipped) await env.event("info", `Slack: ${skipped} public channel${skipped === 1 ? "" : "s"} skipped. Invite the app to read their history`);
       const doc: SyncDoc = {
         kind: "doc",
         externalId: "slack:channels",
         title: "Slack channels",
-        text: `# Public Slack channels\n\n${channels.map((c) => `- #${c.name}${c.purpose?.value ? ` — ${c.purpose.value}` : c.topic?.value ? ` — ${c.topic.value}` : ""}`).join("\n")}`,
+        text: `# Public Slack channels\n\n${channels.map((c) => `- #${c.name}${c.purpose?.value ? `: ${c.purpose.value}` : c.topic?.value ? `: ${c.topic.value}` : ""}`).join("\n")}`,
         meta: { count: channels.length },
       };
       const tasks: Task[] = readable.map((c) => ({ kind: "history", id: c.id, name: c.name, names }));

@@ -6,7 +6,7 @@ import type { BrandProfile } from "@/components/manager/brand";
 // The space's extracted identity (brand_profiles), in the legend's chrome: palette swatches,
 // typography and voice. No profile yet → says so; offline/partial extraction is labelled.
 
-const QUALITY: Record<string, string> = { partial: "partial — HTML/CSS fallback", offline: "offline stand-in" };
+const QUALITY: Record<string, string> = { partial: "partial (HTML/CSS fallback)", offline: "offline stand-in" };
 
 export function IdentityCard({ brand }: { brand: BrandProfile | null | undefined }) {
   // Mounted client-side only (after the space query resolves); collapsed on phones.
@@ -37,7 +37,7 @@ export function IdentityCard({ brand }: { brand: BrandProfile | null | undefined
             {brand.quality && QUALITY[brand.quality] && <div className="q">{QUALITY[brand.quality]}</div>}
           </>
         ) : (
-          <div className="row">Not extracted yet — it appears after the website scan.</div>
+          <div className="row">Not extracted yet.</div>
         ))}
     </div>
   );

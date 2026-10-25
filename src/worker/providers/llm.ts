@@ -2,6 +2,7 @@ import type OpenAI from "openai";
 import type { z } from "zod";
 import { mubitConfigFromEnv } from "@/llm/env";
 import { MubitClient } from "@/llm/mubit";
+import { stripEmDashDeep } from "@/lib/emdash";
 
 // The worker's LLM: a thin wrapper over the one Mubit adapter (src/llm/mubit.ts). With no key it
 // uses the caller's labelled offline stand-in, or throws ProviderOffline (503, never faked).
@@ -9,7 +10,7 @@ import { MubitClient } from "@/llm/mubit";
 export class ProviderOffline extends Error {
   readonly code = 503;
   constructor(what: string) {
-    super(`${what} is not configured (set MUBIT_API_KEY) — no offline stand-in for this step`);
+    super(`${what} is not configured (set MUBIT_API_KEY). There is no offline stand-in for this step.`);
   }
 }
 
@@ -51,10 +52,11 @@ export function createLlm(openai?: OpenAI): Llm {
     async json<T>(req: JsonRequest<T>): Promise<JsonResult<T>> {
       if (!mubit) {
         if (!req.offline) throw new ProviderOffline("The LLM provider");
-        return { value: req.schema.parse(req.offline()), mode: "offline", model: "offline-stand-in", requestId: null };
+        return { value: stripEmDashDeep(req.schema.parse(req.offline())), mode: "offline", model: "offline-stand-in", requestId: null };
       }
       const r = await mubit.json({ task: req.task, system: req.system, user: req.user, schema: req.schema, validate: req.validate, model: req.model, retries: req.retries });
-      return { value: r.value, mode: "live", model: r.model, requestId: r.requestId };
+      // Em-dash rule (src/lib/emdash.ts): every generated string, after validation.
+      return { value: stripEmDashDeep(r.value), mode: "live", model: r.model, requestId: r.requestId };
     },
   };
 }

@@ -16,7 +16,7 @@ async function loadFact(ctx: MutationCtx, factId: Id<"facts">, version: number) 
   const fact = await ctx.db.get(factId);
   if (!fact) return fail(404, "Fact not found");
   const { userId } = await requireRole(ctx, fact.spaceId, MANAGERS);
-  if (fact.version !== version) return fail(409, "This fact changed since you loaded it — reload and try again");
+  if (fact.version !== version) return fail(409, "This fact changed since you loaded it. Reload and try again.");
   return { fact, actor: `user:${userId}` };
 }
 

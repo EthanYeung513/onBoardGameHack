@@ -35,18 +35,18 @@ export function ProvenancePanel({ spaceId, entityId, onClose }: { spaceId: Id<"s
           </div>
           <div className="pt">{e.name}</div>
           {e.aliases.length > 0 && <div className="pm">also known as {e.aliases.join(", ")}</div>}
-          {e.facts.length === 0 && <div className="pm">No facts yet — only mentions in your sources.</div>}
+          {e.facts.length === 0 && <div className="pm">No facts yet.</div>}
           {e.facts.map((f) => (
             <div key={f.id} className={`pfact ${f.status}`}>
               {f.status === "stale" && (
                 <div className="flag stale">
-                  stale — source changed
+                  stale
                   {f.citations.find((c) => c.changed)?.connector
                     ? ` in ${CONNECTOR[f.citations.find((c) => c.changed)!.connector!]}`
                     : ""}
                 </div>
               )}
-              {f.status === "draft" && <div className="flag draft">draft — awaiting review</div>}
+              {f.status === "draft" && <div className="flag draft">draft</div>}
               <div className="ft">{f.text}</div>
               <div className="fm">
                 {f.category} · {Math.round(f.confidence * 100)}% confidence

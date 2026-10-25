@@ -88,7 +88,7 @@ export const send = mutation({
       .query("hires")
       .withIndex("by_space_email", (q) => q.eq("spaceId", reward.spaceId).eq("email", email.trim().toLowerCase()))
       .unique();
-    if (!hire) return fail(404, "No hire with that email in this space — invite them first");
+    if (!hire) return fail(404, "No hire with that email in this space. Invite them first.");
     const redemptionId = await ctx.db.insert("redemptions", { spaceId: reward.spaceId, rewardId, hireId: hire._id, status: "fulfilled" });
     await audit(ctx, reward.spaceId, `user:${userId}`, "reward.sent", { rewardId, hireId: hire._id, redemptionId });
     return redemptionId;

@@ -54,7 +54,7 @@ function NangoConnect({ spaceId, type }: { spaceId: Id<"spaces">; type: NangoTyp
             done = true;
             try {
               await connected({ spaceId, type, connectionId: event.payload.connectionId, providerConfigKey: event.payload.providerConfigKey });
-              toast(`Agent is reading ${LABELS[type]} — brain updated`);
+              toast(`Agent is reading ${LABELS[type]}`);
             } catch (err) {
               toast(errorText(err));
             }

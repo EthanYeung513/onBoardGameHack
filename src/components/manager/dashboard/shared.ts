@@ -10,7 +10,7 @@ export const TABS = ["overview", "courses", "tools", "team", "analytics", "rewar
 export type Tab = (typeof TABS)[number];
 
 /** The Convex error's readable message (BUILD-CONTRACT error shape), or a generic fallback. */
-export function errMsg(err: unknown, fallback = "Something went wrong — please try again."): string {
+export function errMsg(err: unknown, fallback = "Something went wrong."): string {
   if (err instanceof ConvexError) return (err.data as { message?: string })?.message ?? fallback;
   return fallback;
 }

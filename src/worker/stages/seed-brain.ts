@@ -40,7 +40,7 @@ export const seedBrainStage: StageDefinition = {
     const firstPass = Boolean(ctx.job.scanId ?? ctx.job.sourceScanId);
     const rejected = await ctx.convex.query(api.brainWorker.rejectedExamples, { spaceId });
     if (!ctx.llm.live && c.chunks === 0) {
-      await ctx.event("warn", "Offline stand-in: rule-based extraction (no MUBIT_API_KEY) — every fact lands as a draft for review");
+      await ctx.event("warn", "Offline stand-in: rule-based extraction (no MUBIT_API_KEY). Every fact lands as a draft for review");
     }
     if (!c.total) {
       const pending = await ctx.convex.query(api.brainWorker.pendingCount, { spaceId });
@@ -57,7 +57,7 @@ export const seedBrainStage: StageDefinition = {
       if (firstPass && c.chunks >= FIRST_PASS_PASSAGES) {
         const left = await ctx.convex.query(api.brainWorker.pendingCount, { spaceId });
         if (left > 0) {
-          await ctx.event("info", `First pass done — ${left}${left >= 300 ? "+" : ""} more passages keep enriching the brain in the background`);
+          await ctx.event("info", `First pass done. ${left}${left >= 300 ? "+" : ""} more passages keep enriching the brain in the background`);
           return { done: true, summary: summary(c), next: [{ stage: "seed_brain", detached: true }, { stage: "cascade" }] };
         }
         break;

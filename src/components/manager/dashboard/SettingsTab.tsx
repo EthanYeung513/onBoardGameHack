@@ -15,7 +15,7 @@ function BrandPreview({ B, pages }: { B: BrandInfo; pages: number | null }) {
   if (!B.hasBrand)
     return (
       <div className="brand-prev" id="brand-prev">
-        <div className="bp-meta">No brand learned yet — re-scan your website to theme the dashboard and world.</div>
+        <div className="bp-meta">No brand learned yet.</div>
       </div>
     );
   return (

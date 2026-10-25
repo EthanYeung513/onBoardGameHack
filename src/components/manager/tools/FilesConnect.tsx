@@ -28,7 +28,7 @@ export function useUploadFiles(spaceId: Id<"spaces">) {
         uploaded.push({ storageId, name: file.name });
       }
       const r = await addFiles({ spaceId, files: uploaded });
-      if (r.accepted) toast("Agent is reading Upload docs — brain updated");
+      if (r.accepted) toast("Agent is reading Upload docs");
       if (r.rejected.length) toast(r.rejected.map((x) => `${x.name}: ${x.reason}`).join(" · "));
     } catch (err) {
       toast(errorText(err));

@@ -151,7 +151,7 @@ export const applyPatch = mutation({
   args: { courseId: v.id("courses"), version: v.number(), patches: v.array(patchArg) },
   handler: async (ctx, { courseId, version, patches }) => {
     const { course, userId } = await loadCourse(ctx, courseId);
-    if (course.version !== version) return fail(409, `This course changed since you opened it (now v${course.version}) — reload to edit`);
+    if (course.version !== version) return fail(409, `This course changed since you opened it (now v${course.version}). Reload to edit.`);
     const r = await patchForSpace(ctx, course.spaceId, course.spec as CourseSpec, patches as CoursePatch[]);
     if (!r.ok) return fail(422, r.errors.slice(0, 5).join("; "));
     const next = course.version + 1;

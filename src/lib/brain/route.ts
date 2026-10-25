@@ -22,7 +22,7 @@ export type GraphResult =
 const error = (status: number, message: string) => ({ ok: false as const, response: Response.json({ error: message }, { status }) });
 
 export async function loadGraph(request: Request): Promise<GraphResult> {
-  if (!process.env.NEXT_PUBLIC_CONVEX_URL) return error(503, "Convex is not configured — run `npm run dev`.");
+  if (!process.env.NEXT_PUBLIC_CONVEX_URL) return error(503, "Convex is not configured. Run `npm run dev`.");
   const spaceId = new URL(request.url).searchParams.get("space");
   if (!spaceId) return error(422, "Missing ?space=<id>");
   const token = await convexAuthNextjsToken();

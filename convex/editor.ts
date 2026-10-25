@@ -129,8 +129,8 @@ export const assets = query({
         out.push({ id: `color-${i}`, name: p.name, thumb: { color: p.hex, text: p.hex }, meta: `color · ${p.role}`, category: "colors", foundAt: scanUrl }),
       );
       const { heading, body } = brand.typography;
-      out.push({ id: "font-heading", name: "Heading font", thumb: { text: `Aa — ${heading.family}` }, meta: `type · ${heading.weight ?? "heading"}`, category: "type", foundAt: scanUrl });
-      out.push({ id: "font-body", name: "Body font", thumb: { text: `Aa — ${body.family}` }, meta: `type · ${body.weight ?? "body"}`, category: "type", foundAt: scanUrl });
+      out.push({ id: "font-heading", name: "Heading font", thumb: { text: `Aa ${heading.family}` }, meta: `type · ${heading.weight ?? "heading"}`, category: "type", foundAt: scanUrl });
+      out.push({ id: "font-body", name: "Body font", thumb: { text: `Aa ${body.family}` }, meta: `type · ${body.weight ?? "body"}`, category: "type", foundAt: scanUrl });
       if (brand.voice) out.push({ id: "voice", name: "Voice", thumb: { text: brand.voice.slice(0, 40) }, meta: "TXT · scraped", category: "copy", foundAt: scanUrl });
     }
     const items = await ctx.db.query("source_items").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).collect();

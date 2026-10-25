@@ -62,7 +62,7 @@ async function buildCourse(ctx: StageContext, data: Context, pack: CoursePack, t
   const approved = new Set(facts.map((f) => f.id));
   const user = JSON.stringify({
     company: data.company,
-    voice: data.voice || "(no tone of voice extracted — plain, friendly, direct)",
+    voice: data.voice || "(no tone of voice extracted; plain, friendly, direct)",
     course: { title: pack.title, icon: pack.icon, building: pack.building, game: pack.game, desc: pack.desc, outline: pack.lessons },
     facts: facts.map((f) => ({ id: f.id, category: f.category, text: f.text })),
   });
@@ -85,7 +85,7 @@ async function buildCourse(ctx: StageContext, data: Context, pack: CoursePack, t
     requestedBy: target.requestedBy,
   });
   if (r.status === "kept") {
-    await ctx.event("info", `Kept ${pack.title} as it is — regenerate it from Courses to rebuild it`, { packType: pack.packType });
+    await ctx.event("info", `Kept ${pack.title} as it is (regenerate it from Courses to rebuild it)`, { packType: pack.packType });
     return `${pack.title} kept`;
   }
   const taught = new Set(spec.steps.flatMap((s) => s.teaches_fact_ids)).size;
@@ -113,7 +113,7 @@ async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, 
       }
       for (const s of out.steps) if (kinds.get(s.id) !== s.kind) zctx.addIssue({ code: "custom", message: `step "${s.id}" must keep kind ${kinds.get(s.id)}` });
       for (const id of orphaned) {
-        if (!out.remove.includes(id)) zctx.addIssue({ code: "custom", message: `step "${id}" only taught facts that are no longer true — put it in "remove"` });
+        if (!out.remove.includes(id)) zctx.addIssue({ code: "custom", message: `step "${id}" only taught facts that are no longer true; put it in "remove"` });
       }
       // Validating the patched course also proves no stale fact is still cited by an untouched target.
       const r = applyCoursePatches(course.spec, stepRefreshPatches(course.spec, out.steps, out.remove), allApproved);
@@ -124,7 +124,7 @@ async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, 
     system: COURSE_STEPS_SYSTEM_PROMPT,
     user: JSON.stringify({
       company: data.company,
-      voice: data.voice || "(no tone of voice extracted — plain, friendly, direct)",
+      voice: data.voice || "(no tone of voice extracted; plain, friendly, direct)",
       course: course.spec,
       rewrite_step_ids: stepIds,
       must_remove: orphaned,
@@ -177,9 +177,9 @@ export const generateCoursesStage: StageDefinition = {
       const pack = packFor(target.packType);
       const course = data.courses.find((c) => c.packType === target.packType);
       if (!pack) {
-        await ctx.event("warn", `No course pack "${target.packType}" — skipped`);
+        await ctx.event("warn", `No course pack "${target.packType}", skipped`);
       } else if (scan && course) {
-        await ctx.event("info", `Kept ${pack.title} as it is — regenerate it from Courses to rebuild it`, { packType: pack.packType });
+        await ctx.event("info", `Kept ${pack.title} as it is (regenerate it from Courses to rebuild it)`, { packType: pack.packType });
         lines.push(`${pack.title} kept`);
       } else if (target.stepIds?.length && course) {
         lines.push(await refreshSteps(ctx, data, pack, course, target));

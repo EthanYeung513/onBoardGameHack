@@ -22,7 +22,7 @@ export function useInvite(space: Space, toast: Toast): { open: () => void; modal
           const { path } = await invite({ spaceId: space._id, email });
           const link = `${window.location.origin}${path}`;
           await navigator.clipboard?.writeText(link).catch(() => undefined);
-          toast("Invite link copied — email sending not set up yet");
+          toast("Invite link copied (email sending not set up yet)");
           return null;
         } catch (err) {
           return errMsg(err);
@@ -73,7 +73,7 @@ export function OverviewTab({ space, toast, managerName, brandPill }: TabProps &
         </button>
       </div>
       <div className="grid2" id="hire-cards">
-        {data && data.hires.length === 0 && <p style={{ color: "var(--muted)" }}>No hires yet — publish your world and share the link.</p>}
+        {data && data.hires.length === 0 && <p style={{ color: "var(--muted)" }}>No hires yet.</p>}
         {data?.hires.map((h) => {
           const p = h.progress;
           const active = p > 0 || h.started > 0 || h.status !== "invited";

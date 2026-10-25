@@ -62,7 +62,7 @@ export function AnalyticsTab({ space }: TabProps) {
                 {h.scores.map((s, i) => (
                   <td key={courses[i]?._id ?? i}>
                     {s === null ? (
-                      "—"
+                      "·"
                     ) : (
                       <>
                         <Icon name="check" size={13} /> {s}%

@@ -40,7 +40,7 @@ export function insightsFor({ hires, courses, facts, connectors, now }: Input): 
     if (h.progress <= 0 || h.progress >= 100 || !h.lastActivity) continue;
     const days = Math.floor((now - h.lastActivity) / DAY);
     if (days >= STALL_DAYS)
-      out.push([{ text: displayName(h.hire), bold: true }, { text: ` is ${h.progress}% done but hasn't played for ${days} days — a nudge may help.` }]);
+      out.push([{ text: displayName(h.hire), bold: true }, { text: ` is ${h.progress}% done but hasn't played for ${days} days. A nudge may help.` }]);
   }
 
   const invited = hires.filter((h) => h.hire.status === "invited" && h.perCourse.size === 0).length;
@@ -48,15 +48,15 @@ export function insightsFor({ hires, courses, facts, connectors, now }: Input): 
 
   const refresh = courses.filter((c) => c.needsRefresh);
   if (refresh.length)
-    out.push([{ text: `${plural(refresh.length, "course")} need a refresh — brain facts they teach changed: ` }, { text: refresh.map((c) => c.title).join(", "), bold: true }]);
+    out.push([{ text: `${plural(refresh.length, "course")} need a refresh (brain facts they teach changed): ` }, { text: refresh.map((c) => c.title).join(", "), bold: true }]);
 
   const counts = new Map<string, number>();
   for (const f of facts) counts.set(f.category, (counts.get(f.category) ?? 0) + 1);
   const thin = GAP_CATEGORIES.map((c) => [c, counts.get(c) ?? 0] as const).filter(([, n]) => n > 0 && n < GAP_THRESHOLD);
-  for (const [category, n] of thin) out.push([{ text: category, bold: true }, { text: ` has only ${plural(n, "fact")} — connect a tool that covers it.` }]);
+  for (const [category, n] of thin) out.push([{ text: category, bold: true }, { text: ` has only ${plural(n, "fact")}. Connect a tool that covers it.` }]);
 
   for (const c of connectors.filter((c) => c.status === "error"))
-    out.push([{ text: `${c.label ?? c.type} sync failed`, bold: true }, { text: c.error ? ` — ${c.error}` : "." }]);
+    out.push([{ text: `${c.label ?? c.type} sync failed`, bold: true }, { text: c.error ? `: ${c.error}` : "." }]);
 
   return out;
 }

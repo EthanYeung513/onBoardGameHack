@@ -64,7 +64,7 @@ export function LoginCard({ next }: { next?: string }) {
     if (sso) {
       setMsg(
         <>
-          No account found for <b>{em}</b> — check with your IT team that SSO is set up.
+          No account found for <b>{em}</b>.
         </>,
       );
       return;

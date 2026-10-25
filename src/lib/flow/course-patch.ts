@@ -54,7 +54,7 @@ function applyOne(doc: Record<string, unknown>, patch: CoursePatch, n: number): 
     return null;
   }
   const exists = Object.prototype.hasOwnProperty.call(parent, last);
-  if (patch.op === "add" && exists) return `${at}: "${last}" already exists — use set`;
+  if (patch.op === "add" && exists) return `${at}: "${last}" already exists, use set`;
   if (patch.op !== "add" && !exists) return `${at}: "${last}" does not exist`;
   if (patch.op === "remove") delete parent[last];
   else parent[last] = value;

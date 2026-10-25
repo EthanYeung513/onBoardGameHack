@@ -119,7 +119,7 @@ function draw(t) {
   if (nearDoor && !mgOpen && !dlgOpen) {
     const done = (HIRE_REF.games||{})[nearDoor.course];
     hint(g, nearDoor.door[0]*T+16, nearDoor.door[1]*T-14,
-      done ? `${nearDoor.name} — replay (E)` : `Enter ${nearDoor.name} (E)`);
+      done ? `Replay ${nearDoor.name} (E)` : `Enter ${nearDoor.name} (E)`);
   }
   if (nearNPC && !dlgOpen && !mgOpen) hint(g, nearNPC.x*T+16, nearNPC.y*T-14, `Talk to ${nearNPC.name} (E)`);
   // NPCs + player (depth sort)
@@ -250,11 +250,11 @@ function gameQuiz(c) {
     if (i >= OB.QUIZ.length) {
       const score = Math.round(right/OB.QUIZ.length*100);
       document.getElementById('mg-body').innerHTML =
-        `<h3>${OB.icon(c.icon)} ${c.title} — Quiz sprint</h3>` + finishCourse(c.id, score, right*20);
+        `<h3>${OB.icon(c.icon)} ${c.title} · Quiz sprint</h3>` + finishCourse(c.id, score, right*20);
       return;
     }
     const item = OB.QUIZ[i];
-    openMG(c.icon+' '+c.title+' — Quiz sprint', `Question ${i+1}/${OB.QUIZ.length} · ${OB.icon('building',14)} ${c.building}`,
+    openMG(c.icon+' '+c.title+' · Quiz sprint', `Question ${i+1}/${OB.QUIZ.length} · ${OB.icon('building',14)} ${c.building}`,
       `<div class="mg-meta"><span>Correct: ${right}</span><span>${i+1}/${OB.QUIZ.length}</span></div>
        <div class="mg-q">${item.q}</div>
        <div class="mg-opts">${item.a.map((a,j)=>`<button class="mg-opt" onclick="quizPick(${j})">${a}</button>`).join('')}</div>`);
@@ -277,13 +277,13 @@ function gameInbox(c) {
       return;
     }
     const it = OB.INBOX_CARDS[i];
-    openMG(c.icon+' '+c.title+' — Inbox triage', `Sort messages like a local would. ${i+1}/${OB.INBOX_CARDS.length}`,
+    openMG(c.icon+' '+c.title+' · Inbox triage', `Sort messages like a local would. ${i+1}/${OB.INBOX_CARDS.length}`,
       `<div class="inbox-card"><div class="from"><i>IN</i> Internal · #general</div>
        <div class="body">${it.text}</div>
        <div class="inbox-why" id="why"></div></div>
        <div style="display:flex;gap:10px">
-         <button class="btn btn-dark" style="flex:1" onclick="triage(true)">Save — it\'s normal here</button>
-         <button class="btn btn-ghost" style="flex:1" onclick="triage(false)">Trash — violates the rules</button>
+         <button class="btn btn-dark" style="flex:1" onclick="triage(true)">Save</button>
+         <button class="btn btn-ghost" style="flex:1" onclick="triage(false)">Trash</button>
        </div>`);
     window.triage = save => {
       const ok = save === it.save; if (ok) right++;
@@ -308,7 +308,7 @@ function gameRoad(c) {
       return;
     }
     const it = OB.ROAD_QUESTIONS[i];
-    openMG(c.icon+' '+c.title+' — Road run', `Pick the right lane before time runs out. ${i+1}/${OB.ROAD_QUESTIONS.length}`,
+    openMG(c.icon+' '+c.title+' · Road run', `Pick the right lane before time runs out. ${i+1}/${OB.ROAD_QUESTIONS.length}`,
       `<div class="mg-meta"><span>Correct: ${right}</span><span id="road-t">8s</span></div>
        <div class="road-q">${it.q}</div>
        <div class="road-lanes">${it.a.map((a,j)=>`<div class="lane" onclick="lane(${j})">Lane ${j+1}: ${a}</div>`).join('')}</div>`);
@@ -335,7 +335,7 @@ function gameScenario(c) {
       return;
     }
     const s = OB.SCENARIO[step];
-    openMG(c.icon+' '+c.title+' — Live scenario', `Respond like you'd want a teammate to. ${step+1}/${OB.SCENARIO.length}`,
+    openMG(c.icon+' '+c.title+' · Live scenario', `Respond like you'd want a teammate to. ${step+1}/${OB.SCENARIO.length}`,
       `<div class="scn-from"><div class="fa">${s.from[0]}</div><div><b>${s.from}</b><span>${s.role}</span></div></div>
        <div class="scn-line">“${s.line}”</div>
        <div class="mg-opts">${s.options.map((o,j)=>`<button class="mg-opt" onclick="pickOpt(${j})">${o.text}</button>`).join('')}</div>

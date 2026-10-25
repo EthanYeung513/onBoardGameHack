@@ -135,7 +135,7 @@ describe("crawl stage", () => {
     expect(peak).toBeLessThanOrEqual(FETCH_CONCURRENCY);
     expect(r).toMatchObject({ done: false, cursor: { phase: "screens" } });
     expect(events.filter((e) => e.startsWith("Read /p"))).toHaveLength(14);
-    expect(events.some((e) => e.includes("unchanged — skipped re-learning"))).toBe(true);
+    expect(events.some((e) => e.includes("unchanged, skipped re-learning"))).toBe(true);
     expect(events.at(-1)).toMatch(/^Since the last scan: \d+ new, \d+ changed, \d+ unchanged/);
   });
 
@@ -149,7 +149,7 @@ describe("crawl stage", () => {
     })) as never;
     const { ctx, events, data } = fakeCtx({ answers: { "ingest:ensureConnector": "c1" } });
     const r = await createCrawlStage(deps).run(ctx);
-    expect(events).toEqual(["Resolving acme.com", "Found 1,234 pages via sitemap.xml", "Reading public pages — about, careers"]);
+    expect(events).toEqual(["Resolving acme.com", "Found 1,234 pages via sitemap.xml", "Reading public pages: about, careers"]);
     // The scan screen reads `data.pages` from crawl events (pipeline.scanStatus).
     expect(data.map((d) => d?.pages ?? null)).toEqual([null, 1234, null]);
     expect(r).toMatchObject({ done: false, cursor: { phase: "fetch", done: [urls[0]] } });

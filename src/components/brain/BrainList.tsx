@@ -7,7 +7,7 @@ import { PARTITIONS } from "@convex/lib/partitions";
 export function BrainList({ graph, onSelect }: { graph: BrainGraph; onSelect: (id: string) => void }) {
   return (
     <div className="blist">
-      <p className="pm">This browser can&apos;t draw the graph (WebGL unavailable) — showing it as a list.</p>
+      <p className="pm">This browser can&apos;t draw the graph (WebGL unavailable), so it is shown as a list.</p>
       {PARTITIONS.map((p) => {
         const nodes = graph.nodes.filter((n) => n.cluster === p.name).sort((a, b) => b.size - a.size);
         if (!nodes.length) return null;

@@ -76,10 +76,10 @@ function Brain() {
       {graph && gl === false && <BrainList graph={graph} onSelect={setSelected} />}
       {empty && (
         <div className="empty">
-          Nothing in the brain yet — connect a tool or run a scan and it fills in here as facts are learned.
+          Nothing in the brain yet.
         </div>
       )}
-      {spaces && spaces.length === 0 && <div className="empty">Create a space first — the brain is built from its scan and tools.</div>}
+      {spaces && spaces.length === 0 && <div className="empty">Create a space first.</div>}
 
       {!selected && space && <IdentityCard brand={space.brand} />}
 
