@@ -48,3 +48,9 @@ Entry points: `/` landing · `/login` manager sign-in · `/space/new` · `/dashb
   self-hosted backend uses `CONVEX_SELF_HOSTED_URL` + `_ADMIN_KEY`.
 - `next dev` rewrites the Next.js block at the top of `AGENTS.md`. Leave it
   committed; removing it only re-creates the diff.
+- **`.env.local` hygiene.** Each checkout's `.env.local` must point at a *live* backend —
+  its own `CONVEX_LOCAL_PORT` stack, or :3210 only for the preview app. Never run
+  `npm run dev` without `CONVEX_LOCAL_PORT` in a second checkout: it would push your
+  functions over the preview backend. `CONVEX_SELF_HOSTED_ADMIN_KEY` is written quoted
+  (it contains `|`); `set -a; . ./.env.local` and `scripts/run-ts.mjs` both handle quotes.
+

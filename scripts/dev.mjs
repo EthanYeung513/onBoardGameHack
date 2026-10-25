@@ -53,9 +53,12 @@ function readEnv() {
 
 function upsertEnv(values) {
   let text = fs.existsSync(envFile) ? fs.readFileSync(envFile, "utf8") : fs.readFileSync(path.join(root, ".env.example"), "utf8");
-  for (const [k, v] of Object.entries(values)) {
+  for (const [k, raw] of Object.entries(values)) {
+    // Quote anything a shell would split or interpret (the admin key contains "|"), so
+    // `set -a; source .env.local` keeps working.
+    const v = /^[A-Za-z0-9_./:@-]*$/.test(raw) ? raw : `"${String(raw).replace(/(["\\$`])/g, "\\$1")}"`;
     const re = new RegExp(`^${k}=.*$`, "m");
-    text = re.test(text) ? text.replace(re, `${k}=${v}`) : `${text.replace(/\n?$/, "\n")}${k}=${v}\n`;
+    text = re.test(text) ? text.replace(re, () => `${k}=${v}`) : `${text.replace(/\n?$/, "\n")}${k}=${v}\n`;
   }
   // A self-hosted backend and a cloud deployment can't both be selected.
   if (values.CONVEX_SELF_HOSTED_URL) text = text.replace(/^CONVEX_DEPLOYMENT=.*$/m, "CONVEX_DEPLOYMENT=");
