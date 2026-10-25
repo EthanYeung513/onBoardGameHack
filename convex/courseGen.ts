@@ -24,6 +24,10 @@ export const context = workerQuery({
       .query("facts")
       .withIndex("by_space_status", (q) => q.eq("spaceId", spaceId).eq("status", "approved"))
       .take(2000);
+    const stale = await ctx.db
+      .query("facts")
+      .withIndex("by_space_status", (q) => q.eq("spaceId", spaceId).eq("status", "stale"))
+      .take(500);
     const brand = space.brandProfileId
       ? await ctx.db.get(space.brandProfileId)
       : await ctx.db.query("brand_profiles").withIndex("by_space", (q) => q.eq("spaceId", spaceId)).order("desc").first();
@@ -32,6 +36,8 @@ export const context = workerQuery({
       company: space.name,
       voice: brand?.voice ?? "",
       facts: facts.map((f) => ({ id: f._id as string, category: f.category, text: f.text, confidence: f.confidence })),
+      /** No longer approved (their source changed) — the step refresh must stop teaching these. */
+      staleFacts: stale.map((f) => ({ id: f._id as string, category: f.category, text: f.text })),
       courses: courses.map((c) => ({
         id: c._id,
         packType: c.packType,

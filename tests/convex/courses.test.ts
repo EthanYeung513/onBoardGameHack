@@ -191,6 +191,45 @@ describe("course regeneration (F36)", () => {
     expect(kinds).toEqual(expect.arrayContaining(["course.regenerate_requested", "course.steps_regenerated"]));
   });
 
+  it("live step refresh: a step whose only fact went stale must be removed, not re-cited onto another fact", async () => {
+    vi.stubEnv("MUBIT_API_KEY", "k");
+    const { t, mgr, spaceId, connectorId } = await setup();
+    const [deploy, falcon] = await addFacts(t, spaceId, connectorId, FACTS.slice(0, 2));
+    const spec: CourseSpec = {
+      title: "Tools & Stack",
+      icon: "wrench",
+      building: "Workshop",
+      game: "road",
+      steps: [
+        { id: "welcome", kind: "welcome", title: "Hi", teaches_fact_ids: [] },
+        { id: "ship", kind: "lesson", title: "Ship to prod", body: "Merges deploy to staging.", teaches_fact_ids: [deploy] },
+        { id: "boards", kind: "lesson", title: "Boards", body: "FALCON is Payments.", teaches_fact_ids: [falcon] },
+        { id: "done", kind: "done", title: "Done", teaches_fact_ids: [] },
+      ],
+    };
+    const courseId = await t.run(async (ctx) => {
+      const id = await ctx.db.insert("courses", { spaceId, packType: "tools-stack", title: spec.title, icon: spec.icon, building: spec.building, game: spec.game, spec, status: "draft", needsRefresh: false, version: 1 });
+      await ctx.db.insert("course_facts", { spaceId, courseId: id, factId: deploy, stepId: "ship" });
+      await ctx.db.insert("course_facts", { spaceId, courseId: id, factId: falcon, stepId: "boards" });
+      return id;
+    });
+    await t.mutation(api.ingest.upsertItem, { secret, spaceId, connectorId, kind: "message", externalId: "deploys", title: "deploys", contentHash: "edited" });
+    expect((await mgr.query(api.courses.get, { courseId })).staleStepIds).toEqual(["ship"]);
+    await mgr.mutation(api.courses.regenerateSteps, { courseId, stepIds: ["ship"] });
+
+    const reply = (out: unknown) => ({ withResponse: async () => ({ data: { model: "gpt-x", choices: [{ message: { content: JSON.stringify(out) } }] }, response: new Response(null) }) });
+    const create = vi
+      .fn()
+      .mockReturnValueOnce(reply({ steps: [{ ...spec.steps[1], teaches_fact_ids: [falcon] }], remove: [] }))
+      .mockReturnValueOnce(reply({ steps: [], remove: ["ship"] }));
+    expect((await runCourseJob(t, createLlm({ chat: { completions: { create } } } as never))).outcome).toBe("done");
+    expect(create.mock.calls[0][1].headers).toMatchObject({ "X-Mubit-Task": "regenerate_course_steps" });
+    expect(create.mock.calls[1][0].messages.at(-1).content).toContain('step "ship" only taught facts that are no longer true');
+    const after = await mgr.query(api.courses.get, { courseId });
+    expect(after).toMatchObject({ version: 2, needsRefresh: false, staleStepIds: [], mode: "live" });
+    expect(after.spec.steps.map((s: { id: string }) => s.id)).toEqual(["welcome", "boards", "done"]);
+  });
+
   it("regenerate rebuilds the whole course, bumps the version and republishes a published course", async () => {
     const { t, mgr, tools } = await withCourses();
     await t.run((ctx) => ctx.db.patch(tools._id, { status: "published", publishedVersion: 1, publishedSpec: tools.spec, needsRefresh: true, staleStepIds: ["x"] }));

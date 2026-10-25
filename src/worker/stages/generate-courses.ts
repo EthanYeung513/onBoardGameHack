@@ -100,6 +100,10 @@ async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, 
   const allApproved = new Set(data.facts.map((f) => f.id));
   const byId = new Map(data.facts.map((f) => [f.id, f]));
   const kinds = new Map(course.spec.steps.map((s) => [s.id, s.kind]));
+  // A teaching step whose every fact is no longer approved has nothing left to stand on: it must go.
+  const orphaned = course.spec.steps
+    .filter((s) => stepIds.includes(s.id) && s.teaches_fact_ids.length > 0 && s.teaches_fact_ids.every((id) => !allApproved.has(id)))
+    .map((s) => s.id);
   const schema = z
     .preprocess((raw) => normaliseRefresh(raw, stepIds), z.object({ steps: z.array(CourseStep).max(24), remove: z.array(z.string()).max(24) }))
     .superRefine((out, zctx) => {
@@ -108,6 +112,9 @@ async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, 
         return;
       }
       for (const s of out.steps) if (kinds.get(s.id) !== s.kind) zctx.addIssue({ code: "custom", message: `step "${s.id}" must keep kind ${kinds.get(s.id)}` });
+      for (const id of orphaned) {
+        if (!out.remove.includes(id)) zctx.addIssue({ code: "custom", message: `step "${id}" only taught facts that are no longer true — put it in "remove"` });
+      }
       // Validating the patched course also proves no stale fact is still cited by an untouched target.
       const r = applyCoursePatches(course.spec, stepRefreshPatches(course.spec, out.steps, out.remove), allApproved);
       if (!r.ok) for (const message of r.errors) zctx.addIssue({ code: "custom", message });
@@ -120,7 +127,9 @@ async function refreshSteps(ctx: StageContext, data: Context, pack: CoursePack, 
       voice: data.voice || "(no tone of voice extracted — plain, friendly, direct)",
       course: course.spec,
       rewrite_step_ids: stepIds,
+      must_remove: orphaned,
       facts: factsForPack(pack, data.facts).map((f) => ({ id: f.id, category: f.category, text: f.text })),
+      no_longer_true: data.staleFacts.map((f) => f.text),
     }),
     schema,
     offline: () => offlineStepRefresh(course.spec, stepIds, byId),
