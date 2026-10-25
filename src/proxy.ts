@@ -1,18 +1,20 @@
+import { convexAuthNextjsMiddleware, createRouteMatcher, nextjsMiddlewareRedirect } from "@convex-dev/auth/nextjs/server";
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 
-// Every page sits behind Supabase sign-in, except the landing page (and its assets, the /classic
-// export and the /try demo), the sign-in routes, published flows and the endpoints that check their own credentials.
+// Manager surfaces sign in with Convex Auth. The legacy studio (`/studio`, `/admin`, `/api/gen/*`)
+// still sits behind Supabase until it is migrated; everything else (landing, published flows,
+// the public constructor, play) is public.
 
-const PUBLIC = [/^\/$/, /^\/(classic|try)(\/|$)/, /^\/landing\//, /^\/login(\/|$)/, /^\/auth\//, /^\/f\//, /^\/api\/gen\/leads$/, /^\/api\/gen\/pipeline\//, /^\/api\/gen\/flows\/[^/]+\/public$/];
+const MANAGER = createRouteMatcher(["/space(.*)", "/dashboard(.*)", "/brain(.*)", "/editor(.*)", "/course(.*)"]);
+const LEGACY = [/^\/studio(\/|$)/, /^\/admin(\/|$)/, /^\/status(\/|$)/, /^\/preview(\/|$)/, /^\/api\/gen\//, /^\/api\/admin\//];
+const LEGACY_PUBLIC = [/^\/api\/gen\/leads$/, /^\/api\/gen\/pipeline\//, /^\/api\/gen\/flows\/[^/]+\/public$/];
 
-export async function proxy(request: NextRequest) {
+async function legacyGate(request: NextRequest) {
   let response = NextResponse.next({ request });
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const isPublic = PUBLIC.some((r) => r.test(request.nextUrl.pathname));
-  if (!url || !key) return isPublic ? response : new NextResponse("Supabase is not configured", { status: 503 });
-
+  if (!url || !key) return new NextResponse("Supabase is not configured", { status: 503 });
   const supabase = createServerClient(url, key, {
     cookies: {
       getAll: () => request.cookies.getAll(),
@@ -24,19 +26,33 @@ export async function proxy(request: NextRequest) {
     },
   });
   const { data } = await supabase.auth.getUser();
-  const path = request.nextUrl.pathname;
-
-  if (isPublic) return response;
   if (!data.user) {
-    if (path.startsWith("/api/")) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
-    const to = request.nextUrl.clone();
-    to.pathname = "/login";
-    to.search = path === "/" ? "" : `?next=${encodeURIComponent(path + request.nextUrl.search)}`;
-    return NextResponse.redirect(to);
+    if (request.nextUrl.pathname.startsWith("/api/")) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
+    return nextjsMiddlewareRedirect(request, `/login?next=${encodeURIComponent(request.nextUrl.pathname)}`);
   }
   return response;
 }
 
+const convexProxy = convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
+  const path = request.nextUrl.pathname;
+  if (MANAGER(request) && !(await convexAuth.isAuthenticated())) {
+    return nextjsMiddlewareRedirect(request, `/login?next=${encodeURIComponent(path + request.nextUrl.search)}`);
+  }
+  if (LEGACY.some((r) => r.test(path)) && !LEGACY_PUBLIC.some((r) => r.test(path))) return legacyGate(request);
+});
+
+export async function proxy(request: NextRequest, event: NextFetchEvent) {
+  if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
+    const path = request.nextUrl.pathname;
+    if (MANAGER(request) || path === "/login" || path.startsWith("/api/auth")) {
+      return new NextResponse("Convex is not configured — run `npm run dev`, which boots the local backend.", { status: 503 });
+    }
+    if (LEGACY.some((r) => r.test(path)) && !LEGACY_PUBLIC.some((r) => r.test(path))) return legacyGate(request);
+    return NextResponse.next();
+  }
+  return convexProxy(request, event);
+}
+
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|.*\\.(?:png|jpg|jpeg|svg|webp|ico|mp4|webm|woff2?|ttf|css|js)$).*)"],
 };

@@ -16,20 +16,28 @@ description: Boot the app locally with a seeded demo space, verify env wiring, a
 ## 2. Boot
 
 ```bash
-npx convex dev --local  # local Convex deployment (no cloud needed)
-npm run db:seed         # seed Acme Pay demo space into it
-npm run dev             # http://localhost:3000
+npm install
+npm run dev      # Docker Convex backend + functions + auth keys + demo seed + next dev
 ```
 
-Entry points: `/` constructor · `/studio` pipeline view · `/play` game ·
-`/admin` manager console · `/status` env health. There is no auth locally when
-Convex vars are unset; with them, accounts live in Convex Auth.
+`npm run dev` (`scripts/dev.mjs`) is idempotent: it starts `.convex-local` in Docker, writes
+`CONVEX_SELF_HOSTED_*`/`NEXT_PUBLIC_CONVEX_*` to `.env.local` on first boot, pushes `convex/`,
+sets the Convex Auth signing keys, copies provider keys into the Convex function env, seeds
+`demo@orthogonal.dev` / `demo-password` (Acme Pay), then runs `convex dev` + `next dev`.
+`PORT=3100 npm run dev` picks another web port.
+
+Entry points: `/` landing · `/login` manager sign-in · `/space/new` · `/dashboard` ·
+`/try` public constructor · `/studio` legacy (Supabase) · Convex dashboard `http://127.0.0.1:6791`.
 
 ## 3. Gotchas
 
-- **Convex local deployment.** `npx convex dev --local` runs the backend on
-  this machine; `convex dev` against the cloud needs `CONVEX_DEPLOYMENT` +
-  login. Kill stray `convex`/`node` processes if the local port is stuck.
+- **Convex local deployment.** The native `npx convex dev --local` binary needs a newer
+  glibc than the VMs have — `npm run dev` uses the Docker backend instead. A shell that
+  exports `CONVEX_DEPLOY_KEY`/`CONVEX_DEPLOYMENT` sends the CLI to the cloud deployment:
+  run raw CLI commands as `env -u CONVEX_DEPLOY_KEY npx convex …`. `.env.local` must not
+  set both `CONVEX_DEPLOYMENT` and `CONVEX_SELF_HOSTED_URL`.
+- **Tests for Convex functions** use `convex-test` (`tests/convex/*.test.ts`, edge-runtime
+  environment). Commit `convex/_generated` after changing functions (`npx convex dev --once`).
 - Convex function env (LLM keys etc.) lives in the deployment's env —
   `npx convex env set` or the dashboard — not only in `.env.local`.
 - `.env.local` holds `NEXT_PUBLIC_CONVEX_URL` + `CONVEX_DEPLOYMENT`; a

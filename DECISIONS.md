@@ -209,6 +209,17 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (move the page folder back, drop the rewrite)
 - **Revisit?:** yes. Drop `/classic` once F1 ships; revisit the `/try` public entry when Convex Auth replaces Supabase
 
+||||||| parent of 034c29a (feat: Convex foundation — schema, Convex Auth, spaces + roles (S3))
+### D-17: Convex foundation — self-hosted local backend, one `npm run dev`, Supabase only for the legacy studio
+- **Task:** S3 (auth + spaces + roles) / Phase 0 Convex skeleton
+- **Time:** 2026-10-24T23:58Z
+- **Context:** `npx convex dev --local` needs a newer glibc than our VMs have; the cloud dev deployment (`rapid-mosquito-655`) is shared. The scaffold's proxy gated every page behind Supabase (503 with no keys). Embedding width must be fixed for Convex vector indexes
+- **Options:** A) cloud deployment for local dev / B) self-hosted Docker backend (`.convex-local`) booted by `npm run dev`, cloud kept for Vercel/Modal
+- **Chosen:** B. `scripts/dev.mjs` starts Docker Convex, writes the admin key to `.env.local`, pushes functions, sets Convex Auth keys, copies provider keys into the function env, seeds the demo login, then runs `convex dev` + `next dev`. Manager routes (`/space`, `/dashboard`, `/brain`, `/editor`, `/course`) are gated by Convex Auth in `src/proxy.ts`; `/studio`, `/admin`, `/api/gen/*` keep the Supabase gate until migrated; the old Supabase `/login` is replaced. Vector indexes are 1536-d (`text-embedding-3-large` with `dimensions: 1536`; offline hashed stand-in matches)
+- **Why:** works with zero keys on any machine with Docker; no shared-state collisions between agents; 1536-d halves storage with negligible recall loss
+- **Reversibility:** easy (set `CONVEX_DEPLOYMENT` to go cloud; the index width is one constant, `EMBEDDING_DIMS`)
+- **Revisit?:** yes — delete the Supabase gate and `src/lib/supabase` once the studio is migrated or retired
+
 ## Blockers
 
 None yet.
