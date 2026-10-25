@@ -291,6 +291,16 @@ on Windows; delete `.data/pglite-corrupt-*`).
 - **Reversibility:** easy (thresholds are constants in `src/worker/brain/resolve.ts`; `dedupeKey` is optional)
 - **Revisit?:** secondary hard keys scan one type per space (fine to ~thousands of entities); restored facts don't yet clear `staleStepIds` (regeneration does)
 
+### D-24: Brain page — cosmos.gl draws brain.html's partition picture; links drawn, not sprung
+- **Task:** S10 (brain page, F18/F35)
+- **Time:** 2026-10-25T02:30Z
+- **Context:** brain.html is a seeded-random canvas: white company hub, one labelled anchor per partition (People, Glossary, Tools, Rituals, Docs & History), members scattered around their anchor, faint cluster-coloured links. A free force layout over the real graph pulls cross-linked entities together and loses that picture. The mockup has no side panel, export or identity card; the brief and product owner require a provenance panel, GEXF export, visible stale facts and the space's extracted identity
+- **Options:** A) free force layout / B) seeded per-partition positions from `brain.graph` (mockup spread), hub + anchors pinned, link spring 0 so only repulsion/collision tidy overlaps
+- **Chosen:** B. Cluster = majority category of an entity's visible facts, else its type; partition colours are product chrome in `convex/lib/partitions.ts` (mockup's five, plus Policy/Product/Other shown only when non-empty). Merged entities fold into their canonical node; rejected facts never leave `convex/brain.ts`. Stale facts: node dimmed + red outline + "· stale" label; panel lists them first as "stale — source changed in <connector>". Additions from the live query fade in at their seeded spot without re-running the layout. Added (not in the mockup, required): provenance panel and Identity card in the legend's chrome, "Export GEXF" link in the caption; caption is "live graph · updated …" instead of "mock graph"
+- **Why:** keeps the mockup's look while every node, count and colour is real data
+- **Reversibility:** easy (layout is `src/components/brain/layout.ts`; turning link spring on is one config value)
+- **Revisit?:** for >2k entities (labels overlay and per-entity mention counts are O(n))
+
 ## Blockers
 
 None yet.
