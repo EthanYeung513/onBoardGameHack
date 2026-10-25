@@ -97,4 +97,13 @@ describe("pipeline jobs", () => {
     expect(cascade.status).toBe("queued");
     expect(cascade.scanId ?? cascade.connectorId).toBeUndefined();
   });
+
+  it("claims a scan's job before older background work (fresh scans never queue behind enrichment)", async () => {
+    const { t, mgr, spaceId } = await setup();
+    await t.run((ctx) => ctx.db.insert("jobs", { spaceId, stage: "seed_brain", status: "queued", progress: 0, attempt: 0, cursor: {}, runAfter: 0 }));
+    const scanId = await mgr.mutation(api.scans.start, { spaceId });
+    const c = await t.mutation(api.pipeline.claim, { secret, workerId: "w", stages: ["crawl", "seed_brain"] });
+    expect(c?.job).toMatchObject({ stage: "crawl", scanId });
+  });
 });
+

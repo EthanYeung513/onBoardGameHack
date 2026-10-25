@@ -66,7 +66,8 @@ export const claim = workerMutation({
       .query("jobs")
       .withIndex("by_status_run", (q) => q.eq("status", "queued").lte("runAfter", now))
       .take(50);
-    const job = ready.find((j) => stages.includes(j.stage));
+    // A manager watching a scan beats background enrichment: scan jobs are claimed first.
+    const job = ready.find((j) => j.scanId && stages.includes(j.stage)) ?? ready.find((j) => stages.includes(j.stage));
     if (!job) return null;
     await ctx.db.patch(job._id, { status: "running", workerId, heartbeatAt: now, startedAt: job.startedAt ?? now, error: undefined });
     if (!job.startedAt) await logEvent(ctx, job, "info", `${STAGE_LABELS[job.stage]} started`);
@@ -97,7 +98,8 @@ export const event = workerMutation({
   },
 });
 
-const nextJob = v.object({ stage: stageName, cursor: v.optional(v.any()) });
+/** `detached`: queued for the space without the scan (background work that mustn't hold the scan). */
+const nextJob = v.object({ stage: stageName, cursor: v.optional(v.any()), detached: v.optional(v.boolean()) });
 
 export const finish = workerMutation({
   args: {
@@ -146,7 +148,7 @@ export const finish = workerMutation({
     // cascade is per space (one queue, whatever source triggered it), so it is never tied to a scan.
     const chained = job.scanId ? nextInScan(job.stage) : null;
     const next = [...(chained ? [{ stage: chained, cursor: {} }] : []), ...(outcome.next ?? []).filter((n) => n.stage !== chained)];
-    for (const n of next) await enqueue(ctx, n.stage === "cascade" ? { spaceId: job.spaceId } : target, n.stage, n.cursor ?? {});
+    for (const n of next) await enqueue(ctx, n.stage === "cascade" || n.detached ? { spaceId: job.spaceId } : target, n.stage, n.cursor ?? {});
     if (job.stage === "ready") await setScanOutcome(ctx, job, "succeeded");
     else if (job.scanId) {
       const scan = await ctx.db.get(job.scanId);

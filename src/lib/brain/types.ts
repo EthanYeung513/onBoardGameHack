@@ -46,6 +46,12 @@ export const ExtractionBatch = z.object({
 });
 
 export type ExtractionBatch = z.infer<typeof ExtractionBatch>;
+
+/** `brain_extract_batch`: one ExtractionBatch per passage id. */
+export const MultiExtraction = z.object({
+  results: z.array(ExtractionBatch.extend({ id: z.string().trim().min(1) })).max(40).default([]),
+});
+export type MultiExtraction = z.infer<typeof MultiExtraction>;
 export type ExtractedEntity = z.infer<typeof ExtractedEntity>;
 
 /** LLM adjudication for an ambiguous entity pair (F15). */

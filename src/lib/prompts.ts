@@ -51,6 +51,20 @@ Rules:
 - Return empty arrays when the chunk has nothing worth knowing.
 Return only the JSON object.`;
 
+/** Batched extraction (task `brain_extract_batch`): many passages per call, results keyed by id. */
+export const BRAIN_EXTRACT_BATCH_SYSTEM_PROMPT = `You build a company knowledge graph from internal documents for onboarding new hires.
+You receive several passages, each with an id and its source (website page, handbook, wiki page, Slack messages, ticket or repository file), and a list of facts a manager rejected earlier.
+Return JSON {"results": [...]} with exactly one result per passage id, each {"id", "entities", "facts", "edges"}:
+- "entities": {type, name, aliases, keys}. type is one of person, tool, term, ritual, policy, product, org_unit, doc. keys may hold email, login (GitHub or chat handle) or url when the passage states them. Use the most complete name the passage gives.
+- "facts": {category, text, entity_names, confidence, span}. category is one of Glossary, People, Tools, Rituals, Docs & History, Policy, Product, Other. text is one self-contained sentence a new hire should know, in plain words. entity_names lists names from that result's "entities" the fact is about, most important first. confidence (0 to 1) is how directly the passage states the fact. span is the start and end character offsets of the supporting text inside that passage.
+- "edges": {source, target, relation, evidence}. source and target are entity names from that result's "entities"; relation is one of owns, uses, mentions, related_to, depends_on; evidence quotes the passage briefly.
+Rules:
+- Each result uses only its own passage. Only state what the passage supports. Never invent people, numbers, tools or rules.
+- Prefer concrete facts: who owns what, which tool is used for what, rules with their limits, recurring rituals with their timing, product terms with their meaning.
+- Never re-propose a rejected fact or a paraphrase of one.
+- Use empty arrays for a passage with nothing worth knowing, but still return its id.
+Return only the JSON object.`;
+
 export const BRAIN_RESOLVE_SYSTEM_PROMPT = `You decide whether two knowledge-graph entities from the same company refer to the same real-world thing.
 You receive a candidate entity extracted from a document (type, name, aliases, keys, the sentence it came from) and an existing entity (type, name, aliases, keys).
 Answer same=true only when they are clearly the same person, tool, team, term, ritual, policy, product or document; different people who share a first name, or a product and the team that owns it, are not the same.

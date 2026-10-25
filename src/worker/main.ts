@@ -35,23 +35,40 @@ live.onUpdate(api.pipeline.pending, { secret }, () => wake?.(), (err) => console
 let stopping = false;
 for (const sig of ["SIGINT", "SIGTERM"] as const) process.on(sig, () => ((stopping = true), wake?.()));
 
-console.log(`worker ${workerId}: stages [${stages.join(", ")}] · LLM ${llm.live ? "live (Mubit)" : "OFFLINE stand-ins"} · embeddings ${embed.mode}`);
-while (!stopping) {
-  try {
-    const claimed = await convex.mutation(api.pipeline.claim, { workerId, stages });
-    if (claimed) {
-      const outcome = await runSlice(claimed, { convex, llm, embed, workerId, registry });
-      console.log(`worker: ${claimed.job.stage} (${claimed.job._id}) → ${outcome}`);
-      continue;
-    }
-  } catch (err) {
-    console.error("worker:", err instanceof Error ? err.message : err);
-  }
-  // Idle: wait for the queue to change, or 2 s (retry backoff timers aren't reactive).
-  await new Promise<void>((resolve) => {
-    const t = setTimeout(resolve, 2000);
-    wake = () => (clearTimeout(t), resolve());
+/** Jobs run at once (e.g. a fresh scan while another space's brain enriches in the background). */
+const LANES = Math.max(1, Number(process.env.WORKER_CONCURRENCY ?? 4));
+console.log(`worker ${workerId}: stages [${stages.join(", ")}] · ${LANES} lanes · LLM ${llm.live ? "live (Mubit)" : "OFFLINE stand-ins"} · embeddings ${embed.mode}`);
+
+const waiters = new Set<() => void>();
+wake = () => {
+  for (const w of [...waiters]) w();
+};
+const idle = () =>
+  new Promise<void>((resolve) => {
+    const done = () => {
+      clearTimeout(t);
+      waiters.delete(done);
+      resolve();
+    };
+    const t = setTimeout(done, 2000); // retry backoff timers aren't reactive
+    waiters.add(done);
   });
-  wake = null;
+
+async function lane(n: number) {
+  const id = `${workerId}#${n}`;
+  while (!stopping) {
+    try {
+      const claimed = await convex.mutation(api.pipeline.claim, { workerId: id, stages });
+      if (claimed) {
+        const outcome = await runSlice(claimed, { convex, llm, embed, workerId: id, registry });
+        console.log(`worker: ${claimed.job.stage} (${claimed.job._id}) → ${outcome}`);
+        continue;
+      }
+    } catch (err) {
+      console.error("worker:", err instanceof Error ? err.message : err);
+    }
+    await idle();
+  }
 }
+await Promise.all(Array.from({ length: LANES }, (_, i) => lane(i + 1)));
 await live.close();

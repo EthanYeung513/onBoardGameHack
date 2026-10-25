@@ -184,14 +184,17 @@ const children = [
 const startWorker = () => spawn("node", [path.join(root, "scripts", "run-ts.mjs"), "src/worker/main.ts"], { stdio: "inherit", env: { DEMBRANDT_ENABLED: "true", ...cliEnv }, cwd: root, ...group });
 let worker = startWorker();
 let workerRestarts = 0;
+let workerStartedAt = Date.now();
 const superviseWorker = () =>
   worker.on("exit", (code, signal) => {
     if (stopping) return;
+    if (Date.now() - workerStartedAt > 60_000) workerRestarts = 0; // a healthy run resets the backoff
     const delay = Math.min(30_000, 1000 * 2 ** Math.min(workerRestarts++, 5));
     console.error(`dev: pipeline worker exited (${signal ?? `code ${code}`}) — restarting in ${delay / 1000}s`);
     setTimeout(() => {
       if (stopping) return;
       worker = startWorker();
+      workerStartedAt = Date.now();
       superviseWorker();
     }, delay);
   });

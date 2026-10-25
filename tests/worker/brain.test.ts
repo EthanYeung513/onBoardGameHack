@@ -5,7 +5,7 @@ import { api } from "@convex/_generated/api";
 import { factKey, hardKeys } from "@/lib/brain/normalize";
 import { offlineExtract, OFFLINE_CONFIDENCE } from "@/lib/brain/offline";
 import { ExtractionBatch } from "@/lib/brain/types";
-import { BRAIN_EXTRACT_SYSTEM_PROMPT, BRAIN_RESOLVE_SYSTEM_PROMPT } from "@/lib/prompts";
+import { BRAIN_EXTRACT_BATCH_SYSTEM_PROMPT, BRAIN_EXTRACT_SYSTEM_PROMPT, BRAIN_RESOLVE_SYSTEM_PROMPT } from "@/lib/prompts";
 import { dedupeBatch, resolveEntities } from "@/worker/brain/resolve";
 import type { Llm } from "@/worker/providers/llm";
 import type { WorkerConvex } from "@/worker/types";
@@ -13,6 +13,7 @@ import type { WorkerConvex } from "@/worker/types";
 describe("brain prompts", () => {
   it("keeps the extraction and resolution system prompts byte-identical (one Mubit task each)", () => {
     expect(BRAIN_EXTRACT_SYSTEM_PROMPT).toMatchSnapshot("brain_extract");
+    expect(BRAIN_EXTRACT_BATCH_SYSTEM_PROMPT).toMatchSnapshot("brain_extract_batch");
     expect(BRAIN_RESOLVE_SYSTEM_PROMPT).toMatchSnapshot("brain_resolve");
   });
 });
